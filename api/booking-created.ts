@@ -85,11 +85,23 @@ function safeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
+// ClickUp accepts two kinds of credential and they are presented
+// DIFFERENTLY. A personal token (pk_...) goes in the header bare; an
+// OAuth app access token (e.g. MKC Dispatch) requires the 'Bearer '
+// scheme. Send the wrong one and every call fails as
+//   401 {"err":"Oauth token not found","ECODE":"OAUTH_019"}
+// which reads like a revoked credential and is not one -- it cost an
+// evening of the c1 -> c3 migration to find. Detect instead of assume,
+// so swapping token types later is a config change, not a code change.
+// trim() also absorbs the trailing newline a dashboard paste adds,
+// which produces an identical-looking 401.
+function cuAuthHeader(token: string): string {
+  const t = String(token || '').trim();
+  return t.startsWith('pk_') ? t : `Bearer ${t}`;
+}
+
 function cuHeaders(token: string) {
-  // 'Bearer ' prefix is required -- CLICKUP_TOKEN is an OAuth app token
-  // (MKC Dispatch). Personal pk_ tokens use the header bare. Wrong
-  // choice fails as a silent 401 on every call.
-  return { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+  return { Authorization: cuAuthHeader(token), 'Content-Type': 'application/json' };
 }
 
 // US-centric: last 10 digits is the identity. "+1 973-460-0257",

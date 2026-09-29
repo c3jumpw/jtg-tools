@@ -78,6 +78,20 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+// ClickUp accepts two kinds of credential and they are presented
+// DIFFERENTLY. A personal token (pk_...) goes in the header bare; an
+// OAuth app access token (e.g. MKC Dispatch) requires the 'Bearer '
+// scheme. Send the wrong one and every call fails as
+//   401 {"err":"Oauth token not found","ECODE":"OAUTH_019"}
+// which reads like a revoked credential and is not one. Detect instead
+// of assume, so swapping token types later is a config change, not a
+// code change. trim() also absorbs the trailing newline a dashboard
+// paste adds, which produces an identical-looking 401.
+function cuAuthHeader(token: string): string {
+  const t = String(token || '').trim();
+  return t.startsWith('pk_') ? t : `Bearer ${t}`;
+}
+
 // Constant-time string compare. A plain === leaks secret length and
 // prefix via timing; this is cheap insurance on an auth path.
 function safeEqual(a: string, b: string): boolean {
@@ -141,10 +155,8 @@ export default async function handler(req: Request) {
       const res = await fetch(
         `${CU_BASE}/list/${TEAM_DIR_LIST_ID}/task?page=${page}&subtasks=false&include_closed=true`,
         {
-          // 'Bearer ' prefix is required -- CLICKUP_TOKEN is an OAuth
-          // app token (MKC Dispatch app). Personal pk_ tokens use the
-          // header bare. Getting this wrong fails as a silent 401.
-          headers: { Authorization: `Bearer ${clickupToken}`, 'Content-Type': 'application/json' },
+          // See cuAuthHeader -- the scheme depends on the token type.
+          headers: { Authorization: cuAuthHeader(clickupToken), 'Content-Type': 'application/json' },
         }
       );
       if (!res.ok) {
