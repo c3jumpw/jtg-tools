@@ -676,14 +676,12 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
             <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="signOut()">Sign Out</button>
           </div>
         </div>
-        <div class="settings-section">
-          <h3>ClickUp API Token</h3>
-          <p style="font-size:12.5px;color:var(--text-secondary);margin-bottom:12px">Personal ClickUp API token — stored in session only.</p>
-          <div style="display:flex;gap:8px">
-            <input type="password" id="s-cu-token" placeholder="pk_…" style="flex:1;height:36px;border:1px solid var(--border);border-radius:7px;padding:0 12px;font-size:13px;outline:none">
-            <button class="btn btn-primary btn-sm" onclick="saveToken()">Save</button>
-          </div>
-        </div>
+        <!-- ClickUp API Token settings-section removed: the app no longer
+             holds a ClickUp credential at all. Every ClickUp call, including
+             attachment uploads, goes through the Worker's session-authenticated
+             proxy, which uses the Worker's own secret. A field inviting someone
+             to paste a personal token into a browser was how that credential
+             ended up published in the first place. -->
         <!-- Activity Logger settings-section removed (v1.7.0) -- no longer
              needed, access is automatic via the existing login session.
              The "Activity Logger" status pill + Test button under
@@ -1209,7 +1207,6 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
 // ═══════════════════════════════════════════
 // CONFIG & CREDENTIALS
 // ═══════════════════════════════════════════
-const CU_BASE='https://api.clickup.com/api/v2';
 
 // Canonical "this entry is done, not actively in progress" status list --
 // used everywhere staleness/follow-up/active-count logic needs to
@@ -1229,7 +1226,6 @@ const CLOSED_STATUSES=['closed / won','closed / lost','churned/disqualified','co
 // is why this can't wait until after Settings would normally be reachable.
 const WORKER_BASE='https://mkc-crm.c3-jumpw.workers.dev';
 const APP_CONFIG={
-  cuToken:'pk_43609696_CJVDEYUOEJMLNPQIZC0NVRX6JPEFE7AK',
   wsId:'90161137399',spaceId:'90176102006',
   listLeads:'901710477809',listPipeline:'901710326878',
   listContacts:'901710477009',listAccounts:'901710481777',
@@ -1757,8 +1753,6 @@ function getSubBranchOI(branch,sbName){
 document.addEventListener('DOMContentLoaded',()=>{
   const saved=localStorage.getItem('mkc_session');
   const savedTok=localStorage.getItem('mkc_session_token');
-  const tok=sessionStorage.getItem('mkc_cu');
-  if(tok)S.creds.cuToken=tok;
   // Both mkc_session (S.user) AND mkc_session_token (the Worker-issued
   // login token) must be present to restore a session on page load --
   // a leftover S.user with no valid token would let the UI render as
@@ -1857,13 +1851,6 @@ async function attemptLogin(){
   }catch(e){showLoginErr('Auth error: '+e.message);btn.disabled=false;btn.textContent='Sign In';}
 }
 
-function saveToken(){
-  const v=document.getElementById('s-cu-token').value.trim();
-  if(!v)return showToast('Enter a token first.','error');
-  S.creds.cuToken=v;sessionStorage.setItem('mkc_cu',v);
-  showToast('Token saved for this session.','success');
-}
-
 async function init(){
   setSyncState('syncing','Loading…');
   await loadRef();
@@ -1932,10 +1919,14 @@ async function loadRef(){
     ['Entities & Branches!A:D','branches'],
     ['Lead Sources!A:C','leadSources']
   ];
-  for(const[range,key]of sheets){
+  // These four ranges are independent of each other, so they fetch in
+  // parallel rather than one after another -- this runs on every login
+  // and was four sequential round trips. Each keeps its own try/catch,
+  // so one bad range still fails alone instead of taking the rest down.
+  await Promise.all(sheets.map(async([range,key])=>{
     try{const r=await gsFetch(range);S.ref[key]=r.slice(1);}
     catch(e){console.warn('Ref:',range,e.message);}
-  }
+  }));
   await loadLeadMagnetsCU();
   // populateAssigneeFilter() removed -- it populated #tf-assignee from
   // the Team Directory SHEET, which directly conflicted with
@@ -2043,8 +2034,15 @@ async function loadAllEntries(){
   S._contactEntryLookup=null;
   const lists={leads:S.creds.listLeads,pipeline:S.creds.listPipeline,contacts:S.creds.listContacts,accounts:S.creds.listAccounts};
   const typeKeys=Object.keys(lists);
-  for(const type of typeKeys){
-    if(!lists[type])continue;
+  // The four lists are independent -- each writes only its own S.entries
+  // key and renders only its own table -- so they load in parallel. This
+  // is the slowest step of every login, and it was strictly sequential.
+  // Per-type try/catch is kept inside the map so one failing list still
+  // fails on its own rather than aborting the others. Paging WITHIN a
+  // list stays serial in fetchAllTasks, since each page depends on the
+  // previous one's length to know whether to stop.
+  await Promise.all(typeKeys.map(async type=>{
+    if(!lists[type])return;
     try{
       const tasks=await fetchAllTasks(lists[type]);
       // Staff tier sees only what's assigned to them -- filtered right
@@ -2062,7 +2060,7 @@ async function loadAllEntries(){
       console.error('Load:',type,e);
       showToast(`Failed to load ${type}: ${e.message}`,'error');
     }
-  }
+  }));
   refreshEntityBadges();
   renderTasks();
 }
@@ -3313,7 +3311,6 @@ async function submitAddTeamMember(){
 // See api/parse-import.ts for the model/schema side.
 // ═══════════════════════════════════════════════════════════════════
 
-const PARSE_IMPORT_ENDPOINT='https://jtg-tools-mkc-crm.vercel.app/api/parse-import';
 
 // State for the current import session, so per-row edits persist while
 // the preview is open. Reset every parse.
@@ -3368,7 +3365,7 @@ async function parseBulkImport(){
     // relative to the user's local calendar, not Vercel's edge location.
     const today=new Date();
     const referenceDate=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-    const res=await fetch(PARSE_IMPORT_ENDPOINT,{
+    const res=await aiFetch('parse-import',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({transcript,referenceDate}),
@@ -4623,6 +4620,45 @@ function buildMsgVars(task,type,cf){
 
 // Replaces {{key}} tokens with real data, or an obvious [[Field Label]]
 // placeholder when the underlying CRM field is empty.
+// Every Vercel API function now requires the shared FORM_SECRET, which a
+// browser cannot hold. So nothing here calls Vercel directly any more:
+// requests go to the Worker's /api/ai bridge with the user's CRM session
+// token, and the Worker attaches the secret server-side.
+//
+// Signature deliberately mirrors fetch(url, options) and returns the real
+// Response, so every call site keeps its own body, status checks and
+// error handling exactly as written. The body is re-parsed out of the
+// options rather than passed as an object purely so those call sites did
+// not have to change shape -- a trivial cost on payloads this size.
+async function aiFetch(endpoint,opts){
+  if(!S.creds.sessionToken)throw new Error('Not logged in.');
+  let inner;
+  // Throw rather than default to {} -- posting an empty body would turn a
+  // caller's mistake into an opaque server-side validation error.
+  try{inner=JSON.parse((opts&&opts.body)||'{}');}
+  catch(e){throw new Error(`aiFetch("${endpoint}") needs options.body to be a JSON string.`);}
+  const r=await fetch(`${WORKER_BASE}/api/ai`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json',Authorization:`Bearer ${S.creds.sessionToken}`},
+    body:JSON.stringify({endpoint,body:inner})
+  });
+  // A 401 here has two unrelated causes and they must not be conflated.
+  // The Worker's own session check answers "unauthorized: <reason>" --
+  // that means the user's login died and they should be bounced to the
+  // login screen, same as authFetch does. Vercel's shared-secret check
+  // answers "Unauthorized." and is forwarded verbatim -- that is a server
+  // misconfiguration, and logging everyone out would hide it.
+  if(r.status===401){
+    let why='';
+    try{why=((await r.clone().json())||{}).error||'';}catch(e){}
+    if(/^unauthorized:/i.test(String(why))){
+      handleSessionExpired();
+      throw new Error('Session expired — please log back in.');
+    }
+  }
+  return r;
+}
+
 function renderTemplate(tpl,vars){
   return tpl.replace(/\{\{(\w+)\}\}/g,(m,key)=>vars[key]?vars[key]:`[[${MSG_VAR_LABELS[key]||key}]]`);
 }
@@ -4630,11 +4666,9 @@ function renderTemplate(tpl,vars){
 // Vercel Edge Function holding the Gemini API key server-side -- see
 // api/personalize-message.ts in this same repo. Never call Gemini
 // directly from this file; the key must never live in client-side code.
-const PERSONALIZE_ENDPOINT='https://jtg-tools-mkc-crm.vercel.app/api/personalize-message';
 // Same repo/project -- holds the Quo and SendGrid keys server-side. See
 // api/send-message.ts. Sends AS the currently logged-in team member,
 // resolved via resolveSenderIdentity() below.
-const SEND_ENDPOINT='https://jtg-tools-mkc-crm.vercel.app/api/send-message';
 
 // Worker's cron only checks for due messages every 5 minutes, on a
 // fixed schedule -- not "5 minutes after you hit Schedule." Worst case,
@@ -4656,10 +4690,8 @@ function validateScheduleTime(dtVal){
 // api/compose-message.ts -- free-form "describe the situation, get a
 // draft" tool, distinct from Personalize with AI (which needs an
 // existing template to start from).
-const COMPOSE_ENDPOINT='https://jtg-tools-mkc-crm.vercel.app/api/compose-message';
 // api/summarize-email.ts -- condenses a pasted raw email for fast
 // manual activity logging.
-const SUMMARIZE_EMAIL_ENDPOINT='https://jtg-tools-mkc-crm.vercel.app/api/summarize-email';
 
 const CRM_ACTIONS={
   lead:{
@@ -5158,7 +5190,7 @@ async function sendCustomBothVersion(channel){
   if(!confirm(confirmMsg))return;
 
   try{
-    const res=await fetch(SEND_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const res=await aiFetch('send-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const data=await res.json().catch(()=>({}));
     if(!res.ok||!data.sent){
       showToast('Send failed: '+(data.error||`HTTP ${res.status}`),'error');
@@ -5211,7 +5243,7 @@ async function personalizeCustomBothDraft(channel){
   if(btn)btn.disabled=true;
   statusEl.textContent='✨ Personalizing…';
   try{
-    const res=await fetch(PERSONALIZE_ENDPOINT,{
+    const res=await aiFetch('personalize-message',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
@@ -5440,8 +5472,8 @@ async function generateCustomDraft(actionId){
       // a real text-length draft and a real email-length draft, each
       // properly suited to its own channel.
       const[smsRes,emailRes]=await Promise.all([
-        fetch(COMPOSE_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...baseBody,channel:'sms'})}),
-        fetch(COMPOSE_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...baseBody,channel:'email'})})
+        aiFetch('compose-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...baseBody,channel:'sms'})}),
+        aiFetch('compose-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...baseBody,channel:'email'})})
       ]);
       const smsData=await smsRes.json().catch(()=>({}));
       const emailData=await emailRes.json().catch(()=>({}));
@@ -5454,7 +5486,7 @@ async function generateCustomDraft(actionId){
       S.customBothSent=null;
       S.customDraftResult=null;
     }else{
-      const res=await fetch(COMPOSE_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...baseBody,channel:channelMode})});
+      const res=await aiFetch('compose-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...baseBody,channel:channelMode})});
       const data=await res.json().catch(()=>({}));
       if(!res.ok||!data.message){
         if(statusEl)statusEl.textContent='Failed: '+(data.error||`HTTP ${res.status}`);
@@ -5515,7 +5547,6 @@ function getRecentActivitySummary(){
 
 // Vercel Edge Function holding the Gemini key server-side, same as the
 // other two. See api/catchup-summary.ts in this repo.
-const CATCHUP_ENDPOINT='https://jtg-tools-mkc-crm.vercel.app/api/catchup-summary';
 
 function openCatchUpModal(){
   if(!S.currentEntry)return;
@@ -5577,7 +5608,7 @@ async function generateCatchUpSummary(){
   btn.disabled=true;btn.textContent='✨ Summarizing…';
   resultEl.innerHTML='';
   try{
-    const res=await fetch(CATCHUP_ENDPOINT,{
+    const res=await aiFetch('catchup-summary',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({entryName:task.name||'',scopeLabel,activityLog})
@@ -5679,7 +5710,7 @@ async function personalizeWithAI(actionId){
   const origLabel=btn.textContent;
   btn.disabled=true;btn.textContent='✨ Personalizing…';
   try{
-    const res=await fetch(PERSONALIZE_ENDPOINT,{
+    const res=await aiFetch('personalize-message',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
@@ -5827,7 +5858,7 @@ async function sendViaChannel(channel){
   const statusEl=document.getElementById('action-status');
   if(statusEl)statusEl.textContent='Sending…';
   try{
-    const res=await fetch(SEND_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const res=await aiFetch('send-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const data=await res.json().catch(()=>({}));
     if(!res.ok||!data.sent){
       showToast('Send failed: '+(data.error||`HTTP ${res.status}`),'error');
@@ -6697,7 +6728,7 @@ async function summarizeEmailIntoNote(){
   btn.disabled=true;
   statusEl.textContent='✨ Summarizing…';
   try{
-    const res=await fetch(SUMMARIZE_EMAIL_ENDPOINT,{
+    const res=await aiFetch('summarize-email',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({rawEmail:raw,entryName:S.currentEntry?.task?.name||''})
@@ -6824,11 +6855,21 @@ async function submitActivity(){
 // breaking file uploads or half-building multipart proxying under time
 // pressure -- flag for a follow-up decision.
 async function uploadTaskAttachment(taskId,file){
-  const token=S.creds.cuToken||sessionStorage.getItem('mkc_cu')||'';
+  if(!S.creds.sessionToken)throw new Error('Not logged in.');
+  // Matches the Worker's own limit. Checked here too so a large file
+  // fails instantly instead of after a full upload, and so the number
+  // the user is told is the number the server actually enforces.
+  const MAX_ATTACHMENT_MB=20;
+  if(file&&file.size>MAX_ATTACHMENT_MB*1024*1024)
+    throw new Error(`"${file.name}" is ${Math.round(file.size/1048576)}MB — the limit is ${MAX_ATTACHMENT_MB}MB.`);
   const fd=new FormData();
   fd.append('attachment',file,file.name);
-  const r=await fetch(`${CU_BASE}/task/${taskId}/attachment`,{method:'POST',headers:{Authorization:token},body:fd});
-  if(!r.ok)throw new Error(`CU ${r.status}: ${await r.text()}`);
+  // Deliberately NO Content-Type header: fetch must set it itself so the
+  // multipart boundary in the header matches the body it generates.
+  const r=await fetch(`${WORKER_BASE}/api/clickup/attachment?taskId=${encodeURIComponent(taskId)}`,
+    {method:'POST',headers:{Authorization:`Bearer ${S.creds.sessionToken}`},body:fd});
+  if(r.status===401){handleSessionExpired();throw new Error('Session expired \u2014 please log back in.');}
+  if(!r.ok)throw new Error(`Worker ${r.status}: ${await r.text()}`);
   return r.json();
 }
 
@@ -8019,8 +8060,6 @@ async function qcMarkNotAnswered(){
   }catch(e){showToast('Failed: '+e.message,'error');}
 }
 
-const TRIAGE_CLASSIFY_ENDPOINT='https://jtg-tools-mkc-crm.vercel.app/api/triage-classify';
-const CAPTURE_CLASSIFY_ENDPOINT='https://jtg-tools-mkc-crm.vercel.app/api/capture-classify';
 
 // The real, current list of CRM entry names for manual-note matching --
 // the model can only pick a name that's actually in this list, never
@@ -8084,11 +8123,17 @@ async function startSmartTriage(){
     try{
       const rawThread=buildRawThreadTextClient(items);
       if(isManualNote){
-        const cls=await fetch(CAPTURE_CLASSIFY_ENDPOINT,{
+        const cls=await aiFetch('capture-classify',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({rawText:rawThread,candidateNames:buildCandidateNames()})
-        }).then(r=>r.json());
+        }).then(r=>{
+          // A 401/500 body is valid JSON, so without this check the
+          // failure parses cleanly and the catch below never fires --
+          // every row would silently render as "(no summary)".
+          if(!r.ok)throw new Error(`Classify failed (HTTP ${r.status})`);
+          return r.json();
+        });
         // Resolve the matched NAME back to a real id/type via the exact
         // same entry-lookup Smart Triage already uses for phone/email --
         // the model was constrained to real names, this just finds the
@@ -8110,11 +8155,17 @@ async function startSmartTriage(){
           suggestedName:''
         });
       }else{
-        const cls=await fetch(TRIAGE_CLASSIFY_ENDPOINT,{
+        const cls=await aiFetch('triage-classify',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({rawThread,contactName,hasCrmMatch:!!matchedEntry})
-        }).then(r=>r.json());
+        }).then(r=>{
+          // A 401/500 body is valid JSON, so without this check the
+          // failure parses cleanly and the catch below never fires --
+          // every row would silently render as "(no summary)".
+          if(!r.ok)throw new Error(`Classify failed (HTTP ${r.status})`);
+          return r.json();
+        });
         results.push({key,items,latest,matchedEntry,contactName,
           summary:cls.summary||'(no summary)',
           isCrmRelevant:cls.isCrmRelevant,

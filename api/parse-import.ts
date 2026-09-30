@@ -37,7 +37,7 @@ export const config = { runtime: 'edge' };
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'content-type',
+  'Access-Control-Allow-Headers': 'content-type, x-form-secret',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
@@ -114,11 +114,41 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+// Constant-time compare. A plain === leaks the secret's length and its
+// matching prefix through response timing, which is cheap to avoid on an
+// auth path. Deliberately duplicated rather than imported from a shared
+// module: each Edge Function stays one self-contained file with no build
+// wiring that could fail at deploy time. Same helper as
+// team-directory.ts and booking-created.ts.
+function safeEqual(a: string, b: string): boolean {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 export default async function handler(req: Request) {
   if (req.method === 'OPTIONS') return new Response(null, { headers: CORS_HEADERS });
   if (req.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405);
 
   try {
+    // ── SHARED-SECRET GATE ──────────────────────────────────────────
+    // Without this, anyone who knows the URL can use this function:
+    // for the Gemini endpoints that means a free, billable proxy to a
+    // paid API; for send-message it means an open SMS/email relay on
+    // MKC's own Quo number and Resend domain. The browser no longer
+    // calls here directly -- the Worker forwards each request after
+    // checking the caller's CRM session -- so a missing or wrong
+    // secret is a misconfiguration or an outsider, never a real user.
+    const formSecret = process.env.FORM_SECRET;
+    if (!formSecret) {
+      return jsonResponse({ error: 'FORM_SECRET is not set on the server.' }, 500);
+    }
+    if (!safeEqual(req.headers.get('x-form-secret') || '', formSecret)) {
+      return jsonResponse({ error: 'Unauthorized.' }, 401);
+    }
+
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return jsonResponse({ error: 'GEMINI_API_KEY not set on the server.' }, 500);
 
