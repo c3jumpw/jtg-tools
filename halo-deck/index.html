@@ -477,6 +477,46 @@ input[type="number"]::-webkit-inner-spin-button{opacity:.4;}
 .ex-progress .bar{flex:1;height:6px;border-radius:999px;background:var(--panel-alt);overflow:hidden;}
 .ex-progress .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .15s;}
 
+.ex-range{display:flex;align-items:center;gap:10px;margin:-2px 0 12px;flex-wrap:wrap;}
+.ex-range label{font-size:12.5px;color:var(--text-dim);}
+.ex-range input{width:170px;flex:0 0 auto;}
+.ex-range .dim{font-size:12px;}
+input.bad,input.bad:focus{border-color:var(--danger)!important;background:var(--danger-soft);}
+
+/* open as slides (PDF / photos) */
+.import-modal{width:min(640px,100%);}
+.im-file{display:flex;align-items:center;gap:12px;margin:0 0 12px;}
+.im-file > i{width:38px;height:38px;border-radius:10px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;flex:0 0 auto;}
+.im-file > i svg{width:20px;height:20px;}
+.im-file b{display:block;font-size:13.5px;word-break:break-word;}
+.im-file .dim{font-size:12px;}
+.im-strip{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;margin:0 0 6px;align-items:center;scrollbar-width:thin;}
+.im-strip:empty{display:none;}
+.im-thumb{height:84px;width:auto;max-width:160px;border-radius:5px;box-shadow:0 0 0 1px var(--border);background:#fff;flex:0 0 auto;object-fit:cover;}
+.im-more{flex:0 0 auto;font-size:12px;font-weight:600;color:var(--text-dim);padding:0 6px;}
+.im-loading{display:flex;align-items:center;gap:10px;padding:18px 2px;color:var(--text-dim);font-size:13px;}
+.spin{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--accent);animation:spin .8s linear infinite;flex:0 0 auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.im-opts{display:flex;flex-direction:column;gap:12px;padding:12px;background:var(--panel-alt);border:1px solid var(--border-soft);border-radius:10px;}
+.im-opts.busy{opacity:.55;pointer-events:none;}
+.im-row{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:center;}
+.im-row[hidden]{display:none;}
+.im-label{font-size:12.5px;color:var(--text-dim);}
+.im-ctl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0;}
+.im-ctl .seg button{white-space:nowrap;padding:0 12px;}
+.im-ctl input[type="text"]{width:150px;}
+.im-choices{flex-direction:column;align-items:stretch;gap:6px;}
+.radio{display:flex;align-items:flex-start;gap:9px;cursor:pointer;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--panel);}
+.radio:has(input:checked){border-color:var(--accent-line);background:var(--accent-soft);}
+.radio input{margin:2px 0 0;accent-color:var(--accent);width:15px;height:15px;flex:0 0 auto;}
+.radio > span{display:flex;flex-direction:column;gap:1px;min-width:0;}
+.radio b{font-size:12.5px;font-weight:600;}
+.radio .dim{font-size:11.5px;}
+.im-check{align-items:flex-start;line-height:1.45;}
+.im-check input{margin-top:2px;}
+.im-check .dim{font-size:12px;}
+.im-note{margin:10px 0 0;font-size:12px;line-height:1.5;color:var(--accent);}
+
 /* paste box (when the browser won't hand over the clipboard directly) */
 .paste-modal{width:min(440px,100%);}
 .paste-why{margin:0 0 12px;font-size:13px;line-height:1.5;color:var(--text);}
@@ -592,6 +632,9 @@ input[type="number"]::-webkit-inner-spin-button{opacity:.4;}
   #dock .tbtn.labeled .lbl{display:none;}
   .pill .caret{display:none;}
   .paste-modal{width:100%;}
+  .im-row{grid-template-columns:1fr;gap:6px;}
+  .ex-range .dim{display:none;}
+  .ex-range input{flex:1 1 auto;width:auto;}
   .sheet-tabs{padding-top:6px;}
   .zoombar .zoom-part{display:none;}
   .pill.primary{padding:0 12px;}
@@ -602,7 +645,7 @@ input[type="number"]::-webkit-inner-spin-button{opacity:.4;}
   .ex-format > span{display:none;}
   .ex-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;}
   .modal-foot{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));flex-wrap:wrap;}
-  .modal-foot #exSummary{flex:1 1 100%;}
+  .modal-foot #exSummary,.modal-foot #imSummary{flex:1 1 100%;}
 }
 @media (max-width:380px){
   .brand{display:none;}
@@ -640,7 +683,7 @@ input[type="number"]::-webkit-inner-spin-button{opacity:.4;}
     <input id="titleField" class="titlefield" value="Untitled deck" maxlength="80" aria-label="Deck title" spellcheck="false" autocomplete="off">
     <div class="spacer"></div>
     <span id="saveStatus" class="save-status" aria-live="polite"></span>
-    <button class="pill wide-only" id="btnOpen" title="Open a .halodeck.json project or an exported HaloDeck .html">Open</button>
+    <button class="pill wide-only" id="btnOpen" title="Open a PDF, photos or a HaloDeck project" aria-haspopup="menu">Open<i class="caret" data-icon="caret"></i></button>
     <button class="pill wide-only" id="btnSave" title="Download an editable project file (Ctrl/Cmd+S)">Save project</button>
     <button class="tbtn compact-only" id="btnMore" data-icon="more" title="More" aria-label="More" aria-haspopup="menu"></button>
     <button class="pill primary" id="btnExport" title="Export as HTML, PNG or PDF (Ctrl/Cmd+E)" aria-haspopup="menu"><i data-icon="download"></i><span class="lbl">Export</span><i class="caret" data-icon="caret"></i></button>
@@ -653,13 +696,22 @@ input[type="number"]::-webkit-inner-spin-button{opacity:.4;}
     <button role="menuitem" data-format="pdf"><i data-icon="pdf"></i><span class="mi"><b>PDF</b><small>One page per slide, searchable text</small></span></button>
   </div>
 
+  <div class="menu" id="menuOpen" role="menu" hidden>
+    <div class="menu-title">Open as slides</div>
+    <button role="menuitem" data-act="pdf"><i data-icon="pdf"></i><span class="mi"><b>PDF…</b><small>Each page becomes a slide, sized to match</small></span></button>
+    <button role="menuitem" data-act="photos"><i data-icon="stack"></i><span class="mi"><b>Photos…</b><small>Pick several at once — one slide each</small></span></button>
+    <div class="menu-sep" role="separator"></div>
+    <button role="menuitem" data-act="project"><i data-icon="folder"></i><span class="mi"><b>HaloDeck project…</b><small>A saved .json, or an HTML deck made here</small></span></button>
+  </div>
+
   <div class="menu ctx-menu" id="ctxMenu" role="menu" hidden></div>
 
   <div class="menu" id="menuMore" role="menu" hidden>
     <button role="menuitem" data-act="paste"><i data-icon="paste"></i>Paste</button>
+    <button role="menuitem" data-act="pdf"><i data-icon="pdf"></i>Open PDF as slides…</button>
+    <button role="menuitem" data-act="slidesFromImages"><i data-icon="stack"></i>Photos as slides…</button>
     <button role="menuitem" data-act="open"><i data-icon="folder"></i>Open project…</button>
     <button role="menuitem" data-act="save"><i data-icon="save"></i>Save project</button>
-    <button role="menuitem" data-act="slidesFromImages"><i data-icon="stack"></i>New slides from images…</button>
   </div>
 
   <div id="workspace">
@@ -668,7 +720,7 @@ input[type="number"]::-webkit-inner-spin-button{opacity:.4;}
       <div class="slide-list" id="slideList"></div>
       <div class="slide-add">
         <button class="add-btn" id="btnAddSlide"><i data-icon="plus"></i>Add slide</button>
-        <button class="add-btn icon" id="btnSlidesFromImages" title="New slides from images (one per image)" aria-label="New slides from images"><i data-icon="stack"></i></button>
+        <button class="add-btn icon" id="btnSlidesFromImages" title="Photos as slides — pick several, one slide each" aria-label="Photos as slides"><i data-icon="stack"></i></button>
       </div>
       <div class="panel-drop">Drop images here to create one new slide per image</div>
     </aside>
@@ -790,8 +842,14 @@ input[type="number"]::-webkit-inner-spin-button{opacity:.4;}
       <div class="ex-pick-head">
         <b>Slides</b><span class="dim" id="exPickCount"></span>
         <div class="spacer"></div>
-        <button class="link" id="exAll">Select all</button>
+        <button class="link" id="exAll">All</button>
+        <button class="link" id="exCur">Current</button>
         <button class="link" id="exNone">Clear</button>
+      </div>
+      <div class="ex-range">
+        <label for="exRange">Custom</label>
+        <input type="text" id="exRange" placeholder="e.g. 1-3, 5, 8" autocomplete="off" spellcheck="false" inputmode="numeric">
+        <span class="dim">or click slides below · Shift-click picks a run</span>
       </div>
       <div class="ex-grid" id="exGrid"></div>
       <div class="ex-progress" id="exProgress" hidden><div class="bar"><i></i></div><span></span></div>
@@ -820,11 +878,58 @@ input[type="number"]::-webkit-inner-spin-button{opacity:.4;}
   </div>
 </div>
 
+<div class="modal-backdrop" id="importModal" hidden>
+  <div class="modal import-modal" role="dialog" aria-modal="true" aria-labelledby="imTitle">
+    <div class="modal-head">
+      <h2 id="imTitle">Open as slides</h2>
+      <button class="tbtn sm" id="imClose" data-icon="close" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+      <div class="im-file"><i id="imIcon" data-icon="pdf"></i><div><b id="imName"></b><span class="dim" id="imMeta"></span></div></div>
+      <div class="im-strip" id="imStrip"></div>
+      <div class="im-loading" id="imLoading" hidden><span class="spin"></span><span id="imLoadingText">Reading…</span></div>
+      <div class="im-opts" id="imOpts">
+        <div class="im-row" id="imRowPages">
+          <span class="im-label">Pages</span>
+          <div class="im-ctl"><div class="seg" id="imPagesMode"><button data-v="all">All</button><button data-v="range">Choose…</button></div>
+          <input type="text" id="imRange" placeholder="e.g. 1-3, 7" autocomplete="off" spellcheck="false" inputmode="numeric" hidden></div>
+        </div>
+        <div class="im-row">
+          <span class="im-label">Slide size</span>
+          <div class="im-ctl im-choices" id="imSize" role="radiogroup" aria-label="Slide size"></div>
+        </div>
+        <div class="im-row" id="imRowFit">
+          <span class="im-label">Each photo</span>
+          <div class="im-ctl"><div class="seg" id="imFit"><button data-v="contain">Show it whole</button><button data-v="cover">Fill the slide</button></div></div>
+        </div>
+        <div class="im-row" id="imRowOrder">
+          <span class="im-label">Order</span>
+          <div class="im-ctl"><div class="seg" id="imOrder"><button data-v="name">By file name</button><button data-v="picked">As picked</button></div></div>
+        </div>
+        <div class="im-row">
+          <span class="im-label">Put them in</span>
+          <div class="im-ctl"><div class="seg" id="imWhere"><button data-v="new">A new deck</button><button data-v="add">This deck</button></div></div>
+        </div>
+        <label class="check im-check" id="imTextRow"><input type="checkbox" id="imText" checked><span>Copy each page's text into its slide notes <span class="dim">— keeps the words readable in HTML exports</span></span></label>
+      </div>
+      <p class="im-note" id="imNote" hidden></p>
+      <div class="ex-progress" id="imProgress" hidden><div class="bar"><i></i></div><span></span></div>
+    </div>
+    <div class="modal-foot">
+      <span class="dim" id="imSummary"></span>
+      <div class="spacer"></div>
+      <button class="pill" id="imCancel">Cancel</button>
+      <button class="pill primary" id="imGo">Create slides</button>
+    </div>
+  </div>
+</div>
+
 <input type="file" id="fileImages" accept="image/*" multiple hidden>
+<input type="file" id="filePdf" accept=".pdf,application/pdf" hidden>
 <input type="file" id="fileSlides" accept="image/*" multiple hidden>
 <input type="file" id="fileReplace" accept="image/*" hidden>
 <input type="file" id="fileBg" accept="image/*" hidden>
-<input type="file" id="fileProject" accept=".json,.html,.htm,application/json,text/html" hidden>
+<input type="file" id="fileProject" accept=".json,.html,.htm,.pdf,application/json,text/html,application/pdf" hidden>
 
 <script>
 (function(){
@@ -855,6 +960,8 @@ const PAGE_PRESETS = [
   {id:"4:5",  label:"Portrait 4:5",   w:1080, h:1350},
   {id:"a4p",  label:"A4 portrait",    w:794,  h:1123},
   {id:"a4l",  label:"A4 landscape",   w:1123, h:794},
+  {id:"ltrp", label:"US Letter portrait",  w:816,  h:1056},
+  {id:"ltrl", label:"US Letter landscape", w:1056, h:816},
 ];
 const FONTS = [
   {id:"inter",   label:"Inter",           css:"Inter, system-ui, -apple-system, 'Segoe UI', sans-serif"},
@@ -2421,6 +2528,10 @@ $("#btnBgClear").addEventListener("click", () => { curSlide().bgAsset = null; re
 /* ================================================================= images */
 function isImageFile(f){ return /^image\//.test(f.type || "") || /\.(png|jpe?g|gif|webp|avif|bmp|svg|heic|heif|tiff?)$/i.test(f.name || ""); }
 async function fileToAsset(blob){
+  const d = await fileToImageData(blob);
+  return {id:addAsset(d.dataUrl), w:d.w, h:d.h};
+}
+async function fileToImageData(blob){
   const dataUrl = await readAsDataURL(blob);
   const img = await loadImg(dataUrl);
   const type = blob.type || (dataUrl.slice(5, dataUrl.indexOf(";")) || "");
@@ -2434,7 +2545,7 @@ async function fileToAsset(blob){
     cv.getContext("2d").drawImage(img, 0, 0, w, h);
     out = /jpe?g|heic|heif/i.test(type) ? cv.toDataURL("image/jpeg", 0.9) : cv.toDataURL("image/png");
   }
-  return {id:addAsset(out), w, h};
+  return {dataUrl:out, w, h};
 }
 async function insertImageFiles(files, opts){
   opts = opts || {};
@@ -2512,7 +2623,7 @@ $("#fileImages").addEventListener("change", e => {
   e.target.value = ""; insertAt = null;
   if(f.length) insertImageFiles(f, {at});
 });
-$("#fileSlides").addEventListener("change", e => { const f = Array.from(e.target.files || []); e.target.value = ""; if(f.length) insertImageFiles(f, {target:"slides"}); if(isCompact()) closePanels(); });
+$("#fileSlides").addEventListener("change", e => { const f = Array.from(e.target.files || []); e.target.value = ""; if(isCompact()) closePanels(); if(f.length) startPhotoImport(f); });
 $("#fileReplace").addEventListener("change", async e => {
   const f = e.target.files && e.target.files[0]; e.target.value = "";
   const el = findEl(replaceTarget); replaceTarget = null;
@@ -2642,7 +2753,7 @@ document.addEventListener("cut", e => {
   deleteSel();
 });
 document.addEventListener("paste", e => {
-  if(!e.clipboardData || !$("#exportModal").hidden) return;
+  if(!e.clipboardData || !$("#exportModal").hidden || !imModal.hidden) return;
   if(!pasteModal.hidden){ e.preventDefault(); closePasteBox(); ingestTransfer(e.clipboardData, {at:pasteBoxOpts.at, announceEmpty:true}); return; }
   if(isTyping()) return;
   e.preventDefault();
@@ -2670,7 +2781,11 @@ async function ingestTransfer(dt, opts){
 }
 const isImageUrl = s => /^data:image\//i.test(s) || /^https?:\/\/\S+\.(png|jpe?g|gif|webp|avif|svg)(\?\S*)?$/i.test(s);
 const looksLikeFilePath = s => !/\n/.test(s.trim()) && /^(file:\/\/|[a-z]:\\|\\\\|\/(users|home|private|volumes|tmp|var|mnt)\/)/i.test(s.trim());
+const isPdfFile = f => /\.pdf$/i.test(f.name || "") || f.type === "application/pdf";
 async function ingestFiles(files, opts){
+  const pdf = files.find(isPdfFile);
+  if(pdf && !files.some(isImageFile)){ startPdfImport(pdf); return; }
+  files = files.filter(f => !isPdfFile(f));
   const images = files.filter(isImageFile);
   const projects = files.filter(f => !isImageFile(f) && (/\.(json|html?)$/i.test(f.name || "") || /json|html/.test(f.type || "")));
   const texts = files.filter(f => !isImageFile(f) && !projects.includes(f) && (/^text\//.test(f.type || "") || /\.(txt|md|markdown)$/i.test(f.name || "")));
@@ -2923,10 +3038,398 @@ async function openProjectFile(file){
   toast("Opened " + (file.name || "project"));
 }
 $("#btnSave").addEventListener("click", saveProject);
-$("#btnOpen").addEventListener("click", () => $("#fileProject").click());
-$("#fileProject").addEventListener("change", e => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if(f) openProjectFile(f); });
+$("#btnOpen").addEventListener("click", () => toggleMenu($("#menuOpen"), $("#btnOpen")));
+$("#menuOpen").addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if(!b) return;
+  closeMenu();
+  if(b.dataset.act === "pdf") $("#filePdf").click();
+  else if(b.dataset.act === "photos") $("#fileSlides").click();
+  else $("#fileProject").click();
+});
+$("#filePdf").addEventListener("change", e => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if(f) startPdfImport(f); });
+$("#fileProject").addEventListener("change", e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = "";
+  if(f){ if(isPdfFile(f)) startPdfImport(f); else openProjectFile(f); }
+});
 
-/* ================================================================= export */
+/* ======================================================= open as slides: PDF & photos
+   A PDF page or a photo becomes one slide. Slides can take the source's own shape
+   ("match"), so nothing is letterboxed or cropped, or keep this deck's size, in which case
+   each picture is fitted inside the slide. PDF pages come in as locked full-page pictures
+   (you can draw on them right away) and, optionally, their text goes into the slide notes
+   so the words survive in HTML exports. PDF.js is fetched from a CDN the first time a PDF
+   is opened, so the app itself stays one small file. */
+const PDFJS_VER = "4.10.38";
+const PDFJS_BASES = ["https://cdn.jsdelivr.net/npm/pdfjs-dist@" + PDFJS_VER + "/", "https://unpkg.com/pdfjs-dist@" + PDFJS_VER + "/"];
+let pdfjsReady = null;
+function loadPdfJs(){
+  if(!pdfjsReady){
+    pdfjsReady = (async () => {
+      let err = null;
+      for(const base of PDFJS_BASES){
+        try{
+          const lib = await import(base + "build/pdf.min.mjs");
+          lib.GlobalWorkerOptions.workerSrc = base + "build/pdf.worker.min.mjs";
+          return {lib, base};
+        }catch(e){ err = e; }
+      }
+      throw Object.assign(new Error("The PDF reader couldn't be downloaded"), {code:"LOAD", cause:err});
+    })();
+    pdfjsReady.catch(() => { pdfjsReady = null; });
+  }
+  return pdfjsReady;
+}
+/* Pick the slide size for a source of w×h (CSS px at 96 dpi): a preset with the same shape if
+   there is one, else the source's own size (scaled to a sensible range). */
+function pageSizeFor(w, h){
+  const r = w / h;
+  const p = PAGE_PRESETS.find(q => Math.abs(q.w / q.h - r) / r < 0.01);
+  if(p) return {w:p.w, h:p.h};
+  const long = Math.max(w, h);
+  if(long > 1600 || long < 600){ const s = 1280 / long; w *= s; h *= s; }
+  return {w:clamp(Math.round(w), 100, 8000), h:clamp(Math.round(h), 100, 8000)};
+}
+function sizeName(w, h){
+  const p = PAGE_PRESETS.find(q => q.w === w && q.h === h);
+  return p ? p.label : (w > h ? "Landscape " : w < h ? "Portrait " : "Square ") + w + " × " + h;
+}
+function inchesName(wPt, hPt){
+  const r = v => (Math.round(v / 72 * 100) / 100).toString();
+  return r(wPt) + " × " + r(hPt) + " in";
+}
+/* "1-3, 5, 9-" → [1,2,3,5,9,…max]; null when it can't be read */
+function parseRange(str, max){
+  const out = new Set(), parts = String(str || "").split(/[,;\s]+/).filter(Boolean);
+  if(!parts.length) return null;
+  for(const part of parts){
+    const m = /^(\d*)\s*[-–]\s*(\d*)$/.exec(part);
+    if(m){
+      const a = m[1] ? +m[1] : 1, b = m[2] ? +m[2] : max;
+      if(!a || !b || a > b || a > max) return null;
+      for(let i = a; i <= Math.min(b, max); i++) out.add(i);
+    } else if(/^\d+$/.test(part)){
+      const n = +part; if(n < 1 || n > max) return null; out.add(n);
+    } else return null;
+  }
+  return Array.from(out).sort((x, y) => x - y);
+}
+/* [1,2,3,5,8,9] → "1-3, 5, 8-9" */
+function formatRange(nums){
+  const out = [];
+  for(let i = 0; i < nums.length; i++){
+    let j = i;
+    while(j + 1 < nums.length && nums[j + 1] === nums[j] + 1) j++;
+    out.push(j > i ? nums[i] + "-" + nums[j] : String(nums[i]));
+    i = j;
+  }
+  return out.join(", ");
+}
+const naturalCmp = (a, b) => String(a).localeCompare(String(b), undefined, {numeric:true, sensitivity:"base"});
+
+const imModal = $("#importModal");
+let imp = null;          // the import being set up: {kind, …}
+function imSeg(id, v){ $$("#" + id + " button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); }
+function openImportShell(kind, name, meta){
+  if(ui.editing) endEdit();
+  closeMenu(); closePanels();
+  $("#imTitle").textContent = kind === "pdf" ? "Open PDF as slides" : "Photos as slides";
+  $("#imIcon").innerHTML = icon(kind === "pdf" ? "pdf" : "stack");
+  $("#imName").textContent = name;
+  $("#imMeta").textContent = meta || "";
+  $("#imStrip").innerHTML = "";
+  $("#imOpts").hidden = true; $("#imNote").hidden = true; $("#imProgress").hidden = true;
+  $("#imLoading").hidden = false; $("#imLoadingText").textContent = kind === "pdf" ? "Reading the PDF…" : "Reading the photos…";
+  $("#imGo").disabled = true; $("#imCancel").disabled = false; $("#imCancel").textContent = "Cancel";
+  $("#imOpts").classList.remove("busy"); $("#imRange").value = "";
+  $("#imSummary").textContent = "";
+  imModal.hidden = false;
+}
+function closeImport(){
+  if(imp && imp.busy){ imp.cancel = true; return; }
+  imModal.hidden = true;
+  if(imp && imp.pdf){ try{ imp.pdf.destroy(); }catch(_){} }
+  imp = null;
+}
+function importFail(msg){
+  imModal.hidden = true;
+  if(imp && imp.pdf){ try{ imp.pdf.destroy(); }catch(_){} }
+  imp = null;
+  toast(msg, {warn:true});
+}
+
+async function startPdfImport(file){
+  if(imp) return;
+  imp = {kind:"pdf", file, busy:false};
+  const mine = imp;
+  openImportShell("pdf", file.name || "document.pdf", "");
+  let lib, base, pdf;
+  try{
+    ({lib, base} = await loadPdfJs());
+  }catch(_){
+    if(imp === mine) importFail("Couldn't download the PDF reader — it needs an internet connection the first time. Try again in a moment.");
+    return;
+  }
+  try{
+    const data = new Uint8Array(await file.arrayBuffer());
+    pdf = await lib.getDocument({data, isEvalSupported:false, cMapUrl:base + "cmaps/", cMapPacked:true, standardFontDataUrl:base + "standard_fonts/"}).promise;
+  }catch(err){
+    if(imp !== mine) return;
+    importFail(err && err.name === "PasswordException"
+      ? "That PDF is password-protected. Save a copy without the password, then open that."
+      : "Couldn't read that file as a PDF.");
+    return;
+  }
+  if(imp !== mine){ pdf.destroy(); return; }
+  imp.pdf = pdf;
+  const sizes = [];
+  for(let i = 1; i <= pdf.numPages; i++){
+    if(imp !== mine) return;
+    const pg = await pdf.getPage(i), vp = pg.getViewport({scale:1});
+    sizes.push([vp.width, vp.height]);
+  }
+  imp.sizes = sizes;
+  const [w0, h0] = sizes[0];
+  const varied = sizes.some(([w, h]) => Math.abs(w - w0) > 1 || Math.abs(h - h0) > 1);
+  imp.pagesMode = "all"; imp.where = "new"; imp.size = "match";
+  pdfShape();
+  $("#imMeta").textContent = pdf.numPages + " page" + (pdf.numPages > 1 ? "s" : "") + " · " + inchesName(w0, h0) + (varied ? " (page 1 — sizes vary)" : "");
+  $("#imLoading").hidden = true;
+  renderImportOpts();
+  // small previews of the first pages
+  const strip = $("#imStrip");
+  for(let i = 1; i <= Math.min(pdf.numPages, 8); i++){
+    if(imp !== mine) return;
+    try{
+      const pg = await pdf.getPage(i), vp1 = pg.getViewport({scale:1});
+      const vp = pg.getViewport({scale:Math.min(2, 180 / Math.max(vp1.width, vp1.height))});
+      const cv = document.createElement("canvas");
+      cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+      const cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, cv.width, cv.height);
+      await pg.render({canvasContext:cx, viewport:vp}).promise;
+      cv.className = "im-thumb"; cv.title = "Page " + i;
+      strip.appendChild(cv);
+    }catch(_){}
+  }
+  if(pdf.numPages > 8 && imp === mine){ const more = document.createElement("span"); more.className = "im-more"; more.textContent = "+" + (pdf.numPages - 8); strip.appendChild(more); }
+}
+
+async function startPhotoImport(files){
+  if(imp) return;
+  const list = files.filter(isImageFile);
+  if(!list.length){ toast("Pick photos or pictures (PNG, JPG, GIF, WebP, HEIC…).", {warn:true}); return; }
+  imp = {kind:"photos", busy:false};
+  const mine = imp;
+  openImportShell("photos", list.length + " photo" + (list.length > 1 ? "s" : ""), "");
+  const items = [], bad = [];
+  for(let i = 0; i < list.length; i++){
+    if(imp !== mine) return;
+    $("#imLoadingText").textContent = "Reading photo " + (i + 1) + " of " + list.length + "…";
+    try{ items.push(Object.assign(await fileToImageData(list[i]), {name:list[i].name || "photo " + (i + 1), picked:i})); }
+    catch(_){ bad.push(list[i].name || "photo"); }
+  }
+  if(imp !== mine) return;
+  if(!items.length){ importFail("Couldn't read those files as pictures."); return; }
+  imp.items = items; imp.bad = bad;
+  // the most common shape among the photos decides "match"
+  const ratios = items.map(it => it.w / it.h).sort((a, b) => a - b), mid = ratios[Math.floor(ratios.length / 2)];
+  const rep = items.find(it => Math.abs(it.w / it.h - mid) < 1e-9) || items[0];
+  imp.match = pageSizeFor(rep.w, rep.h);
+  imp.mixed = ratios.some(r => Math.abs(r - mid) / mid > 0.02);
+  imp.fit = "contain"; imp.order = "name"; imp.where = deckHasContent() ? "add" : "new";
+  imp.size = imp.where === "new" ? "match" : "keep";      // adding to a deck never resizes it unless you ask
+  const portrait = items.filter(it => it.h > it.w).length;
+  $("#imMeta").textContent = (portrait === items.length ? "all portrait" : portrait ? portrait + " portrait, " + (items.length - portrait) + " landscape" : "all landscape")
+    + (bad.length ? " · " + bad.length + " couldn't be read" : "");
+  $("#imLoading").hidden = true;
+  renderImportOpts();
+}
+function orderedPhotos(){
+  const a = imp.items.slice();
+  return imp.order === "name" ? a.sort((x, y) => naturalCmp(x.name, y.name)) : a.sort((x, y) => x.picked - y.picked);
+}
+function renderPhotoStrip(){
+  const strip = $("#imStrip"); strip.innerHTML = "";
+  const list = orderedPhotos();
+  list.slice(0, 10).forEach(it => { const im = document.createElement("img"); im.className = "im-thumb"; im.src = it.dataUrl; im.alt = it.name; im.title = it.name; strip.appendChild(im); });
+  if(list.length > 10){ const more = document.createElement("span"); more.className = "im-more"; more.textContent = "+" + (list.length - 10); strip.appendChild(more); }
+}
+
+function importTargetSize(){ return imp.size === "match" ? imp.match : {w:PW(), h:PH()}; }
+/* For a PDF, "match" follows the first page being imported, and "mixed" looks only at the chosen pages. */
+function pdfShape(){
+  const pages = importPageList() || [1], [w0, h0] = imp.sizes[pages[0] - 1], r0 = w0 / h0;
+  imp.match = pageSizeFor(w0 * 4 / 3, h0 * 4 / 3);
+  imp.mixed = pages.some(n => { const [w, h] = imp.sizes[n - 1]; return Math.abs(w / h - r0) / r0 > 0.01; });
+}
+function importPageList(){
+  if(imp.kind !== "pdf") return null;
+  if(imp.pagesMode === "all") return Array.from({length:imp.pdf.numPages}, (_, i) => i + 1);
+  return parseRange($("#imRange").value, imp.pdf.numPages);
+}
+function renderImportOpts(){
+  if(!imp) return;
+  const pdf = imp.kind === "pdf";
+  $("#imOpts").hidden = false;
+  $("#imRowPages").hidden = !pdf; $("#imTextRow").hidden = !pdf;
+  $("#imRowFit").hidden = pdf; $("#imRowOrder").hidden = pdf || imp.items.length < 2;
+  imSeg("imPagesMode", imp.pagesMode); $("#imRange").hidden = !pdf || imp.pagesMode !== "range";
+  imSeg("imWhere", imp.where); imSeg("imFit", imp.fit); imSeg("imOrder", imp.order);
+  const same = imp.match.w === PW() && imp.match.h === PH();
+  const opt = (v, title, sub) => '<label class="radio"><input type="radio" name="imSize" value="' + v + '"' + (imp.size === v ? " checked" : "") + '><span><b>' + title + '</b><span class="dim">' + sub + "</span></span></label>";
+  $("#imSize").innerHTML = same
+    ? opt("match", "Same as this deck", sizeName(PW(), PH()) + " — already matches")
+    : opt("match", pdf ? "Match the PDF" : "Match the photos", sizeName(imp.match.w, imp.match.h) + " · nothing gets cropped or letterboxed")
+      + opt("keep", "Keep this deck's size", sizeName(PW(), PH()) + (pdf ? " · pages are fitted inside" : imp.fit === "cover" ? " · photos are cropped to fill" : " · photos are fitted inside"));
+  if(same) imp.size = "match";
+  if(!pdf) renderPhotoStrip();
+  syncImport();
+}
+function syncImport(){
+  if(!imp || imp.busy) return;
+  const pdf = imp.kind === "pdf";
+  const pages = importPageList();
+  const n = pdf ? (pages ? pages.length : 0) : imp.items.length;
+  $("#imRange").classList.toggle("bad", pdf && imp.pagesMode === "range" && !pages && $("#imRange").value.trim() !== "");
+  const t = importTargetSize();
+  const resize = imp.where === "add" && (t.w !== PW() || t.h !== PH()) && deckHasContent();
+  const notes = [];
+  if(imp.where === "new" && deckHasContent()) notes.push("A new deck replaces the one that's open now — use Save project first if you want to keep it.");
+  if(resize) notes.push("This deck's slides will change to " + sizeName(t.w, t.h) + "; what's on them is scaled to fit.");
+  if(imp.mixed && pdf) notes.push("Pages in this PDF have different sizes — each one is fitted inside its slide, nothing is cropped.");
+  if(imp.mixed && !pdf && imp.size === "match" && imp.fit === "contain") notes.push("Your photos have different shapes — the odd ones out get a border, or choose “Fill the slide”.");
+  if(pdf && imp.pdf.numPages > 60 && n > 60) notes.push("Big PDFs make big HTML files — every page is stored as a picture.");
+  $("#imNote").hidden = !notes.length; $("#imNote").textContent = notes.join(" ");
+  $("#imSummary").textContent = n ? n + " slide" + (n > 1 ? "s" : "") + " · " + sizeName(t.w, t.h) : (pdf ? "Type pages like 1-3, 7" : "");
+  const go = $("#imGo");
+  go.disabled = !n;
+  go.textContent = n ? "Create " + n + " slide" + (n > 1 ? "s" : "") : "Create slides";
+}
+$("#imPagesMode").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b || !imp) return;
+  imp.pagesMode = b.dataset.v; pdfShape(); renderImportOpts();
+  if(imp.pagesMode === "range"){ const r = $("#imRange"); if(!r.value) r.value = "1-" + imp.pdf.numPages; r.focus(); r.select(); }
+});
+$("#imRange").addEventListener("input", () => {
+  if(!imp || imp.kind !== "pdf") return;
+  const before = imp.match.w + "x" + imp.match.h;
+  pdfShape();
+  if(imp.match.w + "x" + imp.match.h !== before) renderImportOpts(); else syncImport();
+});
+$("#imSize").addEventListener("change", e => { if(imp && e.target.name === "imSize"){ imp.size = e.target.value; imp.sizeChosen = true; syncImport(); } });
+$("#imWhere").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b || !imp) return;
+  imp.where = b.dataset.v;
+  if(!imp.sizeChosen) imp.size = imp.where === "new" ? "match" : "keep";
+  renderImportOpts();
+});
+$("#imFit").addEventListener("click", e => { const b = e.target.closest("button"); if(b && imp){ imp.fit = b.dataset.v; renderImportOpts(); } });
+$("#imOrder").addEventListener("click", e => { const b = e.target.closest("button"); if(b && imp){ imp.order = b.dataset.v; renderImportOpts(); } });
+$("#imClose").addEventListener("click", closeImport);
+$("#imCancel").addEventListener("click", closeImport);
+imModal.addEventListener("pointerdown", e => { if(e.target === imModal && !(imp && imp.busy)) closeImport(); });
+$("#imGo").addEventListener("click", runImport);
+
+function importProgress(i, n, what){
+  const p = $("#imProgress"); p.hidden = false;
+  p.querySelector("i").style.width = (n ? i / n * 100 : 0) + "%";
+  p.querySelector("span").textContent = i < n ? what + " " + (i + 1) + " of " + n + "…" : "Finishing…";
+}
+/* place a w×h picture on a W×H slide: whole (contain) or filling it (cover), centred */
+function fitBox(w, h, W, H, cover){
+  const f = cover ? Math.max(W / w, H / h) : Math.min(W / w, H / h);
+  return {x:(W - w * f) / 2, y:(H - h * f) / 2, w:w * f, h:h * f};
+}
+async function renderPdfPage(page, maxSide){
+  const vp1 = page.getViewport({scale:1});
+  const vp = page.getViewport({scale:Math.min(4, maxSide / Math.max(vp1.width, vp1.height))});
+  const cv = document.createElement("canvas");
+  cv.width = Math.max(1, Math.round(vp.width)); cv.height = Math.max(1, Math.round(vp.height));
+  const cx = cv.getContext("2d");
+  cx.fillStyle = "#ffffff"; cx.fillRect(0, 0, cv.width, cv.height);
+  await page.render({canvasContext:cx, viewport:vp}).promise;
+  // PNG keeps text razor sharp; JPEG wins on photo-heavy pages. Keep whichever is sensible.
+  const png = await canvasBlob(cv, "image/png"), jpg = await canvasBlob(cv, "image/jpeg");
+  cv.width = cv.height = 1;
+  return {dataUrl:await readAsDataURL(png.size <= jpg.size * 1.35 ? png : jpg), w:vp1.width, h:vp1.height};
+}
+async function pdfPageText(page){
+  try{
+    const tc = await page.getTextContent();
+    let s = "";
+    tc.items.forEach(it => { if(typeof it.str === "string"){ s += it.str; if(it.hasEOL) s += "\n"; } });
+    return s.replace(/[ \t ]+\n/g, "\n").replace(/[ \t ]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim().slice(0, 200000);
+  }catch(_){ return ""; }
+}
+async function runImport(){
+  if(!imp || imp.busy) return;
+  const pdf = imp.kind === "pdf";
+  const pages = pdf ? importPageList() : null;
+  if(pdf && !(pages && pages.length)){ $("#imRange").focus(); return; }
+  const target = importTargetSize(), isNew = imp.where === "new";
+  imp.busy = true; imp.cancel = false;
+  $("#imGo").disabled = true; $("#imOpts").classList.add("busy");
+  $("#imCancel").textContent = "Stop";
+  const owned = {};                      // assets for a new deck (it starts with a clean slate)
+  const keep = d => { if(isNew){ const id = uid("a"); owned[id] = d; return id; } return addAsset(d); };
+  const slides = [];
+  let textChars = 0;
+  try{
+    if(pdf){
+      const maxSide = clamp(Math.max(target.w, target.h) * 2, 1200, pages.length > 40 ? 1800 : 2400);
+      const withText = $("#imText").checked, base = (imp.file.name || "PDF").replace(/\.pdf$/i, "");
+      for(let i = 0; i < pages.length; i++){
+        if(imp.cancel) break;
+        importProgress(i, pages.length, "Converting page");
+        await nextFrame();
+        const page = await imp.pdf.getPage(pages[i]);
+        const pic = await renderPdfPage(page, maxSide);
+        const text = withText ? await pdfPageText(page) : "";
+        textChars += text.length;
+        page.cleanup();
+        const b = fitBox(pic.w, pic.h, target.w, target.h, false);
+        const el = Object.assign(newImage(keep(pic.dataUrl), b.x, b.y, b.w, b.h), {locked:true, alt:"Page " + pages[i] + " of " + base});
+        slides.push(Object.assign(newSlide(), {notes:text, elements:[el]}));
+      }
+    } else {
+      const list = orderedPhotos(), cover = imp.fit === "cover";
+      for(let i = 0; i < list.length; i++){
+        if(imp.cancel) break;
+        importProgress(i, list.length, "Adding photo");
+        if(i % 4 === 0) await nextFrame();
+        const it = list[i], b = fitBox(it.w, it.h, target.w, target.h, cover);
+        const el = Object.assign(newImage(keep(it.dataUrl), b.x, b.y, b.w, b.h), {alt:it.name.replace(/\.[a-z0-9]+$/i, "")});
+        slides.push(Object.assign(newSlide(), {elements:[el]}));
+      }
+    }
+  }catch(err){
+    console.error(err);
+    imp.busy = false;
+    importFail("Something went wrong while converting — " + ((err && err.message) || err));
+    return;
+  }
+  const cancelled = imp.cancel, kind = imp.kind, name = pdf ? imp.file.name : "";
+  importProgress(1, 1, "");
+  imp.busy = false;
+  if(!slides.length){ closeImport(); toast("Nothing was added."); return; }
+  if(isNew){
+    applyImported({title:pdf ? name.replace(/\.pdf$/i, "") || "Untitled deck" : "Photos", page:target, slides, assets:owned}, {});
+    hist.stack = []; hist.idx = -1;
+    renderAll(); fitZoom(); pushHistory(); scheduleSave();
+  } else {
+    if(target.w !== PW() || target.h !== PH()) setPageSize(target.w, target.h);
+    const blank = !deckHasContent();
+    const at = blank ? 0 : ui.cur + 1;
+    doc.slides.splice(at, blank ? doc.slides.length : 0, ...slides);
+    ui.cur = at; ui.sel = null;
+    renderAll(); fitZoom(); commit();
+  }
+  closeImport();
+  const n = slides.length;
+  let msg = (cancelled ? "Stopped — " : "") + "Created " + n + " slide" + (n > 1 ? "s" : "") + (kind === "pdf" ? " from " + name : "");
+  if(kind === "pdf" && $("#imText").checked && !textChars) msg += " · this PDF has no text layer (scanned?), so pages are pictures only";
+  else if(kind === "pdf") msg += " · page pictures are locked so you can draw on them";
+  toast(msg);
+}
 const ex = {format:"html", imgType:"png", scale:2, pdfQual:"sharp", pdfScale:2, sel:new Set(), busy:false, last:null};
 try{ const f = localStorage.getItem("halodeck_export_format"); if(["html", "png", "pdf"].includes(f)) ex.format = f; }catch(_){}
 const exModal = $("#exportModal");
@@ -2963,6 +3466,8 @@ function syncExportGrid(){
     b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
   });
   const n = ex.sel.size, total = doc.slides.length;
+  const rf = $("#exRange");
+  if(document.activeElement !== rf){ rf.value = formatRange(slideNumbers()); rf.classList.remove("bad"); }
   $("#exPickCount").textContent = total === 1 ? (n ? "1 slide" : "none selected") : n === total ? "all " + total + " selected" : n + " of " + total + " selected";
   const slug = slugify(doc.title), ext = ex.imgType === "jpeg" ? "jpg" : "png";
   let sum = "";
@@ -3017,6 +3522,14 @@ $("#exGrid").addEventListener("click", e => {
   syncExportGrid();
 });
 $("#exAll").addEventListener("click", () => { ex.sel = new Set(doc.slides.map(s => s.id)); syncExportGrid(); });
+$("#exCur").addEventListener("click", () => { ex.sel = new Set([curSlide().id]); ex.last = ui.cur; syncExportGrid(); });
+$("#exRange").addEventListener("input", e => {
+  const nums = parseRange(e.target.value, doc.slides.length);
+  e.target.classList.toggle("bad", !nums && e.target.value.trim() !== "");
+  if(nums){ ex.sel = new Set(nums.map(n => doc.slides[n - 1].id)); syncExportGrid(); }
+  else if(!e.target.value.trim()){ ex.sel.clear(); syncExportGrid(); }
+});
+$("#exRange").addEventListener("blur", e => { e.target.classList.remove("bad"); syncExportGrid(); });
 $("#exNone").addEventListener("click", () => { ex.sel.clear(); syncExportGrid(); });
 $("#exClose").addEventListener("click", closeExport);
 $("#exCancel").addEventListener("click", closeExport);
@@ -3541,6 +4054,7 @@ $("#menuMore").addEventListener("click", e => {
   if(b.dataset.act === "open") $("#fileProject").click();
   else if(b.dataset.act === "save") saveProject();
   else if(b.dataset.act === "slidesFromImages") $("#fileSlides").click();
+  else if(b.dataset.act === "pdf") $("#filePdf").click();
   else if(b.dataset.act === "paste") pasteFromClipboard({});
 });
 document.addEventListener("pointerdown", e => {
@@ -3662,6 +4176,11 @@ ctxBar.addEventListener("click", e => {
 /* ============================================================== keyboard */
 document.addEventListener("keydown", e => {
   const k = e.key, mod = e.ctrlKey || e.metaKey;
+  if(!imModal.hidden){
+    if(k === "Escape"){ e.preventDefault(); closeImport(); }
+    else if(k === "Enter" && !e.target.closest("button,select,textarea") && e.target.type !== "radio" && e.target.type !== "checkbox"){ e.preventDefault(); runImport(); }
+    return;
+  }
   if(!pasteModal.hidden){
     if(k === "Escape"){ e.preventDefault(); closePasteBox(); }
     return;                                        // Ctrl/Cmd+V goes through to the paste box
