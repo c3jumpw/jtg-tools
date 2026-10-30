@@ -5,7 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
 <title>ContentFlow</title>
 <meta name="description" content="Content strategy production board, synced live with ClickUp." />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23142A2E%22/><path d=%22M28 62 L46 40 L58 52 L74 30%22 stroke=%22%23E8A23D%22 stroke-width=%228%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>" />
+<!-- Icons. These are real files rather than the inline data-URI SVG this used
+     to be, for two reasons that only show up on a phone: iOS Safari does not
+     support SVG favicons at all, and its apple-touch-icon does not accept a
+     data URI either -- it needs a genuine file URL. So the old inline favicon
+     silently did nothing on iPhone. Paths are relative on purpose, so they
+     keep resolving under the /jtg-tools/content-strategy-workflow/ subpath.
+     Generated from the same geometry as brandMarkSvg() below, so the tab icon
+     and the in-app logo are the one mark (the old inline one had drifted into
+     being its own inverted colour scheme). -->
+<link rel="icon" href="favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="manifest" href="site.webmanifest" />
+<meta name="apple-mobile-web-app-title" content="ContentFlow" />
+<meta name="theme-color" content="#14232b" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -312,6 +327,17 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
   .account-filter { order: 10; width: 100%; }
   .account-filter select { width: 100%; }
 }
+
+/* ---- Guide layer ----------------------------------------------------------
+   guide.html shown full-screen over the app. Lives outside #app (see
+   openGuide()), so it survives render() and keeps the reader's place. */
+.guide-layer { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; background: var(--paper); }
+.guide-layer[hidden] { display: none; }
+.guide-bar { background: var(--ink); color: #eef2f2; display: flex; align-items: center; gap: 10px; padding: calc(8px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.guide-bar-title { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 600; font-size: 17px; }
+.guide-frame { flex: 1; width: 100%; min-height: 0; border: 0; background: var(--paper); }
+body.guide-open { overflow: hidden; }
+@media (max-width: 420px) { .guide-newtab { display: none; } }
 </style>
 </head>
 <body>
@@ -877,6 +903,58 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
        text/username input for every other network. No backend change
        needed -- social_links already accepted any non-empty string per
        network regardless of shape. 305/305 jsdom smoke tests passing.
+     v1.24.0 (2026-09-27) -- Real favicon + home-screen icons. The head had
+       carried an inline data-URI SVG favicon, which silently did nothing on
+       iPhone: iOS Safari does not support SVG favicons at all, and its
+       apple-touch-icon does not accept a data URI either -- it needs a real
+       file URL. That inline mark had also drifted from the app's own logo,
+       ending up as its own inverted colour scheme (dark square / amber line)
+       against the in-app brand-mark's amber square / dark line. Both are now
+       one mark: icon-src/gen.py renders the icon set straight from
+       brandMarkSvg()'s own path coordinates and the --accent/#21160a colours,
+       so the tab icon and the in-app logo cannot drift apart again without
+       someone editing both. Ships favicon.ico (16/32/48), favicon-16/32.png,
+       apple-touch-icon.png (180, full-bleed and opaque, since iOS applies its
+       own corner mask and dislikes alpha), icon-192/512.png, a maskable 512
+       for Android's circular mask, and site.webmanifest. Small sizes are
+       optically corrected rather than naively scaled -- at 16px the app's
+       2.4-unit stroke lands at ~1.3px and antialiases into an illegible grey
+       smudge, so 16/32/48 get a heavier stroke and a slightly larger mark.
+       NOTE, this is the first version that is no longer a single
+       self-contained index.html -- the icons must be real sibling files for
+       iOS to use them at all. Paths are relative so they keep resolving under
+       the /jtg-tools/content-strategy-workflow/ subpath. The manifest
+       deliberately uses display:"browser" rather than "standalone": standalone
+       would launch without browser chrome, which on iOS can drop the ClickUp
+       OAuth redirect outside the app and strand admins/reps mid-connect. The
+       only script change is aria-hidden/focusable="false" on the decorative
+       brand mark, which always sits beside the word "ContentFlow".
+       Verified: JS parses clean, and every head/manifest icon reference
+       resolves to a file that exists (5 head refs + 3 manifest icons). The
+       jsdom smoke suite could NOT be re-run for this version -- it lived
+       outside the repo and was lost to a sandbox reset (see CHANGELOG).
+     v1.25.0 (2026-10-30) -- In-app Guide. New sibling file guide.html: a
+       visual walkthrough of every screen, menu and setting, built from
+       styled mockups of the real UI with numbered callouts, a permissions
+       matrix, the stage pipeline, idea lifecycle, admin recipes and
+       troubleshooting. A role switch (Everyone / Admin / Team member /
+       Client) hides what doesn't apply. Opened from a new "?" button in
+       every topnav (plus "Open the guide" in Settings, a Guide button in
+       the admin panel, and links on the sign-in / connect / waiting
+       screens). openGuide() shows it in a full-screen layer appended to
+       <body>, OUTSIDE #app on purpose: render() rebuilds #app's innerHTML
+       on every state change, which would reload an iframe living inside it
+       and lose the reader's place. The layer is built once, then shown and
+       hidden; it passes ?embed=1&role=<viewer's role>&theme=<current> so the
+       guide opens on the right view, and a client is kept on the client
+       view. Theme toggles reach the open guide through the same
+       contentflow.theme localStorage key (storage event). Escape closes it,
+       from either document (the guide posts a same-origin message up).
+       guide.html is self-contained (plain HTML/CSS, one small script, no
+       library) and is edited directly; its mockups reuse this file's design
+       tokens, so a visual change here may want a matching tweak there. This
+       release also carries v1.24.0's icon files, which had not reached the
+       repo yet.
    ============================================================================ */
 
   // ==========================================================================
@@ -4010,6 +4088,7 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
             (state.loggingIn ? 'Signing in…' : 'Sign in') +
           '</button>' +
         '</form>' +
+        '<p class="connect-help" style="margin-top:14px">New to ContentFlow? <button type="button" class="btn-linklike" style="display:inline;padding:0" data-action="open-guide" data-anchor="getting-in">Read the guide</button></p>' +
       '</div></div>'
     );
   }
@@ -4031,14 +4110,18 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
             (state.connecting ? 'Connecting…' : 'Connect with ClickUp') +
           '</button>' +
         '</form>' +
-        '<p class="connect-help">You\'ll be sent to ClickUp to approve access, then brought right back here.</p>' +
+        '<p class="connect-help">You\'ll be sent to ClickUp to approve access, then brought right back here. <button type="button" class="btn-linklike" style="display:inline;padding:0" data-action="open-guide" data-anchor="getting-in">How connecting works</button></p>' +
         '<button type="button" class="btn btn-ghost btn-sm" data-action="sign-out" style="margin-top:12px">Sign out of ContentFlow</button>' +
       '</div></div>'
     );
   }
 
   function brandMarkSvg() {
-    return '<span class="brand-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 13 L10 7 L14 11 L20 5" stroke="#21160a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+    // aria-hidden: the word "ContentFlow" always sits directly beside this, so
+    // the mark is decorative -- announcing it again would just be noise.
+    // Keep this path in sync with icons/gen.py, which renders the favicon and
+    // home-screen icons from these exact coordinates.
+    return '<span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="M4 13 L10 7 L14 11 L20 5" stroke="#21160a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
   }
 
   // ---- Main app shell (topnav + view + modal) ---------------------------
@@ -4070,6 +4153,13 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
    * -- refreshAction is 'refresh' (admin/rep) or 'client-refresh' (client);
    * showDisconnect is false for clients, who never connect ClickUp directly.
    */
+  /** The "?" topnav button that opens the Guide -- shared by both topnavs. */
+  function guideButtonHtml() {
+    return '<button type="button" class="icon-btn" title="Guide" aria-label="Open the ContentFlow guide" data-action="open-guide">' +
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.7.3-1 .9-1 1.6v.3M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
+    '</button>';
+  }
+
   function settingsMenuHtml(opts) {
     var isDark = currentTheme() === 'dark';
     var gearIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" stroke="currentColor" stroke-width="2"/></svg>';
@@ -4080,6 +4170,7 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
           '<div class="settings-menu">' +
             '<button type="button" class="settings-menu-item" data-action="toggle-theme">' + (isDark ? 'Switch to light mode' : 'Switch to dark mode') + '</button>' +
             '<button type="button" class="settings-menu-item" data-action="' + opts.refreshAction + '">Sync now</button>' +
+            '<button type="button" class="settings-menu-item" data-action="open-guide">Open the guide</button>' +
             (opts.isAdmin ? '<button type="button" class="settings-menu-item" data-action="open-admin-panel">Admin panel</button>' : '') +
             '<div class="settings-menu-divider"></div>' +
             '<button type="button" class="settings-menu-item" data-action="open-profile-modal">Edit profile</button>' +
@@ -4133,6 +4224,7 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
         '<div class="topnav-right">' +
           (accounts.length ? '<div class="account-filter"><select id="account-filter-select">' + accountOptions + '</select></div>' : '') +
           '<button type="button" class="btn btn-primary btn-sm" data-action="new-task">+ New</button>' +
+          guideButtonHtml() +
           settingsMenuHtml({ isAdmin: isAdmin, showDisconnect: true, refreshAction: 'refresh' }) +
         '</div>' +
       '</div>'
@@ -4162,6 +4254,7 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
         '<div class="topnav-right">' +
           (accounts.length > 1 ? '<div class="account-filter"><select id="account-filter-select">' + accountOptions + '</select></div>' : '') +
           '<button type="button" class="btn btn-primary btn-sm" data-action="client-new-task">+ New</button>' +
+          guideButtonHtml() +
           settingsMenuHtml({ isAdmin: false, showDisconnect: false, refreshAction: 'client-refresh' }) +
         '</div>' +
       '</div>'
@@ -4283,6 +4376,7 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
         '</div>' +
         '<h1 class="connect-title">Almost there</h1>' +
         '<p class="connect-sub">You\'re signed in, but your admin hasn\'t linked your account to a company yet. Once they do, your content strategy will show up here automatically -- no action needed from you.</p>' +
+        '<p class="connect-help">While you wait: <button type="button" class="btn-linklike" style="display:inline;padding:0" data-action="open-guide" data-anchor="client-start">see what you\'ll be able to do</button></p>' +
         '<button type="button" class="btn btn-ghost btn-sm" data-action="sign-out" style="margin-top:12px">Sign out</button>' +
       '</div></div>'
     );
@@ -4428,6 +4522,7 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
           '<div class="view-tabs">' + tabs + '</div>' +
           '<div class="topnav-spacer"></div>' +
           '<div class="topnav-right">' +
+            '<button type="button" class="btn btn-ghost btn-sm" data-action="open-guide" data-anchor="admin-panel">Guide</button>' +
             '<button type="button" class="btn btn-ghost btn-sm" data-action="close-admin-panel">Back to board</button>' +
             '<button type="button" class="btn btn-ghost btn-sm" data-action="sign-out">Sign out</button>' +
           '</div>' +
@@ -5122,6 +5217,10 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
       case 'toggle-theme':
         toggleTheme(); // RENDER (inside)
         break;
+      case 'open-guide':
+        if (state.showSettingsMenu) { state.showSettingsMenu = false; render(); }
+        openGuide(el.getAttribute('data-anchor')); // no RENDER: the guide layer lives outside #app
+        break;
       case 'open-profile-modal':
         openProfileModal(); // RENDER (inside)
         break;
@@ -5653,6 +5752,79 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
     if (explicit) return explicit;
     return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
   }
+
+  // ==========================================================================
+  // GUIDE -- guide.html (a sibling file) in a full-screen layer over the app.
+  // The layer is appended to <body>, OUTSIDE #app, on purpose: render()
+  // rebuilds #app's innerHTML on every state change, which would reload an
+  // iframe living inside it and throw away the reader's place. It's built
+  // once and then only shown/hidden; the iframe reloads only when the
+  // viewer's role changes (i.e. a different person signed in).
+  // Theme needs no plumbing after the first load: toggleTheme() writes
+  // localStorage[THEME_STORAGE_KEY], and the guide listens for that key's
+  // storage event.
+  // ==========================================================================
+  var GUIDE_URL = 'guide.html';
+  var guideReturnFocus = null;
+
+  function guideSrc(role, anchor) {
+    var q = 'embed=1&theme=' + encodeURIComponent(currentTheme()) + (role ? '&role=' + encodeURIComponent(role) : '');
+    return GUIDE_URL + '?' + q + (anchor ? '#' + anchor : '');
+  }
+
+  function openGuide(anchor) {
+    var role = (state.profile && state.profile.role) || '';
+    var layer = document.getElementById('guide-layer');
+    if (!layer) {
+      layer = document.createElement('div');
+      layer.id = 'guide-layer';
+      layer.className = 'guide-layer';
+      layer.hidden = true;
+      layer.setAttribute('role', 'dialog');
+      layer.setAttribute('aria-modal', 'true');
+      layer.setAttribute('aria-label', 'ContentFlow Guide');
+      layer.innerHTML =
+        '<div class="guide-bar">' +
+          '<span class="guide-bar-title">' + brandMarkSvg() + 'Guide</span>' +
+          '<span class="topnav-spacer"></span>' +
+          '<a class="btn btn-ghost btn-sm guide-newtab" target="_blank" rel="noopener">Open in new tab</a>' +
+          '<button type="button" class="btn btn-primary btn-sm guide-close">Back to ContentFlow</button>' +
+        '</div>' +
+        '<iframe class="guide-frame" title="ContentFlow Guide"></iframe>';
+      document.body.appendChild(layer);
+      layer.querySelector('.guide-close').addEventListener('click', closeGuide);
+    }
+    var frame = layer.querySelector('.guide-frame');
+    if (frame.getAttribute('data-role') !== role || !frame.getAttribute('src')) {
+      frame.setAttribute('data-role', role);
+      frame.src = guideSrc(role, anchor);
+    } else if (anchor) {
+      try { frame.contentWindow.location.hash = anchor; } catch (e) { frame.src = guideSrc(role, anchor); }
+    }
+    layer.querySelector('.guide-newtab').href = GUIDE_URL + (role ? '?role=' + encodeURIComponent(role) : '') + (anchor ? '#' + anchor : '');
+    guideReturnFocus = document.activeElement;
+    layer.hidden = false;
+    document.body.classList.add('guide-open');
+    layer.querySelector('.guide-close').focus();
+  }
+
+  function closeGuide() {
+    var layer = document.getElementById('guide-layer');
+    if (!layer || layer.hidden) return;
+    layer.hidden = true;
+    document.body.classList.remove('guide-open');
+    if (guideReturnFocus && guideReturnFocus.focus && document.body.contains(guideReturnFocus)) guideReturnFocus.focus();
+    guideReturnFocus = null;
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeGuide();
+  });
+  // Escape pressed while focus is inside the guide's own document arrives as a
+  // same-origin message (keydown inside an iframe never reaches this window).
+  window.addEventListener('message', function (e) {
+    if (e.origin === window.location.origin && e.data && e.data.type === 'contentflow-guide-close') closeGuide();
+  });
 
   function toggleTheme() {
     var next = currentTheme() === 'dark' ? 'light' : 'dark';

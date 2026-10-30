@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ContentFlow Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A visual walkthrough of every ContentFlow screen, menu and setting, for admins, team members and clients.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a field manual for the app -- ink masthead carrying the role switch,
+   a sticky contents rail on wide screens, and a single reading column of
+   "screen plates": live-styled mockups of each ContentFlow screen with
+   numbered pins keyed to the notes beneath them. Tokens mirror ContentFlow's
+   own (index.html :root) so the guide reads as part of the product. */
+:root {
+  --ink: #14232b;            /* app chrome: topnav, masthead -- constant across themes */
+  --ink-2: #1d323b;
+  --on-ink: #eef2f2;
+  --on-ink-dim: rgba(238, 242, 242, 0.66);
+  --paper: #fbfaf7;
+  --paper-dim: #f1eee6;
+  --surface: #ffffff;
+  --heading: #14232b;
+  --text: #1b2430;
+  --text-2: #5b6670;
+  --text-3: #8a9297;
+  --border: #e2dfd5;
+  --border-strong: #cfc9ba;
+  --accent: #e8a23d;
+  --accent-dim: #f6d9a8;
+  --accent-ink: #8a5a1c;
+  --on-accent: #21160a;
+  --tab-ideas: #c9820e;
+  --tab-dash: #3b82f6;
+  --tab-work: #0f9488;
+  --danger: #c9463c;
+  --danger-bg: #fbe9e6;
+  --warn-ink: #8a5a1c;
+  --warn-bg: #fdf3e1;
+  --ok: #2f9e44;
+  --private-bg: #ecebfa;
+  --private-ink: #4b4b9a;
+  /* ClickUp stage + medium colours: data colours, white text on every one, same in both themes */
+  --st-idea: #87909e;
+  --st-copy: #a855c9;
+  --st-media: #d93f6b;
+  --st-review: #dc6419;
+  --st-approved: #4558c9;
+  --st-scheduled: #2f86d6;
+  --st-published: #2e9e4f;
+  --md-reel: #e5307a;
+  --md-fb: #1877f2;
+  --md-tiktok: #1d1d1f;
+  --md-blog: #6b7280;
+  --md-email: #2f9e44;
+  --md-li: #0a66c2;
+  --shadow-card: 0 1px 2px rgba(20, 35, 43, 0.06), 0 1px 1px rgba(20, 35, 43, 0.04);
+  --shadow-plate: 0 10px 30px -12px rgba(20, 35, 43, 0.22);
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #182225; --paper-dim: #202b2f; --surface: #1f2a2e; --heading: #e9edec;
+    --text: #e9edec; --text-2: #a7b1b0; --text-3: #75807f;
+    --border: #2c3a3d; --border-strong: #3e4d50;
+    --accent-dim: #4a3a1f; --accent-ink: #e0b060;
+    --danger: #e2685c; --danger-bg: #3d1f1c; --warn-ink: #f0c878; --warn-bg: #3a2e15;
+    --private-bg: #2a2a45; --private-ink: #b0b0e8;
+    --shadow-plate: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #182225; --paper-dim: #202b2f; --surface: #1f2a2e; --heading: #e9edec;
+  --text: #e9edec; --text-2: #a7b1b0; --text-3: #75807f;
+  --border: #2c3a3d; --border-strong: #3e4d50;
+  --accent-dim: #4a3a1f; --accent-ink: #e0b060;
+  --danger: #e2685c; --danger-bg: #3d1f1c; --warn-ink: #f0c878; --warn-bg: #3a2e15;
+  --private-bg: #2a2a45; --private-ink: #b0b0e8;
+  --shadow-plate: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+/* ---- Base --------------------------------------------------------------- */
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+body {
+  margin: 0; background: var(--paper); color: var(--text);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--ink); }
+h1, h2, h3, h4 { font-family: var(--font-display); color: var(--heading); text-wrap: balance; margin: 0; line-height: 1.2; }
+p { margin: 0; }
+a { color: var(--accent-ink); text-underline-offset: 2px; }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+code { background: var(--paper-dim); border: 1px solid var(--border); border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+kbd { font-family: var(--font-body); font-size: 0.85em; font-weight: 600; background: var(--surface); border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; white-space: nowrap; }
+
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* ---- Masthead ------------------------------------------------------------ */
+.masthead { background: var(--ink); color: var(--on-ink); }
+.masthead-inner { max-width: 1180px; margin: 0 auto; padding-block: 28px 26px; display: grid; gap: 18px; }
+.mast-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { display: inline-flex; align-items: center; gap: 9px; font-family: var(--font-display); font-weight: 600; font-size: 18px; color: var(--on-ink); text-decoration: none; }
+.brand-mark { width: 24px; height: 24px; border-radius: 7px; background: var(--accent); display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+.brand-mark svg { width: 15px; height: 15px; }
+.brand small { font-family: var(--font-body); font-weight: 500; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--on-ink-dim); margin-left: 4px; }
+.open-app { color: var(--on-ink); font-size: 13px; font-weight: 600; text-decoration: none; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 6px 12px; }
+.open-app:hover { background: rgba(255,255,255,0.08); }
+.mast-title { font-size: clamp(28px, 4.4vw, 44px); font-weight: 600; color: var(--on-ink); max-width: 20ch; letter-spacing: -0.01em; }
+.mast-title em { font-style: italic; color: var(--accent); font-weight: 500; }
+.mast-sub { color: var(--on-ink-dim); max-width: 62ch; font-size: 15.5px; }
+.role-switch-wrap { display: grid; gap: 10px; }
+.role-switch-label { font-size: 11.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--on-ink-dim); }
+.role-switch { display: flex; gap: 3px; background: rgba(255,255,255,0.07); border-radius: 11px; padding: 4px; width: fit-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.role-switch::-webkit-scrollbar { display: none; }
+.role-btn { border: 0; background: none; color: var(--on-ink-dim); font-weight: 600; font-size: 14px; padding: 8px 16px; border-radius: 8px; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background 0.15s, color 0.15s; }
+.role-btn:hover { color: var(--on-ink); }
+.role-btn[aria-pressed="true"] { background: var(--paper); color: var(--heading); }
+.role-blurb { font-size: 13.5px; color: var(--on-ink-dim); min-height: 1.6em; }
+.role-blurb strong { color: var(--on-ink); font-weight: 600; }
+body.embed .masthead-inner { padding-block: 18px 18px; gap: 12px; }
+body.embed .mast-title { font-size: clamp(22px, 3.4vw, 30px); }
+body.embed .open-app, body.embed .mast-row { display: none; }
+
+/* ---- Layout ------------------------------------------------------------- */
+.layout { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 48px; padding-block: 36px 80px; }
+.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start; max-height: calc(100vh - 40px); overflow-y: auto; font-size: 13.5px; padding-bottom: 20px; scrollbar-width: thin; }
+.toc-group { margin: 0 0 16px; }
+.toc-group-title { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin: 0 0 6px; }
+.toc ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+.toc a { display: block; color: var(--text-2); text-decoration: none; padding: 4px 10px; border-left: 2px solid var(--border); }
+.toc a:hover { color: var(--heading); }
+.toc a.active { color: var(--heading); border-left-color: var(--accent); font-weight: 600; }
+.toc-mobile { display: none; }
+.content { min-width: 0; max-width: 820px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 64px; }
+
+@media (max-width: 960px) {
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 0 64px; }
+  .toc { display: none; }
+  .toc-mobile { display: block; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--paper); border-bottom: 1px solid var(--border); padding-block: 10px; margin-bottom: -24px; }
+  .toc-mobile label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .toc-mobile select { width: 100%; font: inherit; font-size: 14px; font-weight: 600; color: var(--heading); background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--r-sm); padding: 9px 12px; }
+  .content { gap: 52px; }
+}
+
+/* ---- Sections ------------------------------------------------------------ */
+.sec { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; min-width: 0; }
+.sec-head { display: grid; gap: 8px; }
+.eyebrow { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-ink); }
+.sec h2 { font-size: clamp(24px, 3vw, 30px); font-weight: 600; letter-spacing: -0.005em; }
+.sec h3 { font-size: 19px; font-weight: 600; margin-top: 8px; }
+.who { display: flex; gap: 6px; flex-wrap: wrap; }
+.who-chip { font-size: 11.5px; font-weight: 600; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--border-strong); color: var(--text-3); text-decoration: line-through; text-decoration-color: var(--text-3); }
+.who-chip.on { text-decoration: none; color: var(--heading); background: var(--surface); }
+.who-chip.on::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 1px; }
+.lede { font-size: 16px; color: var(--text); max-width: 66ch; }
+.prose { display: grid; gap: 12px; max-width: 66ch; }
+.prose p, .prose li { color: var(--text); }
+.muted { color: var(--text-2); }
+
+/* Notes keyed to a role */
+.note { border: 1px solid var(--border); background: var(--surface); border-radius: var(--r-md); padding: 12px 14px 12px 14px; font-size: 14px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; align-items: start; }
+.note-tag { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: var(--paper-dim); color: var(--text-2); white-space: nowrap; margin-top: 2px; }
+.note-tag.admin { background: var(--ink); color: var(--on-ink); }
+.note-tag.rep { background: var(--tab-work); color: #fff; }
+.note-tag.client { background: var(--accent); color: var(--on-accent); }
+.note-tag.tip { background: var(--accent-dim); color: var(--accent-ink); }
+.note-tag.heads-up { background: var(--danger-bg); color: var(--danger); }
+
+/* ---- Plates (mockup + callouts) ------------------------------------------ */
+.plate { margin: 0; display: grid; gap: 14px; min-width: 0; }
+.plate-frame { border: 1px solid var(--border-strong); border-radius: var(--r-lg); background: var(--paper); box-shadow: var(--shadow-plate); overflow: hidden; min-width: 0; }
+.plate-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.plate-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 12px; background: var(--paper-dim); border-bottom: 1px solid var(--border); font-size: 11.5px; color: var(--text-3); font-weight: 600; letter-spacing: 0.04em; }
+.plate-label .dots { display: inline-flex; gap: 5px; }
+.plate-label .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); }
+.callouts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 22px; counter-reset: none; }
+.callouts li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; font-size: 14px; color: var(--text); }
+.callouts li b { font-weight: 600; color: var(--heading); }
+.callouts.single { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 640px) { .callouts { grid-template-columns: minmax(0, 1fr); } }
+.pin { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex: 0 0 auto; border-radius: 50%; background: var(--accent); color: var(--on-accent); font: 700 11px/1 var(--font-body); font-style: normal; box-shadow: 0 0 0 2px var(--paper), 0 1px 3px rgba(0,0,0,0.25); vertical-align: middle; }
+.m-app .pin { margin: 0 2px; }
+.callouts .pin { margin-top: 1px; }
+
+/* ---- Mock app components (mirror index.html) ----------------------------- */
+.m-app { font-family: var(--font-body); font-size: 13px; color: var(--text); background: var(--paper); line-height: 1.4; }
+.m-top { background: var(--ink); color: var(--on-ink); display: flex; align-items: center; gap: 12px; padding: 9px 14px; flex-wrap: wrap; }
+.m-brand { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-display); font-weight: 600; font-size: 15px; white-space: nowrap; }
+.m-mark { width: 19px; height: 19px; border-radius: 5px; background: var(--accent); display: inline-flex; align-items: center; justify-content: center; }
+.m-mark svg { width: 12px; height: 12px; }
+.m-tabs { display: flex; gap: 2px; background: rgba(255,255,255,0.07); padding: 3px; border-radius: 8px; align-items: center; flex-wrap: wrap; }
+.m-tab { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 6px; color: var(--on-ink-dim); font-weight: 500; font-size: 12.5px; white-space: nowrap; }
+.m-tab svg { width: 13px; height: 13px; }
+.m-tab.active { background: var(--paper); color: var(--heading); }
+.m-spacer { flex: 1; }
+.m-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.m-select-dark { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: var(--on-ink); border-radius: 6px; padding: 5px 9px; font-size: 12px; white-space: nowrap; display: inline-flex; gap: 14px; align-items: center; }
+.m-select-dark::after, .m-select::after { content: "\25BE"; font-size: 10px; opacity: 0.7; }
+.m-btn { display: inline-flex; align-items: center; gap: 5px; border-radius: 7px; padding: 5px 11px; font-weight: 600; font-size: 12px; white-space: nowrap; border: 1px solid transparent; }
+.m-btn.primary { background: var(--accent); color: var(--on-accent); }
+.m-btn.outline { border-color: var(--border-strong); color: var(--text); background: var(--surface); }
+.m-btn.ghost { background: rgba(255,255,255,0.08); color: var(--on-ink); }
+.m-btn.danger { background: var(--danger); color: #fff; }
+.m-icon { width: 28px; height: 28px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; color: var(--on-ink-dim); }
+.m-icon svg { width: 15px; height: 15px; }
+.m-icon.lit { color: var(--on-ink); background: rgba(255,255,255,0.1); }
+.m-body { padding: 14px; }
+.m-h { font-family: var(--font-display); font-weight: 600; font-size: 15px; color: var(--heading); }
+.m-help { font-size: 11.5px; color: var(--text-2); }
+.m-label { font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--text-3); }
+.m-board { display: flex; gap: 10px; align-items: flex-start; }
+.m-col { background: var(--paper-dim); border-radius: 10px; padding: 8px; width: 186px; flex: 0 0 auto; display: grid; gap: 7px; }
+.m-col-h { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--heading); padding: 2px 2px 3px; }
+.m-count { margin-left: auto; font-size: 10.5px; background: var(--surface); border-radius: 999px; padding: 0 7px; color: var(--text-2); font-weight: 600; }
+.m-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; display: inline-block; }
+.m-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 9px; box-shadow: var(--shadow-card); display: grid; gap: 5px; }
+.m-card.lifted { transform: rotate(-2deg); box-shadow: 0 10px 22px rgba(20,35,43,0.22); border-color: var(--accent); }
+.m-card-title { font-weight: 600; font-size: 12.5px; color: var(--heading); }
+.m-acct { display: inline-block; width: fit-content; background: var(--accent-dim); color: var(--accent-ink); font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border-radius: 999px; padding: 1px 8px; }
+.m-chips { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.m-chip { color: #fff; font-size: 10px; font-weight: 600; border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+.m-chip.outline { color: var(--text-2); background: none; border: 1px solid var(--border-strong); }
+.m-avs { display: flex; }
+.m-av { width: 20px; height: 20px; border-radius: 50%; color: #fff; font-size: 8.5px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; border: 2px solid var(--surface); margin-left: -5px; }
+.m-av:first-child { margin-left: 0; }
+.m-add { font-size: 11.5px; color: var(--text-3); padding: 2px 4px; }
+.m-input { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 9px; font-size: 12px; color: var(--text-3); }
+.m-input.filled { color: var(--text); }
+.m-select { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 9px; font-size: 12px; color: var(--text); display: inline-flex; justify-content: space-between; gap: 12px; align-items: center; }
+.m-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.m-banner { background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--accent-dim); border-radius: 8px; padding: 7px 10px; font-size: 11.5px; }
+.m-banner.error { background: var(--danger-bg); color: var(--danger); border-color: transparent; }
+.m-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.m-table th { text-align: left; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); padding: 7px 9px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.m-table td { padding: 8px 9px; border-bottom: 1px solid var(--border); white-space: nowrap; vertical-align: middle; }
+.m-table td.name { font-weight: 600; color: var(--heading); }
+.m-table tr:last-child td { border-bottom: 0; }
+.m-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.m-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; }
+.m-stat b { display: block; font-family: var(--font-display); font-size: 21px; color: var(--heading); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.m-stat span { font-size: 10.5px; color: var(--text-2); }
+.m-stat.danger { border-color: var(--danger); }
+.m-stat.danger b { color: var(--danger); }
+.m-stat.warn { border-color: var(--accent); background: var(--warn-bg); }
+.m-bars { display: grid; gap: 5px; }
+.m-bar { display: grid; grid-template-columns: 138px minmax(0, 1fr) 22px; gap: 8px; align-items: center; font-size: 11.5px; }
+.m-bar-track { height: 8px; background: var(--paper-dim); border-radius: 999px; overflow: hidden; }
+.m-bar-fill { height: 100%; border-radius: 999px; background: var(--text-3); }
+.m-bar-n { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-2); }
+.m-row { display: flex; gap: 10px; align-items: center; padding: 7px 10px; border: 1px solid var(--border); background: var(--surface); border-radius: 7px; font-size: 12px; }
+.m-row .when { font-weight: 600; color: var(--text-2); min-width: 108px; font-variant-numeric: tabular-nums; }
+.m-row.overdue { border-color: var(--danger); }
+.m-row.overdue .when { color: var(--danger); }
+.m-row.stuck .when { color: var(--accent-ink); }
+.m-sub-h { font-family: var(--font-display); font-size: 13.5px; font-weight: 600; color: var(--heading); margin: 14px 0 7px; }
+.m-comment { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; font-size: 12px; padding: 6px 0; }
+.m-comment .m-av { margin: 0; width: 22px; height: 22px; border: 0; }
+.m-comment-author { font-weight: 600; color: var(--heading); }
+.m-comment-author span { font-weight: 400; color: var(--text-3); font-size: 11px; margin-left: 4px; }
+.m-comment-author .m-acct { color: var(--accent-ink); font-weight: 700; font-size: 9.5px; }
+.m-modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow-plate); max-width: 640px; margin: 0 auto; }
+.m-modal-h { padding: 14px 16px 10px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-start; }
+.m-title-input { font-family: var(--font-display); font-weight: 600; font-size: 17px; color: var(--heading); }
+.m-modal-b { padding: 12px 16px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
+.m-modal-b .full { grid-column: 1 / -1; }
+.m-field { display: grid; gap: 4px; align-content: start; min-width: 0; }
+.m-toggles { display: flex; gap: 4px; flex-wrap: wrap; }
+.m-toggle { font-size: 10.5px; font-weight: 600; border: 1px solid; border-radius: 999px; padding: 1px 8px; background: none; white-space: nowrap; }
+.m-pill { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px 2px 3px; font-size: 11px; background: var(--surface); }
+.m-pill.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent-ink); font-weight: 600; }
+.m-pill .m-av { width: 16px; height: 16px; font-size: 7px; border: 0; margin: 0; }
+.m-files { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.m-file-cat { border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; font-size: 11px; display: grid; gap: 3px; background: var(--paper); }
+.m-file-cat b { font-size: 11px; color: var(--heading); }
+.m-file-cat .up { color: var(--accent-ink); font-weight: 600; }
+.m-file-row { display: flex; justify-content: space-between; gap: 6px; color: var(--accent-ink); }
+.m-file-row span:last-child { color: var(--text-3); }
+.m-modal-f { padding: 10px 16px 14px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: center; }
+.m-social { display: flex; gap: 5px; flex-wrap: wrap; }
+.m-social span { font-size: 11px; font-weight: 600; border: 1px solid var(--border-strong); border-radius: 999px; padding: 2px 9px; color: var(--heading); background: var(--surface); }
+.m-subnav { display: flex; gap: 18px; border-bottom: 1px solid var(--border); margin-bottom: 12px; overflow-x: auto; }
+.m-subnav span { padding: 7px 2px; font-size: 12.5px; font-weight: 600; color: var(--text-3); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.m-subnav span.active { color: var(--heading); border-bottom-color: var(--accent); }
+.m-filter { display: inline-flex; gap: 2px; background: var(--paper-dim); padding: 3px; border-radius: 8px; flex-wrap: wrap; }
+.m-filter > span { display: inline-flex; gap: 5px; align-items: center; padding: 4px 9px; border-radius: 6px; font-size: 11.5px; color: var(--text-2); font-weight: 500; }
+.m-filter > span.active { background: var(--surface); color: var(--heading); box-shadow: var(--shadow-card); }
+.m-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.m-badge { font-size: 9.5px; font-weight: 700; letter-spacing: 0.03em; padding: 1px 6px; border-radius: 4px; background: var(--paper-dim); color: var(--text-2); text-transform: uppercase; }
+.m-badge.review { background: var(--warn-bg); color: var(--warn-ink); }
+.m-badge.private { background: var(--private-bg); color: var(--private-ink); }
+.m-option { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 6px 10px; font-size: 11.5px; }
+.m-option.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent-ink); font-weight: 600; }
+.m-options { display: grid; gap: 5px; }
+.m-chiprow { display: flex; gap: 6px; flex-wrap: wrap; }
+.m-pillar { display: inline-flex; gap: 6px; align-items: center; background: var(--paper-dim); border: 1px solid var(--border); border-radius: 999px; padding: 3px 6px 3px 10px; font-size: 11.5px; font-weight: 600; color: var(--heading); }
+.m-pillar i { font-style: normal; color: var(--text-3); font-size: 10px; }
+.m-copyblock { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; background: var(--paper); display: grid; gap: 3px; }
+.m-copyblock .hd { display: flex; justify-content: space-between; align-items: center; }
+.m-link { color: var(--accent-ink); font-weight: 600; font-size: 11px; }
+.m-check { width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid var(--border-strong); background: var(--surface); flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; }
+.m-check.on { background: var(--accent); border-color: var(--accent); }
+.m-check.on::after { content: ""; width: 7px; height: 4px; border-left: 2px solid var(--on-accent); border-bottom: 2px solid var(--on-accent); transform: rotate(-45deg) translate(1px, -1px); }
+.m-toggle-sw { width: 32px; height: 18px; border-radius: 999px; background: var(--border-strong); position: relative; flex: 0 0 auto; }
+.m-toggle-sw::after { content: ""; position: absolute; width: 14px; height: 14px; border-radius: 50%; background: #fff; top: 2px; left: 2px; }
+.m-toggle-sw.on { background: var(--accent); }
+.m-toggle-sw.on::after { left: 16px; }
+.m-menu { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-plate); min-width: 200px; overflow: hidden; font-size: 12.5px; }
+.m-menu div { padding: 8px 12px; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.m-menu hr { border: 0; border-top: 1px solid var(--border); margin: 3px 0; }
+.m-menu .r { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-3); }
+.m-cal { display: grid; grid-template-columns: repeat(7, minmax(78px, 1fr)); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.m-cal > div { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); min-height: 64px; padding: 4px 5px; display: grid; gap: 3px; align-content: start; font-size: 10.5px; }
+.m-cal > div:nth-child(7n) { border-right: 0; }
+.m-cal .dow { min-height: 0; font-weight: 700; color: var(--text-3); text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.05em; background: var(--paper-dim); }
+.m-cal .out { color: var(--text-3); background: var(--paper); }
+.m-cal .today b { background: var(--ink); color: var(--on-ink); border-radius: 4px; padding: 0 5px; width: fit-content; }
+.m-cal .item { color: #fff; border-radius: 3px; padding: 1px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.m-phone { width: 250px; flex: 0 0 auto; border: 8px solid var(--ink); border-radius: 30px; overflow: hidden; background: var(--paper); box-shadow: var(--shadow-plate); }
+
+/* ---- Diagrams -------------------------------------------------------------- */
+.flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; align-items: stretch; }
+.flow-node { position: relative; display: grid; gap: 6px; align-content: start; padding: 14px 16px 16px; background: var(--surface); border: 1px solid var(--border); }
+.flow-node:first-child { border-radius: var(--r-md) 0 0 var(--r-md); }
+.flow-node:last-child { border-radius: 0 var(--r-md) var(--r-md) 0; }
+.flow-node + .flow-node { border-left: 0; }
+.flow-node:not(:last-child)::after { content: ""; position: absolute; right: -9px; top: 22px; width: 16px; height: 16px; background: var(--surface); border-top: 1px solid var(--border); border-right: 1px solid var(--border); transform: rotate(45deg); z-index: 1; }
+.flow-kicker { font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); }
+.flow-name { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--heading); }
+.flow-node p { font-size: 13px; color: var(--text-2); }
+.flow-where { font-size: 11.5px; font-weight: 600; color: var(--accent-ink); }
+.flow-node.prod { background: var(--ink); border-color: var(--ink); }
+.flow-node.prod .flow-name { color: var(--on-ink); }
+.flow-node.prod p { color: var(--on-ink-dim); }
+.flow-node.prod .flow-kicker { color: var(--accent); }
+.flow-node.prod .flow-where { color: var(--accent); }
+.sync-band { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sync-band > div { border: 1px dashed var(--border-strong); border-radius: var(--r-md); padding: 10px 14px; font-size: 13.5px; background: var(--paper); }
+.sync-band b { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 2px; }
+@media (max-width: 760px) {
+  .flow { grid-template-columns: minmax(0, 1fr); }
+  .flow-node:first-child { border-radius: var(--r-md) var(--r-md) 0 0; }
+  .flow-node:last-child { border-radius: 0 0 var(--r-md) var(--r-md); }
+  .flow-node + .flow-node { border-left: 1px solid var(--border); border-top: 0; }
+  .flow-node.prod + .flow-node, .flow-node + .flow-node.prod { border-color: var(--ink); }
+  .flow-node:not(:last-child)::after { right: auto; left: 24px; top: auto; bottom: -9px; transform: rotate(135deg); }
+  .sync-band { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Stage pipeline */
+.stages { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.stage { border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--border); overflow: hidden; display: grid; align-content: start; }
+.stage-h { color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 7px 9px; display: flex; gap: 6px; align-items: center; min-height: 44px; line-height: 1.25; }
+.stage-h small { font-family: var(--font-mono); font-size: 10px; opacity: 0.85; font-weight: 500; }
+.stage p { font-size: 12.5px; color: var(--text-2); padding: 8px 9px 10px; }
+.stage.gate { outline: 2px dashed var(--st-review); outline-offset: 2px; }
+@media (max-width: 860px) { .stages { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Lifecycle */
+.life { display: grid; grid-template-columns: auto auto auto; gap: 8px 10px; align-items: center; justify-content: start; font-size: 13px; }
+.life-node { border: 1px solid var(--border-strong); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-weight: 600; color: var(--heading); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; width: fit-content; }
+.life-node.end { background: var(--heading); color: var(--paper); border-color: var(--heading); }
+.life-arrow { color: var(--text-3); font-size: 12px; }
+@media (max-width: 640px) { .life, .life[style] { grid-template-columns: minmax(0, 1fr) !important; gap: 2px; } .life-node { white-space: normal; } .life-arrow { padding: 0 0 8px 14px; } .life-arrow:empty { display: none; } }
+
+/* Permission matrix */
+.matrix-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); }
+.matrix { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+body[data-role="all"] #matrix { min-width: 560px; }
+.matrix th, .matrix td { padding: 9px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+.matrix thead th { font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); background: var(--paper-dim); position: sticky; top: 0; }
+.matrix tbody th { font-weight: 500; color: var(--text); width: 46%; }
+.matrix tr.grp th { font-family: var(--font-display); font-size: 14px; font-weight: 600; color: var(--heading); background: var(--paper); padding-top: 14px; }
+.matrix td { color: var(--text-2); font-size: 13px; white-space: nowrap; }
+.matrix tr:last-child th, .matrix tr:last-child td { border-bottom: 0; }
+.cap { display: inline-flex; gap: 6px; align-items: center; }
+.cap::before { content: ""; width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+.cap.full::before { background: var(--ok); }
+.cap.part::before { background: linear-gradient(90deg, var(--accent) 50%, var(--border-strong) 50%); }
+.cap.none::before { background: none; border: 1.5px solid var(--border-strong); width: 7px; height: 7px; }
+.cap.none { color: var(--text-3); }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--text-2); }
+
+/* Role cards */
+.roles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.role-card { border: 1px solid var(--border); background: var(--surface); border-radius: var(--r-md); padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
+.role-card h3 { font-size: 17px; margin: 0; display: flex; gap: 8px; align-items: center; }
+.role-card p { font-size: 13.5px; color: var(--text-2); }
+.role-card ul { margin: 0; padding-left: 18px; font-size: 13.5px; display: grid; gap: 3px; }
+.role-swatch { width: 12px; height: 12px; border-radius: 3px; flex: 0 0 auto; }
+@media (max-width: 760px) { .roles { grid-template-columns: minmax(0, 1fr); } }
+
+/* Step cards (recipes) */
+.recipes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.recipe { border: 1px solid var(--border); background: var(--surface); border-radius: var(--r-md); padding: 14px 16px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.recipe h4 { font-size: 15.5px; font-weight: 600; }
+.recipe ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 13.5px; }
+.recipe ol li::marker { color: var(--accent-ink); font-weight: 700; }
+.recipe .where { font-size: 12px; color: var(--text-3); }
+@media (max-width: 760px) { .recipes { grid-template-columns: minmax(0, 1fr); } }
+
+/* Files table */
+.files-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.files-col { border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); padding: 12px 14px; display: grid; gap: 8px; align-content: start; }
+.files-col h4 { font-size: 15px; display: flex; gap: 8px; align-items: center; }
+.files-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.files-col li { display: grid; gap: 1px; font-size: 13.5px; padding: 7px 10px; border-radius: 7px; background: var(--paper); border: 1px solid var(--border); }
+.files-col li b { color: var(--heading); font-weight: 600; }
+.files-col li span { font-size: 12.5px; color: var(--text-2); }
+@media (max-width: 640px) { .files-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Compare */
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.compare > div { border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
+.compare h4 { font-size: 16px; }
+.compare dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 12px; font-size: 13.5px; }
+.compare dt { color: var(--text-3); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; padding-top: 2px; }
+.compare dd { margin: 0; color: var(--text); }
+@media (max-width: 640px) { .compare { grid-template-columns: minmax(0, 1fr); } }
+
+/* Prompt transform */
+.transform { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 10px; align-items: stretch; }
+.transform > div { border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); padding: 12px 14px; display: grid; gap: 6px; align-content: start; font-size: 13.5px; min-width: 0; }
+.transform .arrow { border: 0; background: none; align-self: center; color: var(--accent-ink); font-weight: 700; font-size: 12px; text-align: center; padding: 0; }
+.tag { font-family: var(--font-mono); font-size: 12px; background: var(--accent-dim); color: var(--accent-ink); border-radius: 4px; padding: 0 4px; }
+.fill-val { background: var(--paper-dim); border-radius: 4px; padding: 0 3px; box-shadow: inset 0 -2px 0 var(--accent); }
+.tags-list { display: flex; gap: 6px; flex-wrap: wrap; }
+.arrow-narrow { display: none; }
+@media (max-width: 700px) { .transform { grid-template-columns: minmax(0, 1fr); } .transform .arrow { justify-self: center; } .arrow-wide { display: none; } .arrow-narrow { display: inline; } }
+
+/* FAQ */
+.faq { display: grid; gap: 8px; }
+.faq details { border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); }
+.faq summary { cursor: pointer; padding: 12px 16px; font-weight: 600; color: var(--heading); list-style: none; display: flex; gap: 10px; align-items: baseline; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::before { content: "+"; font-family: var(--font-mono); color: var(--accent-ink); font-weight: 700; width: 12px; flex: 0 0 auto; }
+.faq details[open] summary::before { content: "\2013"; }
+.faq details > div { padding: 0 16px 14px 38px; font-size: 14px; color: var(--text); display: grid; gap: 6px; }
+
+/* Glossary */
+.gloss { display: grid; grid-template-columns: minmax(130px, auto) minmax(0, 1fr); gap: 0; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface); overflow: hidden; margin: 0; }
+.gloss dt, .gloss dd { padding: 10px 14px; border-bottom: 1px solid var(--border); margin: 0; font-size: 14px; }
+.gloss dt { font-weight: 600; color: var(--heading); }
+.gloss dd { color: var(--text); }
+.gloss dt:nth-last-of-type(1), .gloss dd:last-of-type { border-bottom: 0; }
+@media (max-width: 560px) { .gloss { grid-template-columns: minmax(0, 1fr); } .gloss dt { border-bottom: 0; padding-bottom: 0; } }
+
+.two-up { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 760px) { .two-up { grid-template-columns: minmax(0, 1fr); } }
+.phone-row { display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; }
+.phone-row .prose { flex: 1 1 260px; }
+
+.footer { border-top: 1px solid var(--border); padding-top: 18px; font-size: 13px; color: var(--text-3); display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-mark" viewBox="0 0 24 24"><path d="M4 13 L10 7 L14 11 L20 5" fill="none" stroke="#21160a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-ideas" viewBox="0 0 24 24"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-dash" viewBox="0 0 24 24"><path d="M4 20V10M12 20V4M20 20v-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-board" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="9.5" y="4" width="5" height="10" rx="1"/><rect x="16" y="4" width="5" height="13" rx="1"/></g></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></g></symbol>
+  <symbol id="i-feed" viewBox="0 0 24 24"><circle cx="6" cy="18" r="1.5" fill="currentColor"/><path d="M5 12a7 7 0 0 1 7 7M5 6a13 13 0 0 1 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></g></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.7.3-1 .9-1 1.6v.3M12 17h.01"/></g></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></g></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0M14 20a4 4 0 0 1 7 0"/></g></symbol>
+</svg>
+
+<header class="masthead">
+  <div class="masthead-inner gutter">
+    <div class="mast-row">
+      <span class="brand"><span class="brand-mark"><svg aria-hidden="true"><use href="#i-mark"/></svg></span>ContentFlow <small>Guide</small></span>
+      <a class="open-app" href="https://jtg-tools.jtgworkspace.com/content-strategy-workflow/" target="_blank" rel="noopener">Open ContentFlow &rarr;</a>
+    </div>
+    <h1 class="mast-title">From first idea to <em>published</em>, screen by screen.</h1>
+    <p class="mast-sub">Every page, menu and setting in ContentFlow, shown the way it looks in the app. Pick your role and the guide hides what doesn't apply to you.</p>
+    <div class="role-switch-wrap" id="role-switch-wrap">
+      <span class="role-switch-label" id="role-switch-label">Show the guide for</span>
+      <div class="role-switch" role="group" aria-labelledby="role-switch-label">
+        <button type="button" class="role-btn" id="role-btn-all" data-role="all" aria-pressed="true">Everyone</button>
+        <button type="button" class="role-btn" id="role-btn-admin" data-role="admin" aria-pressed="false">Admin</button>
+        <button type="button" class="role-btn" id="role-btn-rep" data-role="rep" aria-pressed="false">Team member</button>
+        <button type="button" class="role-btn" id="role-btn-client" data-role="client" aria-pressed="false">Client</button>
+      </div>
+      <p class="role-blurb" id="role-blurb"></p>
+    </div>
+  </div>
+</header>
+
+<div class="layout gutter">
+  <nav class="toc" id="toc" aria-label="Guide contents"></nav>
+  <main class="content" id="content">
+    <div class="toc-mobile" id="toc-mobile">
+      <label for="toc-select">Jump to a section</label>
+      <select id="toc-select"></select>
+    </div>
+
+<!-- =================================================================== START HERE -->
+<section class="sec" id="how-it-fits" data-group="Start here" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">The big picture</p>
+    <h2>How ContentFlow fits together</h2>
+  </div>
+  <p class="lede">ContentFlow runs content in four layers. Strategy and ideas live in ContentFlow. Once an idea becomes real work, it lives in ClickUp, and ContentFlow is the window onto it.</p>
+  <div class="flow" role="list">
+    <div class="flow-node" role="listitem">
+      <span class="flow-kicker">1 &middot; Strategy</span>
+      <span class="flow-name">Brand Foundation</span>
+      <p>Who the brand is for, what it offers, how it sounds. Reusable pitch, keywords, hooks and CTAs.</p>
+      <span class="flow-where">Ideas &rsaquo; Foundation</span>
+    </div>
+    <div class="flow-node" role="listitem">
+      <span class="flow-kicker">2 &middot; Habit</span>
+      <span class="flow-name">Pillars &amp; Rhythm</span>
+      <p>3&ndash;5 themes the brand posts about, and the pace the team can keep up.</p>
+      <span class="flow-where">Ideas &rsaquo; Pillars &amp; Rhythm</span>
+    </div>
+    <div class="flow-node" role="listitem">
+      <span class="flow-kicker">3 &middot; Capture</span>
+      <span class="flow-name">Idea Inbox</span>
+      <p>Raw thoughts, links and notes, sorted by pillar. Nothing here is a task yet.</p>
+      <span class="flow-where">Ideas &rsaquo; Ideas</span>
+    </div>
+    <div class="flow-node prod" role="listitem">
+      <span class="flow-kicker">4 &middot; Production</span>
+      <span class="flow-name">Content entries</span>
+      <p>Promoted ideas become entries that move through the stages to Published.</p>
+      <span class="flow-where">Dashboard &middot; Board &middot; List &middot; Calendar &middot; Feed</span>
+    </div>
+  </div>
+  <div class="sync-band">
+    <div><b>Stored in ContentFlow</b>Brand Foundation, prompts, pillars, rhythm, ideas, account messages and files.</div>
+    <div><b>Stored in ClickUp</b>Content entries: name, stage, assignees, dates, mediums and the Log. Saving here writes straight to ClickUp. Changes made in ClickUp show up after <kbd>Sync now</kbd> or a reload.</div>
+  </div>
+</section>
+
+<section class="sec" id="roles" data-group="Start here" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Who does what</p>
+    <h2>The three roles</h2>
+  </div>
+  <p class="lede">Every person has one role, set by an admin when they're invited. Your role decides which accounts you see and what you can change.</p>
+  <div class="roles">
+    <div class="role-card" data-for="admin">
+      <h3><span class="role-swatch" style="background:var(--ink)"></span>Admin</h3>
+      <p>Runs the workspace.</p>
+      <ul><li>Sees every active account</li><li>Invites people and sets their access</li><li>Turns accounts on and off</li><li>Moves entries between accounts</li><li>Sees private Notebook links</li></ul>
+    </div>
+    <div class="role-card" data-for="rep">
+      <h3><span class="role-swatch" style="background:var(--tab-work)"></span>Team member</h3>
+      <p>Produces content. Shown as <code>rep</code> in the invite form.</p>
+      <ul><li>Sees only their assigned accounts</li><li>Creates, edits and moves entries</li><li>Edits Brand Foundation and prompts</li><li>Connects their own ClickUp login</li></ul>
+    </div>
+    <div class="role-card" data-for="client">
+      <h3><span class="role-swatch" style="background:var(--accent)"></span>Client</h3>
+      <p>Follows and contributes to their own content.</p>
+      <ul><li>Sees only their business(es)</li><li>Adds ideas and new entries</li><li>Uploads their own assets</li><li>Comments and messages the team</li><li>No ClickUp account needed</li></ul>
+    </div>
+  </div>
+  <div class="matrix-wrap">
+    <table class="matrix" id="matrix">
+      <thead><tr><th scope="col">What you can do</th><th scope="col" data-col="admin">Admin</th><th scope="col" data-col="rep">Team</th><th scope="col" data-col="client">Client</th></tr></thead>
+      <tbody>
+        <tr class="grp"><th colspan="4">Seeing work</th></tr>
+        <tr><th scope="row">Accounts you see</th><td data-col="admin"><span class="cap full">All active</span></td><td data-col="rep"><span class="cap part">Assigned</span></td><td data-col="client"><span class="cap part">Own business(es)</span></td></tr>
+        <tr><th scope="row">Dashboard, Board, List, Feed</th><td data-col="admin"><span class="cap full">Yes</span></td><td data-col="rep"><span class="cap full">Yes</span></td><td data-col="client"><span class="cap full">Yes</span></td></tr>
+        <tr><th scope="row">Calendar</th><td data-col="admin"><span class="cap full">Yes</span></td><td data-col="rep"><span class="cap full">Yes</span></td><td data-col="client"><span class="cap none">No</span></td></tr>
+        <tr class="grp"><th colspan="4">Content entries</th></tr>
+        <tr><th scope="row">Create an entry</th><td data-col="admin"><span class="cap full">Full form</span></td><td data-col="rep"><span class="cap full">Full form</span></td><td data-col="client"><span class="cap part">Name only</span></td></tr>
+        <tr><th scope="row">Change stage, dates, mediums, assignees</th><td data-col="admin"><span class="cap full">Yes</span></td><td data-col="rep"><span class="cap full">Yes</span></td><td data-col="client"><span class="cap none">View</span></td></tr>
+        <tr><th scope="row">Move an entry to another account</th><td data-col="admin"><span class="cap full">Yes</span></td><td data-col="rep"><span class="cap none">No</span></td><td data-col="client"><span class="cap none">No</span></td></tr>
+        <tr><th scope="row">Delete an entry</th><td data-col="admin"><span class="cap full">Yes</span></td><td data-col="rep"><span class="cap full">Yes</span></td><td data-col="client"><span class="cap none">No</span></td></tr>
+        <tr><th scope="row">Post to an entry's Log</th><td data-col="admin"><span class="cap full">Yes</span></td><td data-col="rep"><span class="cap full">Yes</span></td><td data-col="client"><span class="cap full">Yes</span></td></tr>
+        <tr><th scope="row">Upload files</th><td data-col="admin"><span class="cap full">Any category</span></td><td data-col="rep"><span class="cap full">Any category</span></td><td data-col="client"><span class="cap part">Client Assets</span></td></tr>
+        <tr><th scope="row">See internal files (drafts, notes, raw media)</th><td data-col="admin"><span class="cap full">Yes</span></td><td data-col="rep"><span class="cap full">Yes</span></td><td data-col="client"><span class="cap none">No</span></td></tr>
+        <tr class="grp"><th colspan="4">Ideas &amp; strategy</th></tr>
+        <tr><th scope="row">Capture, edit and promote ideas</th><td data-col="admin"><span class="cap full">Yes</span></td><td data-col="rep"><span class="cap full">Yes</span></td><td data-col="client"><span class="cap full">Yes</span></td></tr>
+        <tr><th scope="row">Set pillars and rhythm</th><td data-col="admin"><span class="cap full">Yes</span></td><td data-col="rep"><span class="cap full">Yes</span></td><td data-col="client"><span class="cap full">Yes</span></td></tr>
+        <tr><th scope="row">Brand Foundation and Prompt Library</th><td data-col="admin"><span class="cap full">Edit</span></td><td data-col="rep"><span class="cap full">Edit</span></td><td data-col="client"><span class="cap part">View &amp; copy</span></td></tr>
+        <tr><th scope="row">Account messages</th><td data-col="admin"><span class="cap full">Yes</span></td><td data-col="rep"><span class="cap full">Yes</span></td><td data-col="client"><span class="cap full">Yes</span></td></tr>
+        <tr><th scope="row">Notebook links</th><td data-col="admin"><span class="cap full">Yes</span></td><td data-col="rep"><span class="cap none">No</span></td><td data-col="client"><span class="cap none">No</span></td></tr>
+        <tr class="grp"><th colspan="4">Workspace</th></tr>
+        <tr><th scope="row">Connect a ClickUp login</th><td data-col="admin"><span class="cap full">Required</span></td><td data-col="rep"><span class="cap full">Required</span></td><td data-col="client"><span class="cap none">Not needed</span></td></tr>
+        <tr><th scope="row">Admin panel: invite people, turn accounts on/off</th><td data-col="admin"><span class="cap full">Yes</span></td><td data-col="rep"><span class="cap none">No</span></td><td data-col="client"><span class="cap none">No</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="legend"><span class="cap full">Full access</span><span class="cap part">Limited</span><span class="cap none">Not available</span></div>
+</section>
+
+<section class="sec" id="getting-in" data-group="Start here" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">First time</p>
+    <h2>Getting in</h2>
+  </div>
+  <p class="lede">Everyone signs in with the email and password tied to their invitation. Admins and team members then link their ClickUp login once on each device.</p>
+  <figure class="plate">
+    <div class="plate-frame plate-scroll">
+      <div class="m-app" style="display:flex;gap:14px;padding:16px;min-width:640px;background:var(--ink)">
+        <div class="m-panel" style="flex:1;display:grid;gap:8px;align-content:start">
+          <span class="m-brand" style="color:var(--heading);font-size:13px"><span class="m-mark"><svg><use href="#i-mark"/></svg></span>ContentFlow</span>
+          <span class="m-h" style="font-size:18px">Sign in <i class="pin">1</i></span>
+          <span class="m-help">Use the email and password your admin set up for you.</span>
+          <span class="m-label">Email</span><span class="m-input filled">dana@harborpine.co</span>
+          <span class="m-label">Password</span><span class="m-input filled">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span>
+          <span class="m-btn primary" style="justify-content:center">Sign in</span>
+        </div>
+        <div class="m-panel" style="flex:1.15;display:grid;gap:8px;align-content:start" data-for="admin rep">
+          <span class="m-h" style="font-size:16px">Connect your ClickUp account <i class="pin">2</i></span>
+          <span class="m-help">Connect the ClickUp user or guest account that already has access to the Client Master Content Strategy Workflow list.</span>
+          <span style="font-size:11.5px;display:flex;gap:6px;align-items:center"><span class="m-check on"></span>Remember on this device <i class="pin">3</i></span>
+          <span class="m-btn primary" style="justify-content:center">Connect with ClickUp</span>
+          <span class="m-help">You'll be sent to ClickUp to approve access, then brought right back here.</span>
+        </div>
+        <div class="m-panel" style="flex:1;display:grid;gap:8px;align-content:start" data-for="client">
+          <span class="m-h" style="font-size:16px">Almost there <i class="pin">4</i></span>
+          <span class="m-help">You're signed in, but your admin hasn't linked your account to a company yet. Once they do, your content strategy shows up here automatically.</span>
+          <span class="m-btn outline" style="width:fit-content">Sign out</span>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>Sign in.</b> Your admin invites you by email. Follow the invitation, then sign in here with your email and password. To change your password later, use <b>Settings &rsaquo; Edit profile</b>.</span></li>
+        <li data-for="admin rep"><i class="pin">2</i><span><b>Connect ClickUp</b> <span class="muted">(admin &amp; team)</span>. Approve ContentFlow in ClickUp and you're returned to the board. Use the ClickUp login that can already open the Client Master Content Strategy Workflow list.</span></li>
+        <li data-for="admin rep"><i class="pin">3</i><span><b>Remember on this device</b> keeps you connected next time. Untick it on a shared computer.</span></li>
+        <li data-for="client"><i class="pin">4</i><span><b>Almost there</b> <span class="muted">(clients)</span> means your login works but no business is linked to it yet. Nothing to do on your side; it fills in as soon as your admin links you.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+</section>
+
+<section class="sec" id="navigation" data-group="Start here" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Main menu</p>
+    <h2>Finding your way around</h2>
+  </div>
+  <p class="lede">The dark bar across the top is the same on every screen. Tabs on the left switch views; controls on the right act on the whole app.</p>
+  <figure class="plate">
+    <div class="plate-frame plate-scroll">
+      <div class="plate-label"><span class="dots"><i></i><i></i><i></i></span><span>Top bar</span></div>
+      <div class="m-app" style="min-width:760px">
+        <div class="m-top">
+          <span class="m-brand"><span class="m-mark"><svg><use href="#i-mark"/></svg></span>ContentFlow</span><i class="pin">1</i>
+          <div class="m-tabs">
+            <span class="m-tab"><span style="color:var(--tab-ideas);display:inline-flex"><svg><use href="#i-ideas"/></svg></span>Ideas</span><i class="pin">2</i>
+            <span class="m-tab active"><span style="color:var(--tab-dash);display:inline-flex"><svg><use href="#i-dash"/></svg></span>Dashboard</span><i class="pin">3</i>
+            <span class="m-tab"><span style="color:var(--tab-work);display:inline-flex"><svg><use href="#i-board"/></svg></span>Board</span>
+            <span class="m-tab"><span style="color:var(--tab-work);display:inline-flex"><svg><use href="#i-list"/></svg></span>List</span>
+            <span class="m-tab" data-for="admin rep"><span style="color:var(--tab-work);display:inline-flex"><svg><use href="#i-cal"/></svg></span>Calendar</span>
+            <span class="m-tab"><span style="color:var(--tab-work);display:inline-flex"><svg><use href="#i-feed"/></svg></span>Feed</span><i class="pin">4</i>
+          </div>
+          <span class="m-spacer"></span>
+          <div class="m-right">
+            <span class="m-select-dark"><span data-for="admin rep">All accounts</span><span data-for="client" data-hide-all>All my businesses</span></span><i class="pin">5</i>
+            <span class="m-btn primary">+ New</span><i class="pin">6</i>
+            <span class="m-icon lit" title="Guide"><svg><use href="#i-help"/></svg></span><i class="pin">7</i>
+            <span class="m-icon"><svg><use href="#i-gear"/></svg></span><i class="pin">8</i>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;padding:8px 14px 16px">
+          <div class="m-menu">
+            <div>Switch to dark mode</div>
+            <div>Sync now</div>
+            <div data-for="admin">Admin panel <span class="r">Admin</span></div>
+            <hr>
+            <div>Edit profile</div>
+            <div data-for="admin rep">Disconnect ClickUp <span class="r">Admin &amp; team</span></div>
+            <div>Sign out</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>Logo</b> takes you back to the Dashboard from anywhere.</span></li>
+        <li><i class="pin">2</i><span><b>Ideas</b> (amber) holds idea capture, Pillars &amp; Rhythm and the Brand Foundation.</span></li>
+        <li><i class="pin">3</i><span><b>Dashboard</b> (blue) is the overview: what's late, what's stuck, where everything sits.</span></li>
+        <li><i class="pin">4</i><span><b>Board, List, Calendar, Feed</b> share one colour because they show the same content entries four ways.<span data-for="client"> Clients get Board, List and Feed.</span></span></li>
+        <li><i class="pin">5</i><span><b>Account filter</b> narrows every view to one account, or shows all of them together.<span data-for="client"> Clients see it only when they have more than one business (&ldquo;All my businesses&rdquo;).</span></span></li>
+        <li><i class="pin">6</i><span><b>+ New</b> starts a new content entry.<span data-for="client"> For clients it asks only for a name.</span></span></li>
+        <li><i class="pin">7</i><span><b>Guide</b> opens this page inside ContentFlow, already set to your role.</span></li>
+        <li><i class="pin">8</i><span><b>Settings</b> holds the theme switch, <b>Sync now</b>, your profile and sign out.<span data-for="admin"> Admins also find the <b>Admin panel</b> here.</span></span></li>
+      </ol>
+    </figcaption>
+  </figure>
+</section>
+
+<section class="sec" id="client-start" data-group="Start here" data-for="client">
+  <div class="sec-head">
+    <p class="eyebrow">Client quick start</p>
+    <h2>What clients do most</h2>
+  </div>
+  <p class="lede">You see your own business's content, live. You can't break anything: stages, dates and assignments are your team's to change.</p>
+  <div class="recipes">
+    <div class="recipe"><h4>See where everything stands</h4><ol><li>Open <b>Board</b>.</li><li>Each column is a stage; each card is a piece of content.</li><li>Tap a card to see its files and comments.</li></ol></div>
+    <div class="recipe"><h4>Send the team a new request</h4><ol><li>Tap <b>+ New</b> at the top.</li><li>Type what you want made and tap <b>Create</b>.</li><li>It lands in the first stage (Idea) for your team to pick up.</li></ol></div>
+    <div class="recipe"><h4>Share photos, logos or reference</h4><ol><li>Open the content card.</li><li>Under <b>Client Assets</b>, tap <b>+ Upload</b>.</li><li>The upload is noted in the Log so the team sees it.</li></ol></div>
+    <div class="recipe"><h4>Give feedback or approve</h4><ol><li>Open the card.</li><li>Write in <b>Log an update&hellip;</b> and tap <b>Post</b>.</li><li>For questions not tied to one post, use <b>Messages</b> on the Dashboard.</li></ol></div>
+    <div class="recipe"><h4>Jot down a raw idea</h4><ol><li>Go to <b>Ideas</b> and tap <b>+ Capture</b>.</li><li>Pick Idea, Link or Note and save.</li><li>When it's ready to be made, tap <b>Promote</b>.</li></ol></div>
+    <div class="recipe"><h4>Switch between your businesses</h4><ol><li>Use the account switcher at the top (only shown with 2+ businesses).</li><li><b>All my businesses</b> mixes everything together.</li><li>Pick one name to focus on it.</li></ol></div>
+  </div>
+  <div class="note"><span class="note-tag tip">Tip</span><span><b>+ New</b> creates real work that appears on the Board straight away. <b>+ Capture</b> in Ideas saves a raw thought that only reaches the Board when someone promotes it.</span></div>
+</section>
+
+<!-- =================================================================== WORKFLOW -->
+<section class="sec" id="dashboard" data-group="Production" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Overview</p>
+    <h2>Dashboard</h2>
+  </div>
+  <p class="lede">The Dashboard answers &ldquo;what needs me today?&rdquo; for whatever is selected in the account filter. Click any row to open that entry.</p>
+  <figure class="plate">
+    <div class="plate-frame plate-scroll">
+      <div class="m-app m-body" style="min-width:640px">
+        <div class="m-stats">
+          <div class="m-stat"><b>24</b><span>Total tasks</span></div>
+          <div class="m-stat danger"><b>2</b><span>Overdue</span></div>
+          <div class="m-stat"><b>5</b><span>Due this week</span> <i class="pin">1</i></div>
+          <div class="m-stat warn"><b>3</b><span>Stuck</span></div>
+          <div class="m-stat"><b>6</b><span>Accounts</span></div>
+        </div>
+        <div class="m-sub-h">Idea pipeline <i class="pin">2</i></div>
+        <div style="display:flex;gap:8px;margin-bottom:8px"><div class="m-stat" style="width:110px"><b>8</b><span>Active ideas</span></div><div class="m-stat warn" style="width:110px"><b>2</b><span>Needs review</span></div></div>
+        <div class="m-banner">You have 8 ideas waiting &ndash; about 4 weeks of material at your current pace.</div>
+        <div class="m-sub-h">Messages <span class="m-help">(shared across everyone with access to this account)</span> <i class="pin">3</i></div>
+        <div class="m-panel"><div class="m-comment"><span class="m-av" style="background:#7c5cbf">DR</span><div><div class="m-comment-author">Dana R. <span>Oct 28, 9:12 AM</span></div>Can we push the holiday hours post to next week?</div></div></div>
+        <div class="m-sub-h">By status <i class="pin">4</i></div>
+        <div class="m-bars">
+          <div class="m-bar"><span><span class="m-dot" style="background:var(--st-idea)"></span> Idea</span><span class="m-bar-track"><span class="m-bar-fill" style="width:75%;background:var(--st-idea);display:block"></span></span><span class="m-bar-n">6</span></div>
+          <div class="m-bar"><span><span class="m-dot" style="background:var(--st-copy)"></span> Copy &ndash; In Progress</span><span class="m-bar-track"><span class="m-bar-fill" style="width:100%;background:var(--st-copy);display:block"></span></span><span class="m-bar-n">8</span></div>
+          <div class="m-bar"><span><span class="m-dot" style="background:var(--st-review)"></span> For Review</span><span class="m-bar-track"><span class="m-bar-fill" style="width:38%;background:var(--st-review);display:block"></span></span><span class="m-bar-n">3</span></div>
+          <div class="m-bar"><span><span class="m-dot" style="background:var(--st-scheduled)"></span> Scheduled</span><span class="m-bar-track"><span class="m-bar-fill" style="width:50%;background:var(--st-scheduled);display:block"></span></span><span class="m-bar-n">4</span></div>
+        </div>
+        <div class="m-sub-h">Needs attention <i class="pin">5</i></div>
+        <div style="display:grid;gap:5px">
+          <div class="m-row overdue"><span class="when">Oct 27 (overdue)</span><span>Fall menu launch reel</span></div>
+          <div class="m-row"><span class="when">Nov 2</span><span>Member spotlight: Dana</span></div>
+        </div>
+        <div class="m-sub-h">Stuck <span class="m-help">(no next action, no activity in 7+ days)</span> <i class="pin">6</i></div>
+        <div class="m-row stuck"><span class="when">12d quiet</span><span>3 myths about teeth whitening</span></div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>Totals.</b> Overdue and Due this week count entries by their <b>Next Action Date</b>. The Accounts tile appears when more than one account is in view.</span></li>
+        <li><i class="pin">2</i><span><b>Idea pipeline</b> shows unpromoted ideas and how many weeks of material they add up to at the account's chosen pace.</span></li>
+        <li><i class="pin">3</i><span><b>Messages</b> is the account-wide conversation (see <a href="#messages">Log vs. Messages</a>).</span></li>
+        <li><i class="pin">4</i><span><b>By status</b> counts entries per stage. A &ldquo;By account&rdquo; chart follows when several accounts are in view.</span></li>
+        <li><i class="pin">5</i><span><b>Needs attention</b> lists entries whose Next Action Date has passed (red) or falls in the next 7 days.</span></li>
+        <li><i class="pin">6</i><span><b>Stuck</b> flags open entries with no Next Action Date and no activity for 7+ days. Published entries never count.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="note"><span class="note-tag tip">Tip</span><span>Idea pipeline and Messages only appear when <b>one</b> account is selected, because ideas and messages belong to a single account.</span></div>
+</section>
+
+<section class="sec" id="workflow" data-group="Production" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">The stages</p>
+    <h2>How an entry moves to Published</h2>
+  </div>
+  <p class="lede">Every content entry sits in one stage. Stage names and colours come straight from the ClickUp list, so if they change in ClickUp, ContentFlow follows. These are the current stages and how teams typically use them.</p>
+  <div class="stages">
+    <div class="stage"><div class="stage-h" style="background:var(--st-idea)">Idea</div><p>New requests and promoted ideas land here first.</p></div>
+    <div class="stage"><div class="stage-h" style="background:var(--st-copy)">Copy &ndash; In Progress</div><p>Caption, script or article being written.</p></div>
+    <div class="stage"><div class="stage-h" style="background:var(--st-media)">Media &ndash; In Progress</div><p>Photos, video or graphics being made.</p></div>
+    <div class="stage gate"><div class="stage-h" style="background:var(--st-review)">For Review</div><p>Ready to check. ContentFlow looks for a draft or raw media first.</p></div>
+    <div class="stage"><div class="stage-h" style="background:var(--st-approved)">Approved</div><p>Signed off and ready to schedule.</p></div>
+    <div class="stage"><div class="stage-h" style="background:var(--st-scheduled)">Scheduled</div><p>Queued for its Scheduled Date.</p></div>
+    <div class="stage"><div class="stage-h" style="background:var(--st-published)">Published</div><p>Live. Never counted as stuck.</p></div>
+  </div>
+  <div class="note" data-for="admin rep"><span class="note-tag heads-up">For Review check</span><span>Moving an entry into <b>For Review</b> when it has no files under <b>Copy / Drafts</b> or <b>Media Files (raw)</b> asks &ldquo;Move to For Review anyway?&rdquo; It's a reminder, not a block.</span></div>
+  <div class="note" data-for="client"><span class="note-tag client">Clients</span><span>You'll see each entry's stage on the Board and inside the entry. Your team moves entries between stages; when something reaches For Review, that's usually your cue to look and comment.</span></div>
+  <h3>Where new entries come from</h3>
+  <div class="life">
+    <span class="life-node">+ New (top bar)</span><span class="life-arrow">&rarr;</span><span class="life-node end">Entry in the first stage</span>
+    <span class="life-node" data-for="admin rep">+ Add task (Board)</span><span class="life-arrow" data-for="admin rep">&rarr;</span><span class="life-node end" data-for="admin rep">Blank entry form</span>
+    <span class="life-node">Promote (Idea Inbox)</span><span class="life-arrow">&rarr;</span><span class="life-node end">Entry with the idea's details</span>
+  </div>
+</section>
+
+<section class="sec" id="board" data-group="Production" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Workflow view</p>
+    <h2>Board</h2>
+  </div>
+  <p class="lede">One column per stage, one card per entry. It's the fastest way to see what's moving and to move things along.</p>
+  <figure class="plate">
+    <div class="plate-frame plate-scroll">
+      <div class="m-app m-body">
+        <div class="m-board" style="min-width:820px">
+          <div class="m-col">
+            <div class="m-col-h"><span class="m-dot" style="background:var(--st-idea)"></span>Idea<span class="m-count">2</span><i class="pin">1</i></div>
+            <div class="m-card"><span style="display:flex;gap:4px;align-items:center"><span class="m-acct">Harbor &amp; Pine Coffee</span><i class="pin">2</i></span><span class="m-card-title">Behind the bar: latte art</span><div class="m-chips"><span class="m-chip" style="background:var(--md-reel)">Instagram Reel</span><span class="m-chip" style="background:var(--md-tiktok)">TikTok Post</span><i class="pin">3</i></div></div>
+            <div class="m-card"><span class="m-acct">Northside Fitness</span><span class="m-card-title">January challenge teaser</span></div>
+            <span class="m-add" data-for="admin rep">+ Add task <i class="pin">6</i></span>
+          </div>
+          <div class="m-col">
+            <div class="m-col-h"><span class="m-dot" style="background:var(--st-copy)"></span>Copy &ndash; In Progress<span class="m-count">1</span></div>
+            <div class="m-card"><span class="m-acct">Lumen Dental</span><span class="m-card-title">3 myths about teeth whitening</span><div class="m-chips"><span class="m-chip" style="background:var(--md-blog)">Blog</span><span class="m-chip" style="background:var(--md-fb)">Facebook Post</span></div><div class="m-avs"><span class="m-av" style="background:#2f86d6">JT</span><span class="m-av" style="background:#c9463c">AR</span><i class="pin">4</i></div></div>
+          </div>
+          <div class="m-col">
+            <div class="m-col-h"><span class="m-dot" style="background:var(--st-review)"></span>For Review<span class="m-count">1</span></div>
+            <div class="m-card lifted"><span class="m-acct">Harbor &amp; Pine Coffee</span><span class="m-card-title">Fall menu launch reel</span><div class="m-chips"><span class="m-chip" style="background:var(--md-reel)">Instagram Reel</span><span class="m-chip outline">+2</span></div><div class="m-avs"><span class="m-av" style="background:#2f86d6">JT</span></div></div>
+            <span class="m-add" data-for="admin rep">dragging&hellip; <i class="pin">5</i></span>
+          </div>
+          <div class="m-col">
+            <div class="m-col-h"><span class="m-dot" style="background:var(--st-scheduled)"></span>Scheduled<span class="m-count">1</span></div>
+            <div class="m-card"><span class="m-acct">Northside Fitness</span><span class="m-card-title">Member spotlight: Dana</span><div class="m-chips"><span class="m-chip" style="background:var(--md-fb)">Facebook Post</span><span class="m-chip" style="background:var(--md-email)">Email Blast</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>Stage column</b> with its ClickUp colour and a count of entries.</span></li>
+        <li><i class="pin">2</i><span><b>Account badge</b> names the account the entry belongs to.</span></li>
+        <li><i class="pin">3</i><span><b>Medium chips</b> show where it will be posted, in ClickUp's colours. Up to four show, then &ldquo;+n&rdquo;.</span></li>
+        <li><i class="pin">4</i><span><b>Assignees</b> appear as initials.</span></li>
+        <li data-for="admin rep"><i class="pin">5</i><span><b>Drag a card</b> to another column to change its stage (desktop). On a phone, open the entry and change <b>Status</b> instead.</span></li>
+        <li data-for="admin rep"><i class="pin">6</i><span><b>+ Add task</b> opens a blank entry form, same as <b>+ New</b>.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="note" data-for="client"><span class="note-tag client">Clients</span><span>Your Board is view-only: cards can't be dragged, and only stages that currently hold your content appear as columns. Tap any card to open it.</span></div>
+</section>
+
+<section class="sec" id="list" data-group="Production" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Workflow view</p>
+    <h2>List</h2>
+  </div>
+  <p class="lede">The same entries as a table. Best for finding one thing fast or scanning dates across many entries.</p>
+  <figure class="plate">
+    <div class="plate-frame">
+      <div class="m-app m-body">
+        <div style="margin-bottom:10px;display:flex;gap:6px;align-items:center"><span class="m-input" style="width:240px;max-width:100%">Search by name&hellip;</span><i class="pin">1</i></div>
+        <div class="plate-scroll">
+          <table class="m-table" style="min-width:680px">
+            <thead><tr><th><span data-for="admin rep">Task &uarr; <i class="pin">2</i></span><span data-for="client" data-hide-all>Name</span></th><th>Status</th><th>Account</th><th>Mediums</th><th data-for="admin rep">Scheduled</th><th data-for="admin rep">Publish date</th><th data-for="admin rep">Assignees</th></tr></thead>
+            <tbody>
+              <tr><td class="name">3 myths about teeth whitening <i class="pin">3</i></td><td><span class="m-chip" style="background:var(--st-copy)">Copy &ndash; In Progress</span></td><td>Lumen Dental</td><td><span class="m-chip" style="background:var(--md-blog)">Blog</span></td><td data-for="admin rep">Nov 6</td><td data-for="admin rep">Nov 8</td><td data-for="admin rep">JT, AR</td></tr>
+              <tr><td class="name">Behind the bar: latte art</td><td><span class="m-chip" style="background:var(--st-idea)">Idea</span></td><td>Harbor &amp; Pine Coffee</td><td><span class="m-chip" style="background:var(--md-reel)">Instagram Reel</span></td><td data-for="admin rep">&mdash;</td><td data-for="admin rep">&mdash;</td><td data-for="admin rep">&mdash;</td></tr>
+              <tr><td class="name">Fall menu launch reel</td><td><span class="m-chip" style="background:var(--st-review)">For Review</span></td><td>Harbor &amp; Pine Coffee</td><td><span class="m-chip" style="background:var(--md-reel)">Instagram Reel</span></td><td data-for="admin rep">Oct 30</td><td data-for="admin rep">Nov 1</td><td data-for="admin rep">JT</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>Search</b> filters by name as you type.</span></li>
+        <li data-for="admin rep"><i class="pin">2</i><span><b>Sort</b> by clicking any column heading; click again to reverse the order.</span></li>
+        <li><i class="pin">3</i><span><b>Click a row</b> to open the entry.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="note" data-for="client"><span class="note-tag client">Clients</span><span>Your List shows Name, Status, Account and Mediums.</span></div>
+</section>
+
+<section class="sec" id="calendar" data-group="Production" data-for="admin rep">
+  <div class="sec-head">
+    <p class="eyebrow">Workflow view</p>
+    <h2>Calendar</h2>
+  </div>
+  <p class="lede">A month view of everything with a date. Entries are coloured by stage, so a red-orange chip next week means something is still waiting on review.</p>
+  <figure class="plate">
+    <div class="plate-frame">
+      <div class="m-app m-body">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap"><span class="m-btn outline">&lsaquo;</span><span class="m-h">November 2026</span><span class="m-btn outline">&rsaquo;</span><span class="m-btn outline">Today</span><i class="pin">1</i></div>
+        <div class="plate-scroll">
+          <div class="m-cal" style="min-width:560px">
+            <div class="dow">Sun</div><div class="dow">Mon</div><div class="dow">Tue</div><div class="dow">Wed</div><div class="dow">Thu</div><div class="dow">Fri</div><div class="dow">Sat</div>
+            <div><b>1</b><span class="item" style="background:var(--st-review)">Fall menu launch reel</span><i class="pin">2</i></div><div><b>2</b></div><div><b>3</b><span class="item" style="background:var(--st-scheduled)">Member spotlight</span></div><div><b>4</b></div><div><b>5</b></div><div class="today"><b>6</b></div><div><b>7</b></div>
+            <div><b>8</b><span class="item" style="background:var(--st-copy)">3 myths about whitening</span><span class="item" style="background:var(--st-idea)">Holiday hours</span><span class="item" style="background:var(--st-approved)">Gift card promo</span><span class="m-help">+1 more</span><i class="pin">3</i></div><div><b>9</b></div><div><b>10</b></div><div><b>11</b><span class="item" style="background:var(--st-published)">Veterans Day thanks</span></div><div><b>12</b></div><div><b>13</b></div><div><b>14</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>&lsaquo; &rsaquo;</b> change month; <b>Today</b> jumps back to now.</span></li>
+        <li><i class="pin">2</i><span>Entries sit on their <b>Publish Date</b>, or their <b>Scheduled Date</b> if no publish date is set. Click one to open it.</span></li>
+        <li><i class="pin">3</i><span>Up to three show per day, then &ldquo;+n more&rdquo;. Use List sorted by date to see them all.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="note"><span class="note-tag tip">Tip</span><span>An entry with neither date set won't appear here. Open it and fill in <b>Scheduled Date</b> or <b>Publish Date</b>.</span></div>
+</section>
+
+<section class="sec" id="feed" data-group="Production" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Workflow view</p>
+    <h2>Feed</h2>
+  </div>
+  <p class="lede">Every Log comment across the entries you're looking at, newest first. Catch up on a week of conversation without opening each entry.</p>
+  <figure class="plate">
+    <div class="plate-frame">
+      <div class="m-app m-body" style="display:grid;gap:2px">
+        <div class="m-comment"><span class="m-av" style="background:#2f86d6">JT</span><div><div class="m-comment-author" style="font-weight:400">Jordan T. on <b>Fall menu launch reel</b> <span class="m-acct" style="margin-left:4px">Harbor &amp; Pine Coffee</span> <span>Oct 29, 4:40 PM</span> <i class="pin">1</i></div>Uploaded &ldquo;reel-v2.mp4&rdquo; to Media Files (raw).</div></div>
+        <div class="m-comment"><span class="m-av" style="background:#7c5cbf">DR</span><div><div class="m-comment-author" style="font-weight:400">Dana R. on <b>Fall menu launch reel</b> <span class="m-acct" style="margin-left:4px">Harbor &amp; Pine Coffee</span> <span>Oct 29, 2:05 PM</span></div>Love it. Can the pumpkin latte be the first shot?</div></div>
+        <div class="m-comment"><span class="m-av" style="background:#c9463c">AR</span><div><div class="m-comment-author" style="font-weight:400">Alex R. on <b>3 myths about teeth whitening</b> <span class="m-acct" style="margin-left:4px">Lumen Dental</span> <span>Oct 28, 11:30 AM</span></div>First draft is in Copy / Drafts.</div></div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts single">
+        <li><i class="pin">1</i><span>Each line shows who wrote it, on which entry, for which account, and when. <b>Click it to open that entry.</b> The Feed follows the account filter and covers the 60 most recently updated entries.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+</section>
+
+<section class="sec" id="entry" data-group="Production" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">The detail view</p>
+    <h2>Inside a content entry</h2>
+  </div>
+  <p class="lede" data-for="admin rep">Click any card, row or feed line to open the entry. Everything about one piece of content is here. Field edits are saved together when you press <b>Save changes</b>; Log posts and file uploads save immediately.</p>
+  <figure class="plate" data-for="admin rep">
+    <div class="plate-frame plate-scroll">
+      <div class="m-app" style="padding:16px;min-width:600px;background:var(--paper-dim)">
+        <div class="m-modal">
+          <div class="m-modal-h">
+            <div style="flex:1;display:grid;gap:6px">
+              <span style="display:flex;gap:4px;align-items:center"><span class="m-acct">Harbor &amp; Pine Coffee &#9662;</span><i class="pin">1</i></span>
+              <span class="m-title-input">Fall menu launch reel <i class="pin">2</i></span>
+            </div>
+            <span style="color:var(--text-3)">&#10005;</span>
+          </div>
+          <div class="m-modal-b">
+            <div class="m-field"><span class="m-label">Status <i class="pin">3</i></span><span class="m-select">For Review</span></div>
+            <div class="m-field"><span class="m-label">Assignees <i class="pin">4</i></span><span style="display:flex;gap:4px;flex-wrap:wrap"><span class="m-pill active"><span class="m-av" style="background:#2f86d6">JT</span>Jordan T.</span><span class="m-pill"><span class="m-av" style="background:#c9463c">AR</span>Alex R.</span></span></div>
+            <div class="m-field"><span class="m-label">Scheduled Date <i class="pin">5</i></span><span class="m-input filled">10/30/2026</span></div>
+            <div class="m-field"><span class="m-label">Publish Date</span><span class="m-input filled">11/01/2026</span></div>
+            <div class="m-field full"><span class="m-label">Medium(s)</span><span class="m-toggles"><span class="m-toggle" style="background:var(--md-reel);border-color:var(--md-reel);color:#fff">Instagram Reel</span><span class="m-toggle" style="border-color:var(--md-fb);color:var(--md-fb)">Facebook Reel</span><span class="m-toggle" style="background:var(--md-tiktok);border-color:var(--md-tiktok);color:#fff">TikTok Post</span><span class="m-toggle" style="border-color:var(--md-blog);color:var(--text-2)">Blog</span><span class="m-toggle" style="border-color:var(--md-email);color:var(--md-email)">Email Blast</span></span></div>
+            <div class="m-field"><span class="m-label">Next Action Date</span><span class="m-input filled">11/02/2026</span></div>
+            <div class="m-field full"><span class="m-label">Files <i class="pin">6</i></span>
+              <div class="m-files">
+                <div class="m-file-cat"><b>Copy / Drafts</b><span class="m-file-row"><span>caption-v1.docx</span><span>18 KB</span></span><span class="up">+ Upload</span></div>
+                <div class="m-file-cat"><b>Media Files (raw)</b><span class="m-file-row"><span>reel-v2.mp4</span><span>42 MB</span></span><span class="up">+ Upload</span></div>
+              </div>
+            </div>
+            <div class="m-field full" data-for="admin"><span class="m-label">Notebook <i class="pin">7</i></span><span class="m-link">notebook.example.com/harbor-pine/fall-menu</span><span class="m-help">Set in ClickUp &ndash; not editable here.</span></div>
+            <div class="m-field full"><span class="m-label">Social Links <i class="pin">8</i></span><span class="m-social"><span>Instagram</span><span>Facebook</span><span>TikTok</span></span></div>
+          </div>
+          <div style="padding:10px 16px;border-top:1px solid var(--border)">
+            <span class="m-label">Log <i class="pin">9</i></span>
+            <div class="m-comment"><span class="m-av" style="background:#7c5cbf">DR</span><div><div class="m-comment-author">Dana R. <span>Oct 29, 2:05 PM</span></div>Love it. Can the pumpkin latte be the first shot?</div></div>
+            <div style="display:flex;gap:6px;align-items:center"><span class="m-input" style="flex:1">Log an update&hellip;</span><span class="m-btn outline">Post</span></div>
+          </div>
+          <div class="m-modal-f"><span class="m-btn danger">Delete task</span><span style="display:flex;gap:6px;align-items:center"><span class="m-btn outline">Cancel</span><span class="m-btn primary">Save changes</span><i class="pin">10</i></span></div>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>Account badge.</b><span data-for="admin"> Admins can pick a different account from it to move the entry.</span><span data-for="rep"> Team members see it read-only.</span></span></li>
+        <li><i class="pin">2</i><span><b>Title.</b> Click it to rename.</span></li>
+        <li><i class="pin">3</i><span><b>Status</b> is the stage. Use this on a phone, where cards can't be dragged.</span></li>
+        <li><i class="pin">4</i><span><b>Assignees.</b> Tap a name to add or remove them.</span></li>
+        <li><i class="pin">5</i><span><b>ClickUp fields</b>: Scheduled Date, Publish Date, Medium(s), Next Action Date. A field added to the ClickUp list later shows up here on its own.</span></li>
+        <li><i class="pin">6</i><span><b>Files</b>, grouped by category. See <a href="#files">Files and who sees them</a>.</span></li>
+        <li data-for="admin"><i class="pin">7</i><span><b>Notebook</b> <span class="muted">(admins only)</span> is the entry's <b>Notebook Link</b> field from ClickUp, your private reference folder. Edit it in ClickUp.</span></li>
+        <li><i class="pin">8</i><span><b>Social Links</b> to the account's profiles, from its current Brand Foundation. They open the app on a phone.</span></li>
+        <li><i class="pin">9</i><span><b>Log</b> is the entry's comment thread, newest first. It's the ClickUp task's comments, so the ClickUp side sees it too. Uploads add a line here automatically.</span></li>
+        <li><i class="pin">10</i><span><b>Save changes</b> writes field edits to ClickUp. <b>Cancel</b> drops them. <b>Delete task</b> removes the entry.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+
+  <h3 data-for="client">What clients see</h3>
+  <p class="lede" data-for="client">Tap any card or row to open the entry. You'll see where it stands, its shared files, and the conversation about it.</p>
+  <figure class="plate" data-for="client">
+    <div class="plate-frame">
+      <div class="m-app" style="padding:16px;background:var(--paper-dim)">
+        <div class="m-modal" style="max-width:460px">
+          <div class="m-modal-h"><div style="flex:1;display:grid;gap:6px"><span class="m-acct">Harbor &amp; Pine Coffee</span><span class="m-title-input">Fall menu launch reel</span></div><span style="color:var(--text-3)">&#10005;</span></div>
+          <div style="padding:12px 16px;display:grid;gap:10px">
+            <span style="font-size:12.5px"><b>Status:</b> For Review <i class="pin">1</i></span>
+            <span class="m-label">Files <i class="pin">2</i></span>
+            <div class="m-files">
+              <div class="m-file-cat"><b>Published / Final</b><span class="m-help">No files yet.</span></div>
+              <div class="m-file-cat"><b>Client Assets</b><span class="m-file-row"><span>storefront.jpg</span><span>2.1 MB</span></span><span class="up">+ Upload</span></div>
+            </div>
+            <span class="m-label">Social Links</span><span class="m-social"><span>Instagram</span><span>Facebook</span></span>
+            <span class="m-label">Log <i class="pin">3</i></span>
+            <div class="m-comment"><span class="m-av" style="background:#2f86d6">JT</span><div><div class="m-comment-author">Jordan T. <span>Oct 29, 4:40 PM</span></div>Uploaded &ldquo;reel-v2.mp4&rdquo; to Media Files (raw).</div></div>
+            <div style="display:flex;gap:6px;align-items:center"><span class="m-input" style="flex:1">Log an update&hellip;</span><span class="m-btn primary">Post</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>Status</b> shows the current stage. Your team changes it.</span></li>
+        <li><i class="pin">2</i><span><b>Files</b>: finished work appears under <b>Published / Final</b>. Add your own photos and logos under <b>Client Assets</b>.</span></li>
+        <li><i class="pin">3</i><span><b>Log</b>: type feedback or approval and tap <b>Post</b>. Your team sees it on the entry and in their Feed.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+</section>
+
+<section class="sec" id="files" data-group="Production" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Attachments</p>
+    <h2>Files and who sees them</h2>
+  </div>
+  <p class="lede">Each entry has six file categories. Four are working space for the team; two are shared with the client. Files are stored privately in ContentFlow, and clicking a file name downloads it.</p>
+  <div class="files-grid">
+    <div class="files-col" data-for="admin rep">
+      <h4><svg width="16" height="16" aria-hidden="true" style="color:var(--text-2)"><use href="#i-lock"/></svg>Team only</h4>
+      <ul>
+        <li><b>Copy / Drafts</b><span>Captions, scripts, article drafts.</span></li>
+        <li><b>Notes</b><span>Briefs, research, call notes.</span></li>
+        <li><b>Media Extractions</b><span>Clips and stills pulled from longer media.</span></li>
+        <li><b>Media Files (raw)</b><span>Original footage and photos. Promoted ideas drop their attachments here.</span></li>
+      </ul>
+    </div>
+    <div class="files-col">
+      <h4><svg width="16" height="16" aria-hidden="true" style="color:var(--accent-ink)"><use href="#i-share"/></svg>Shared with the client</h4>
+      <ul>
+        <li><b>Published / Final</b><span>The finished piece. Uploaded by the team.</span></li>
+        <li><b>Client Assets</b><span>Logos, photos and reference from the client. Anyone can upload here.</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="note" data-for="admin rep"><span class="note-tag rep">Admin &amp; team</span><span>Upload to any category and delete with the &#10005; beside a file. Every upload posts a line to the Log, such as &ldquo;Uploaded &lsquo;reel-v2.mp4&rsquo; to Media Files (raw).&rdquo;</span></div>
+  <div class="note" data-for="client"><span class="note-tag client">Clients</span><span>You can upload to <b>Client Assets</b> and download anything shown to you. To remove a file you added by mistake, ask your team in the Log.</span></div>
+</section>
+
+<!-- =================================================================== IDEAS -->
+<section class="sec" id="ideas" data-group="Ideas &amp; strategy" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Ideas tab</p>
+    <h2>The Ideas area</h2>
+  </div>
+  <p class="lede">The Ideas tab has three parts, always one tap apart in the strip under the top bar. Everything here belongs to one account at a time.</p>
+  <figure class="plate">
+    <div class="plate-frame">
+      <div class="m-app m-body">
+        <div class="m-subnav"><span class="active">Ideas</span><span>Pillars &amp; Rhythm</span><span>Foundation</span></div>
+        <div style="display:flex;gap:6px;align-items:center"><i class="pin">1</i><span class="m-help">The strip stays put, so you can jump between all three or leave the setup wizard without saving.</span></div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts single">
+        <li><i class="pin">1</i><span><b>Ideas</b> is the inbox, <b>Pillars &amp; Rhythm</b> sets themes and pace, <b>Foundation</b> holds the brand strategy and Prompt Library.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="note" data-for="admin rep"><span class="note-tag tip">Tip</span><span>If the account filter says <b>All accounts</b>, the Ideas tab asks you to choose one first. Pick the account in the filter and the inbox loads.</span></div>
+  <div class="note" data-for="client"><span class="note-tag client">Clients</span><span>With more than one business, the Ideas tab follows the business picked in the top switcher.</span></div>
+  <div class="note"><span class="note-tag tip">First visit</span><span>An account with no rhythm yet shows <b>Let's set up your idea system</b>. <b>Get started</b> opens the Pillars &amp; Rhythm setup below.</span></div>
+</section>
+
+<section class="sec" id="rhythm" data-group="Ideas &amp; strategy" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Ideas &rsaquo; Pillars &amp; Rhythm</p>
+    <h2>Pillars &amp; Rhythm</h2>
+  </div>
+  <p class="lede">Three quick questions and a short list of pillars. The answers set the account's pace and become the columns of the Idea Inbox. Come back any time to change them.</p>
+  <figure class="plate">
+    <div class="plate-frame plate-scroll">
+      <div class="m-app m-body" style="min-width:600px">
+        <div class="two-up" style="grid-template-columns:1fr 1fr">
+          <div style="display:grid;gap:7px">
+            <span class="m-h">Your content rhythm</span>
+            <span class="m-help">Where do your best ideas usually come from? <i class="pin">1</i></span>
+            <div class="m-options"><span class="m-option">Client calls &amp; conversations</span><span class="m-option active">Questions people keep asking me</span><span class="m-option">Voice notes to myself</span></div>
+            <span class="m-help">How much time can you realistically give content each week? <i class="pin">2</i></span>
+            <div class="m-options"><span class="m-option">30 minutes a week</span><span class="m-option active">1 hour a week</span></div>
+            <span class="m-help">Which routine fits best? <i class="pin">3</i></span>
+            <div class="m-options"><span class="m-option active">Quick Capture &ndash; jot ideas whenever, review weekly</span></div>
+          </div>
+          <div style="display:grid;gap:8px;align-content:start">
+            <span class="m-h">Your content pillars <i class="pin">4</i></span>
+            <span class="m-help">3&ndash;5 things you want to be known for. Plain language beats marketing-speak.</span>
+            <div class="m-chiprow"><span class="m-pillar">Seasonal menu <i>&#10005;</i></span><span class="m-pillar">Behind the bar <i>&#10005;</i></span><span class="m-pillar">Local regulars <i>&#10005;</i></span></div>
+            <div style="display:flex;gap:6px"><span class="m-input" style="flex:1">e.g. Business systems</span><span class="m-btn outline">Add</span></div>
+            <span class="m-btn primary" style="width:fit-content;margin-top:8px">Save and start capturing ideas</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>Idea source</b>: calls, voice notes, writing, existing social posts, or questions people ask.</span></li>
+        <li><i class="pin">2</i><span><b>Weekly time</b> sets the pace used for &ldquo;weeks of material&rdquo; (table below).</span></li>
+        <li><i class="pin">3</i><span><b>Routine</b>: Quick Capture, Conversation-to-Content, Batch Creator or Daily Builder.</span></li>
+        <li><i class="pin">4</i><span><b>Pillars</b>: add with <b>Add</b>, remove with &#10005;. Each pillar becomes a column in the inbox.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="matrix-wrap">
+    <table class="matrix" style="min-width:0">
+      <thead><tr><th scope="col">Weekly time</th><th scope="col">Pace used</th><th scope="col">8 ideas waiting =</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">15 minutes a week</th><td>1 idea every 2 weeks</td><td>16 weeks of material</td></tr>
+        <tr><th scope="row">30 minutes a week</th><td>1 idea a week</td><td>8 weeks</td></tr>
+        <tr><th scope="row">1 hour a week</th><td>2 ideas a week</td><td>4 weeks</td></tr>
+        <tr><th scope="row">One dedicated content day</th><td>4 ideas a week</td><td>2 weeks</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="sec" id="inbox" data-group="Ideas &amp; strategy" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Ideas &rsaquo; Ideas</p>
+    <h2>Idea Inbox</h2>
+  </div>
+  <p class="lede">Raw material, sorted by pillar. Nothing here is on the production board until someone presses <b>Promote</b>, so capture freely.</p>
+  <figure class="plate">
+    <div class="plate-frame plate-scroll">
+      <div class="m-app m-body" style="min-width:700px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span class="m-h">Idea Inbox</span><span><span class="m-btn primary">+ Capture</span> <i class="pin">1</i></span></div>
+        <div class="m-banner" style="margin-bottom:10px">You have 4 ideas waiting &ndash; about 2 weeks of material at your current pace. <i class="pin">2</i></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <span style="display:flex;gap:4px;align-items:center"><span class="m-filter"><span class="active"><span class="m-dot" style="background:var(--accent)"></span>Active</span><span><span class="m-dot" style="background:#a8710f"></span>Needs Review</span><span><span class="m-dot" style="background:var(--text-3)"></span>Archived</span><span><span class="m-dot" style="background:var(--ok)"></span>Promoted</span></span><i class="pin">3</i></span>
+          <span class="m-btn outline">Sort: Newest first</span>
+        </div>
+        <div class="m-board">
+          <div class="m-col" style="width:200px">
+            <div class="m-col-h" style="text-transform:none;letter-spacing:0;font-size:12px">Seasonal menu<span class="m-count">2</span><i class="pin">4</i></div>
+            <div class="m-card"><span class="m-badges"><span class="m-badge">Link</span><span class="m-badge review">Needs review</span></span><span class="m-card-title">Competitor's cider launch</span><span class="m-help">instagram.com/p/&hellip;</span><span style="display:flex;justify-content:space-between;align-items:center"><span class="m-btn outline">Promote</span><span style="color:var(--text-3)">&#10005;</span><i class="pin">5</i></span></div>
+            <div class="m-card"><span class="m-card-title">Pumpkin latte taste test</span><span class="m-help">Staff blind-taste three versions on camera.</span><span style="display:flex;justify-content:space-between"><span class="m-btn outline">Promote</span><span style="color:var(--text-3)">&#10005;</span></span></div>
+          </div>
+          <div class="m-col" style="width:200px">
+            <div class="m-col-h" style="text-transform:none;letter-spacing:0;font-size:12px">Behind the bar<span class="m-count">1</span></div>
+            <div class="m-card"><span class="m-badges"><span class="m-badge private"><svg width="9" height="9" aria-hidden="true" style="vertical-align:-1px"><use href="#i-lock"/></svg> Private</span><span class="m-badge">Video</span></span><span class="m-card-title">Morning open, 6am timelapse</span><span style="display:flex;justify-content:space-between"><span class="m-btn outline">Promote</span><span style="color:var(--text-3)">&#10005;</span></span></div>
+          </div>
+          <div class="m-col" style="width:200px">
+            <div class="m-col-h" style="text-transform:none;letter-spacing:0;font-size:12px">Unsorted<span class="m-count">1</span></div>
+            <div class="m-card"><span class="m-badges"><span class="m-badge">Note</span></span><span class="m-card-title">Regular asked if we do catering</span><span style="display:flex;justify-content:space-between"><span class="m-btn outline">Promote</span><span style="color:var(--text-3)">&#10005;</span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>+ Capture</b> opens the capture form (below).</span></li>
+        <li><i class="pin">2</i><span><b>Pipeline health</b> turns the idea count into weeks of material at this account's pace.</span></li>
+        <li><i class="pin">3</i><span><b>Filters</b>: Active and Needs Review show the pillar columns; Archived and Promoted are simple lists. <b>Sort</b> flips newest/oldest.</span></li>
+        <li><i class="pin">4</i><span><b>Pillar columns</b>, plus <b>Unsorted</b>. Drag a card to another column to re-file it (desktop).</span></li>
+        <li><i class="pin">5</i><span><b>Promote</b> turns the idea into a content entry. <b>&#10005;</b> archives it; restore it from the Archived filter.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+
+  <div class="two-up">
+    <figure class="plate">
+      <div class="plate-frame">
+        <div class="plate-label"><span class="dots"><i></i><i></i><i></i></span><span>Capture form</span></div>
+        <div class="m-app m-body" style="display:grid;gap:7px">
+          <div style="display:flex;gap:5px;align-items:center"><span class="m-option" style="flex:1;text-align:center">Idea</span><span class="m-option active" style="flex:1;text-align:center">Link</span><span class="m-option" style="flex:1;text-align:center">Note</span><i class="pin">1</i></div>
+          <span class="m-input filled">Competitor's cider launch</span>
+          <span class="m-input filled">https://instagram.com/p/&hellip;</span>
+          <span class="m-input" style="min-height:40px">Any more detail? (optional)</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="m-select">Seasonal menu</span><span class="m-input">Category (optional)</span><i class="pin">2</i></div>
+          <span style="font-size:11.5px;display:flex;gap:6px;align-items:center"><span class="m-check"></span>Private to me <i class="pin">3</i></span>
+          <span style="display:flex;gap:6px"><span class="m-btn primary">Save</span><span class="m-btn outline">Cancel</span></span>
+        </div>
+      </div>
+      <figcaption>
+        <ol class="callouts single">
+          <li><i class="pin">1</i><span><b>Idea</b>, <b>Link</b> or <b>Note</b>. A Link asks for the URL and starts flagged <b>Needs review</b>, so it gets looked at.</span></li>
+          <li><i class="pin">2</i><span>File it under a <b>pillar</b> now or leave it Unsorted. <b>Category</b> is a free label for your own grouping.</span></li>
+          <li><i class="pin">3</i><span><b>Private to me</b> hides the idea from everyone but you (admins can still see it).</span></li>
+        </ol>
+      </figcaption>
+    </figure>
+    <div class="prose">
+      <h3 style="margin:0">An idea's life</h3>
+      <div class="life" style="grid-template-columns:auto auto">
+        <span class="life-node">Captured</span><span class="life-arrow">lands in Active (Links also in Needs Review)</span>
+        <span class="life-node">Opened</span><span class="life-arrow">edit title, details, link, pillar, category; attach files</span>
+        <span class="life-node end">Promoted</span><span class="life-arrow">becomes an entry in the first stage</span>
+        <span class="life-node">Archived</span><span class="life-arrow">kept under Archived; <b>Restore</b> brings it back</span>
+      </div>
+      <p>When you promote, the idea's details, link and category are copied into the new entry's description, and any files attached to the idea move to the entry's <b>Media Files (raw)</b>.</p>
+      <p>Click an idea card to open it. <b>Edit</b> changes any detail, and the pillar picker there is how you re-file an idea on a phone. <b>+ Add file</b> keeps photos, voice memos or old media with the idea.</p>
+    </div>
+  </div>
+  <div class="note" data-for="client"><span class="note-tag client">Clients</span><span>When you promote an idea, ContentFlow creates the entry for you and it appears on your Board in the first stage.</span></div>
+</section>
+
+<section class="sec" id="foundation" data-group="Ideas &amp; strategy" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Ideas &rsaquo; Foundation</p>
+    <h2>Brand Foundation</h2>
+  </div>
+  <p class="lede">The account's strategy on one page: positioning, audience, offers, voice, and ready-to-copy lines. Keep several profiles as the brand evolves; one is always marked current.</p>
+  <figure class="plate">
+    <div class="plate-frame plate-scroll">
+      <div class="m-app m-body" style="min-width:620px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <span style="display:flex;gap:8px;align-items:center"><span class="m-h">Brand Foundation</span><span class="m-select">2026 Positioning &#9733;</span><i class="pin">1</i></span>
+          <span style="display:flex;gap:5px;align-items:center;flex-wrap:wrap" data-for="admin rep"><span class="m-btn outline">+ New profile</span><span class="m-btn outline">Edit</span><span class="m-btn outline">Duplicate</span><span style="color:var(--text-3);padding:0 4px">&#10005;</span><i class="pin">2</i></span>
+        </div>
+        <div class="two-up" style="grid-template-columns:1fr 1fr">
+          <div style="display:grid;gap:8px;align-content:start">
+            <span class="m-sub-h" style="margin:0">Positioning</span>
+            <div class="m-copyblock"><span class="hd"><span class="m-label">Elevator pitch</span><span class="m-link">Copy <i class="pin">3</i></span></span><span>A neighbourhood coffee bar that roasts in-house and remembers your order.</span></div>
+            <div class="m-copyblock"><span class="hd"><span class="m-label">Value proposition</span><span class="m-link">Copy</span></span><span>Small-batch coffee, made by people who know your name.</span></div>
+            <span class="m-sub-h" style="margin:4px 0 0">Audience</span>
+            <div class="m-panel" style="font-size:11.5px"><b>Remote workers</b><br><span class="m-help">Pain points: noisy cafés, weak Wi-Fi</span></div>
+          </div>
+          <div style="display:grid;gap:8px;align-content:start">
+            <span class="m-sub-h" style="margin:0">Voice &amp; Keywords</span>
+            <span style="font-size:11.5px"><span class="m-label">Voice</span> warm, local, a little nerdy <span class="m-help">(avoid: corporate jargon)</span></span>
+            <div class="m-copyblock"><span class="hd"><span class="m-label">Hook lines</span><span class="m-link">Copy</span></span><span>Your barista has opinions.</span></div>
+            <span class="m-sub-h" style="margin:4px 0 0">Social Links <i class="pin">4</i></span>
+            <span class="m-social"><span>Instagram</span><span>TikTok</span><span>LinkedIn</span></span>
+            <span class="m-sub-h" style="margin:4px 0 0" data-for="admin">Notebook <i class="pin">5</i></span>
+            <span class="m-link" data-for="admin">notebook.example.com/harbor-pine</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>Profile switcher.</b> &#9733; marks the current profile, the one social links and prompts use.</span></li>
+        <li data-for="admin rep"><i class="pin">2</i><span><b>+ New profile</b>, <b>Edit</b>, <b>Duplicate</b> (pre-fills &ldquo;Copy of &hellip;&rdquo;) and <b>&#10005;</b> delete. Viewing an older profile adds <b>Set as current</b>.</span></li>
+        <li><i class="pin">3</i><span><b>Copy</b> beside the pitch, value proposition, keywords, CTA lines and hook lines puts the text on your clipboard.</span></li>
+        <li><i class="pin">4</i><span><b>Social Links</b> open each profile. They also appear inside every entry for this account.</span></li>
+        <li data-for="admin"><i class="pin">5</i><span><b>Notebook</b> <span class="muted">(admins only)</span>: a link to the account's private notes, typed in here when editing the profile.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+  <h3>What a profile holds</h3>
+  <div class="matrix-wrap">
+    <table class="matrix" style="min-width:0">
+      <tbody>
+        <tr><th scope="row">Positioning</th><td style="white-space:normal">Niche, what the business does, elevator pitch, value proposition</td></tr>
+        <tr><th scope="row">Audience</th><td style="white-space:normal">Buckets, each with demographics, psychographics, pain points and goals</td></tr>
+        <tr><th scope="row">Expertise &amp; Offer</th><td style="white-space:normal">Expertise areas; offers with features, advantages and benefits; proof points</td></tr>
+        <tr><th scope="row">Voice &amp; Keywords</th><td style="white-space:normal">Voice words, what to avoid, keywords, CTA lines and hook lines (one per line)</td></tr>
+        <tr><th scope="row">Social Links</th><td style="white-space:normal">Instagram, Facebook, TikTok, X, YouTube and Pinterest take the username. LinkedIn takes the full profile URL.</td></tr>
+        <tr data-for="admin"><th scope="row">Notebook</th><td style="white-space:normal">Admin-only link to private notes</td></tr>
+        <tr><th scope="row">Prompt Library</th><td style="white-space:normal">Reusable prompts that fill in from this profile (next section)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note" data-for="admin rep"><span class="note-tag tip">Tip</span><span>Paste a full profile link or an @handle into a social field and ContentFlow trims it to the username. Deleting the current profile makes the next most recent one current, so an account always has one.</span></div>
+  <div class="note" data-for="client"><span class="note-tag client">Clients</span><span>The Foundation is read-only for you, and every Copy button works. If something is out of date, tell your team in Messages.</span></div>
+</section>
+
+<section class="sec" id="prompts" data-group="Ideas &amp; strategy" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Inside each Foundation profile</p>
+    <h2>Prompt Library</h2>
+  </div>
+  <p class="lede">Save a prompt once with <span class="tag">{{tags}}</span> in it. ContentFlow fills the tags from the profile, so the prompt is ready to paste into whatever AI tool you use.</p>
+  <div class="transform">
+    <div><span class="m-label">Template</span><p>Write an Instagram caption for a business with this positioning: <span class="tag">{{elevator_pitch}}</span>. Voice: <span class="tag">{{voice_adjectives}}</span>. Avoid: <span class="tag">{{voice_avoid}}</span>. End with one of these: <span class="tag">{{cta_lines}}</span></p><span class="m-link">Copy template</span></div>
+    <div class="arrow"><span class="arrow-wide">fills in &rarr;</span><span class="arrow-narrow">&darr; fills in</span></div>
+    <div><span class="m-label">Ready to paste</span><p>Write an Instagram caption for a business with this positioning: <span class="fill-val">A neighbourhood coffee bar that roasts in-house and remembers your order.</span> Voice: <span class="fill-val">warm, local, a little nerdy</span>. Avoid: <span class="fill-val">corporate jargon</span>. End with one of these: <span class="fill-val">Stop by this week.</span></p><span class="m-link">Copy resolved</span></div>
+  </div>
+  <div class="prose">
+    <p><b>Using a prompt:</b> click its name to expand it, then <b>Copy resolved</b> for the filled-in version or <b>Copy template</b> for the raw one.</p>
+    <p data-for="admin rep"><b>Adding one:</b> <b>+ New prompt</b>, give it a name, write the template using the tags listed above the box, add a note on when to use it, then <b>Add prompt</b>. Expanded prompts have <b>Edit</b> and <b>Delete</b>.</p>
+  </div>
+  <div class="tags-list" aria-label="Available tags">
+    <span class="tag">{{niche}}</span><span class="tag">{{elevator_pitch}}</span><span class="tag">{{value_proposition}}</span><span class="tag">{{business_description}}</span><span class="tag">{{expertise_areas}}</span><span class="tag">{{proof_points}}</span><span class="tag">{{voice_adjectives}}</span><span class="tag">{{voice_avoid}}</span><span class="tag">{{keywords}}</span><span class="tag">{{cta_lines}}</span><span class="tag">{{hook_lines}}</span><span class="tag">{{audience_buckets}}</span><span class="tag">{{offers}}</span>
+  </div>
+  <div class="note" data-for="client"><span class="note-tag client">Clients</span><span>You can open and copy every prompt; your team adds and edits them.</span></div>
+</section>
+
+<section class="sec" id="messages" data-group="Ideas &amp; strategy" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Talking to each other</p>
+    <h2>Log vs. Messages</h2>
+  </div>
+  <p class="lede">There are two places to write. Pick by asking: is this about one piece of content, or the account in general?</p>
+  <div class="compare">
+    <div>
+      <h4>Log</h4>
+      <dl>
+        <dt>About</dt><dd>One content entry</dd>
+        <dt>Where</dt><dd>Inside the entry, under <b>Log</b></dd>
+        <dt>Also in</dt><dd>The Feed, and the ClickUp task's comments</dd>
+        <dt>Use for</dt><dd>&ldquo;Swap the first shot&rdquo;, &ldquo;Approved&rdquo;, &ldquo;Draft is up&rdquo;</dd>
+      </dl>
+    </div>
+    <div>
+      <h4>Messages</h4>
+      <dl>
+        <dt>About</dt><dd>The whole account</dd>
+        <dt>Where</dt><dd>Dashboard, with one account selected</dd>
+        <dt>Also in</dt><dd>ContentFlow only, not ClickUp</dd>
+        <dt>Use for</dt><dd>&ldquo;We're closed the 24th&rdquo;, &ldquo;New logo attached to&hellip;&rdquo;, questions</dd>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== YOU -->
+<section class="sec" id="preferences" data-group="You &amp; your device" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Settings menu</p>
+    <h2>Profile, theme and sync</h2>
+  </div>
+  <div class="two-up">
+    <figure class="plate">
+      <div class="plate-frame">
+        <div class="plate-label"><span class="dots"><i></i><i></i><i></i></span><span>Settings &rsaquo; Edit profile</span></div>
+        <div class="m-app m-body" style="display:grid;gap:8px">
+          <span class="m-label">Display name <i class="pin">1</i></span><span style="display:flex;gap:6px"><span class="m-input filled" style="flex:1">Jordan Taylor</span><span class="m-btn outline">Save</span></span>
+          <span class="m-label">Email <i class="pin">2</i></span><span style="display:flex;gap:6px"><span class="m-input filled" style="flex:1">jordan@agency.co</span><span class="m-btn outline">Save</span></span>
+          <span class="m-label">New password <i class="pin">3</i></span><span class="m-input">At least 6 characters</span><span class="m-input">Confirm new password</span><span class="m-btn outline" style="width:fit-content">Update password</span>
+        </div>
+      </div>
+      <figcaption>
+        <ol class="callouts single">
+          <li><i class="pin">1</i><span><b>Display name</b> is how you appear to others.</span></li>
+          <li><i class="pin">2</i><span><b>Email</b>: a confirmation link goes to the new address. The change only takes effect once you click it.</span></li>
+          <li><i class="pin">3</i><span><b>Password</b>: at least 6 characters, typed twice.</span></li>
+        </ol>
+      </figcaption>
+    </figure>
+    <div class="prose">
+      <h3 style="margin:0">The rest of the menu</h3>
+      <p><b>Switch to dark / light mode</b> is remembered on this device. Until you choose, ContentFlow follows your device's setting.</p>
+      <p><b>Sync now</b> reloads everything from ClickUp. Use it after someone edits a task directly in ClickUp.</p>
+      <p data-for="admin rep"><b>Disconnect ClickUp</b> unlinks your ClickUp login on this device. You'll be asked to connect again next time.</p>
+      <p data-for="admin"><b>Admin panel</b> opens people and account management (see <a href="#admin-panel">Admin panel</a>).</p>
+      <p><b>Sign out</b> ends your session on this device.<span data-for="admin rep"> It also unlinks ClickUp, so you'll connect again when you next sign in.</span></p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="mobile" data-group="You &amp; your device" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">On the go</p>
+    <h2>Using ContentFlow on your phone</h2>
+  </div>
+  <div class="phone-row">
+    <div class="m-phone" aria-hidden="true">
+      <div class="m-app">
+        <div class="m-top" style="padding:10px 10px 8px;gap:8px">
+          <span class="m-brand"><span class="m-mark"><svg><use href="#i-mark"/></svg></span>ContentFlow</span>
+          <div class="m-tabs" style="flex-wrap:nowrap;overflow:hidden;width:100%"><span class="m-tab"><span style="color:var(--tab-ideas);display:inline-flex"><svg><use href="#i-ideas"/></svg></span>Ideas</span><span class="m-tab"><span style="color:var(--tab-dash);display:inline-flex"><svg><use href="#i-dash"/></svg></span>Dashboard</span><span class="m-tab active"><span style="color:var(--tab-work);display:inline-flex"><svg><use href="#i-board"/></svg></span>Board</span><span class="m-tab">List</span></div>
+          <div style="display:flex;gap:6px;width:100%;justify-content:flex-end;align-items:center"><span class="m-btn primary">+ New</span><span class="m-icon"><svg><use href="#i-help"/></svg></span><span class="m-icon"><svg><use href="#i-gear"/></svg></span></div>
+          <span class="m-select-dark" style="width:100%;justify-content:space-between">All accounts</span>
+        </div>
+        <div style="padding:10px;display:flex;gap:8px;overflow:hidden">
+          <div class="m-col" style="width:190px"><div class="m-col-h"><span class="m-dot" style="background:var(--st-idea)"></span>Idea<span class="m-count">2</span></div><div class="m-card"><span class="m-acct">Harbor &amp; Pine</span><span class="m-card-title">Behind the bar: latte art</span><div class="m-chips"><span class="m-chip" style="background:var(--md-reel)">Instagram Reel</span></div></div><div class="m-card"><span class="m-acct">Northside Fitness</span><span class="m-card-title">January challenge teaser</span></div></div>
+          <div class="m-col" style="width:40px;opacity:0.6"></div>
+        </div>
+      </div>
+    </div>
+    <div class="prose">
+      <p><b>Swipe the tab bar</b> sideways to reach Calendar and Feed. The Ideas strip scrolls the same way.</p>
+      <p><b>Swipe the Board</b> left and right to see more stages.</p>
+      <p data-for="admin rep"><b>Change a stage</b> by opening the entry and using <b>Status</b>; dragging cards only works with a mouse.</p>
+      <p><b>Re-file an idea</b> by opening it, tapping <b>Edit</b> and choosing a pillar.</p>
+      <p><b>Social links</b> open the Instagram, TikTok or other app directly when it's installed.</p>
+      <p><b>Add it to your home screen</b>: in Safari tap Share, then <b>Add to Home Screen</b>. ContentFlow's icon appears with your apps.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== ADMIN -->
+<section class="sec" id="admin-panel" data-group="Admin" data-for="admin">
+  <div class="sec-head">
+    <p class="eyebrow">Settings &rsaquo; Admin panel</p>
+    <h2>Admin panel</h2>
+  </div>
+  <p class="lede">Two tabs: <b>Accounts</b> controls which client accounts are live in ContentFlow, and <b>Invite &amp; Users</b> controls who can sign in and what they see. <b>Back to board</b> returns you to the app.</p>
+  <figure class="plate">
+    <div class="plate-frame plate-scroll">
+      <div class="m-app" style="min-width:620px">
+        <div class="m-top"><span class="m-brand"><span class="m-mark"><svg><use href="#i-mark"/></svg></span>ContentFlow &ndash; Admin</span><div class="m-tabs"><span class="m-tab active">Accounts</span><span class="m-tab">Invite &amp; Users</span></div><span class="m-spacer"></span><span class="m-btn ghost">Back to board</span><span class="m-btn ghost">Sign out</span></div>
+        <div class="m-body" style="display:grid;gap:8px;max-width:560px">
+          <span class="m-h">Accounts</span>
+          <span style="display:flex;gap:6px;align-items:center"><span class="m-input" style="width:220px">Search accounts&hellip;</span><i class="pin">1</i></span>
+          <div class="m-panel" style="display:grid;gap:8px">
+            <span style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-weight:600;color:var(--heading)">&#9662; Harbor &amp; Pine Coffee <span class="m-count">3 users</span> <i class="pin">2</i></span><span style="display:flex;gap:6px;align-items:center"><span class="m-toggle-sw on"></span><i class="pin">3</i></span></span>
+            <span class="m-chiprow"><span class="m-pillar" style="font-weight:400">dana@harborpine.co &middot; client</span><span class="m-pillar" style="font-weight:400">jordan@agency.co &middot; rep</span><span class="m-pillar" style="font-weight:400">alex@agency.co &middot; rep</span></span>
+            <span style="display:flex;gap:6px;align-items:center"><span class="m-btn outline" style="width:fit-content">Invite someone to this account</span><i class="pin">4</i></span>
+          </div>
+          <div class="m-panel" style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;color:var(--heading)">&#9656; Lumen Dental <span class="m-count">2 users</span></span><span class="m-toggle-sw on"></span></div>
+          <div class="m-panel" style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;color:var(--heading)">&#9656; Old Town Bakery <span class="m-help">(inactive)</span> <span class="m-count">0 users</span></span><span class="m-toggle-sw"></span></div>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>Search</b> the list, which comes from ClickUp's <b>Companies &amp; Accounts</b> list.</span></li>
+        <li><i class="pin">2</i><span><b>Click an account</b> to expand it and see everyone with access and their role.</span></li>
+        <li><i class="pin">3</i><span><b>Active switch.</b> Off hides the account everywhere and locks team members and clients out of it. Nothing is deleted; switch it back on any time.</span></li>
+        <li><i class="pin">4</i><span><b>Invite someone to this account</b> jumps to the invite form with this account filled in.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+  <figure class="plate">
+    <div class="plate-frame plate-scroll">
+      <div class="m-app" style="min-width:620px">
+        <div class="m-top"><span class="m-brand"><span class="m-mark"><svg><use href="#i-mark"/></svg></span>ContentFlow &ndash; Admin</span><div class="m-tabs"><span class="m-tab">Accounts</span><span class="m-tab active">Invite &amp; Users</span></div></div>
+        <div class="m-body" style="display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);gap:16px">
+          <div style="display:grid;gap:6px;align-content:start">
+            <span class="m-h">Invite someone</span>
+            <span class="m-label">Email</span><span class="m-input filled">sam@northsidefit.com</span>
+            <span class="m-label">Name (optional)</span><span class="m-input filled">Sam Ortiz</span>
+            <span class="m-label">Role <i class="pin">1</i></span><span class="m-select">client</span>
+            <span class="m-label">MKC ID(s) from Companies &amp; Accounts, comma-separated <i class="pin">2</i></span><span class="m-input filled mono">86exmpl01, 86exmpl02</span>
+            <span class="m-btn primary" style="width:fit-content">Send invite</span>
+          </div>
+          <div style="display:grid;gap:6px;align-content:start">
+            <span class="m-h">Everyone with access <i class="pin">3</i></span>
+            <table class="m-table"><thead><tr><th>Email</th><th>Role</th><th>Accounts</th></tr></thead><tbody>
+              <tr><td>dana@harborpine.co</td><td>client</td><td>Harbor &amp; Pine Coffee</td></tr>
+              <tr><td>jordan@agency.co</td><td>rep</td><td>Harbor &amp; Pine, Lumen Dental</td></tr>
+              <tr><td>owner@agency.co</td><td>admin</td><td>--</td></tr>
+            </tbody></table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>Role</b>: <code>admin</code>, <code>rep</code> (team member) or <code>client</code>.</span></li>
+        <li><i class="pin">2</i><span><b>MKC ID(s)</b>: the ID of each account they should see, from the account's record in ClickUp's Companies &amp; Accounts. Separate several with commas. Admins don't need one.</span></li>
+        <li><i class="pin">3</i><span><b>Everyone with access</b> lists every user, their role and their accounts.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="note"><span class="note-tag heads-up">Heads-up</span><span>Access is set when you send the invite, so include every account the person needs. The panel can't yet add an account to someone who's already been invited.</span></div>
+</section>
+
+<section class="sec" id="admin-recipes" data-group="Admin" data-for="admin">
+  <div class="sec-head">
+    <p class="eyebrow">Step by step</p>
+    <h2>Common admin jobs</h2>
+  </div>
+  <div class="recipes">
+    <div class="recipe">
+      <h4>Onboard a new client</h4>
+      <ol>
+        <li>In ClickUp, open the client in <b>Companies &amp; Accounts</b> and copy its <b>MKC ID</b>.</li>
+        <li>ContentFlow: <b>Settings &rsaquo; Admin panel &rsaquo; Invite &amp; Users</b>.</li>
+        <li>Enter their email and name, role <code>client</code>, paste the MKC ID. Running several businesses? Add each ID, comma-separated.</li>
+        <li><b>Send invite</b>.</li>
+        <li>On <b>Accounts</b>, check the account's switch is on.</li>
+        <li>Fill in the Brand Foundation and Pillars &amp; Rhythm so they arrive to a ready workspace.</li>
+      </ol>
+    </div>
+    <div class="recipe">
+      <h4>Add a team member</h4>
+      <ol>
+        <li><b>Invite &amp; Users</b>, role <code>rep</code>, with the MKC ID of each account they'll work on.</li>
+        <li>After signing in they'll connect their own ClickUp login. It must already have access to the Client Master Content Strategy Workflow list in ClickUp.</li>
+      </ol>
+      <span class="where">To make another admin, choose role <code>admin</code>; no MKC ID needed.</span>
+    </div>
+    <div class="recipe">
+      <h4>Pause a client account</h4>
+      <ol>
+        <li><b>Admin panel &rsaquo; Accounts</b>, search for it.</li>
+        <li>Switch it off. It disappears from every filter and its team members and clients lose access.</li>
+        <li>Switch it back on to restore everything as it was.</li>
+      </ol>
+    </div>
+    <div class="recipe">
+      <h4>Move an entry to the right account</h4>
+      <ol>
+        <li>Open the entry.</li>
+        <li>Click the account badge above the title and choose the account.</li>
+        <li><b>Save changes</b>.</li>
+      </ol>
+      <span class="where">An entry belongs to the account whose MKC ID matches its Related Account ID field in ClickUp.</span>
+    </div>
+    <div class="recipe">
+      <h4>Keep private reference notes</h4>
+      <ol>
+        <li><b>For one entry:</b> fill in its <b>Notebook Link</b> field in ClickUp. It shows in the entry for admins.</li>
+        <li><b>For a whole brand:</b> Ideas &rsaquo; Foundation &rsaquo; <b>Edit</b> &rsaquo; <b>Notebook</b>, then Save.</li>
+      </ol>
+      <span class="where">Team members and clients never see Notebook links.</span>
+    </div>
+    <div class="recipe">
+      <h4>Check what a role sees</h4>
+      <ol>
+        <li>Use the role switch at the top of this guide.</li>
+        <li>Every screen above redraws to show only that role's view and controls.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================================== HELP -->
+<section class="sec" id="help" data-group="Help" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">When something looks off</p>
+    <h2>Troubleshooting</h2>
+  </div>
+  <div class="faq">
+    <details data-for="admin rep"><summary>&ldquo;Could not reach ClickUp&rdquo; or the board looks out of date</summary><div><p>Open <b>Settings &rsaquo; Sync now</b>. If the message comes back, choose <b>Disconnect ClickUp</b>, then connect again with the ClickUp login that has access to the workflow list.</p></div></details>
+    <details><summary>Something I changed in ClickUp isn't showing</summary><div><p>ContentFlow loads from ClickUp when you open it. <b>Settings &rsaquo; Sync now</b> pulls the latest without reloading.</p></div></details>
+    <details data-for="admin rep"><summary>The Ideas tab says &ldquo;Pick an account&rdquo;</summary><div><p>Ideas belong to one account. Choose that account in the filter at the top.</p></div></details>
+    <details data-for="client"><summary>I see &ldquo;Almost there&rdquo; after signing in</summary><div><p>Your login works, but your admin hasn't linked your business yet. It fills in by itself once they do.</p></div></details>
+    <details><summary>An account is missing from my filter</summary><div><p>Either it's switched off in the Admin panel, or you aren't assigned to it. Ask an admin.</p></div></details>
+    <details data-for="admin rep"><summary>I can't drag cards on my phone</summary><div><p>Touch screens don't support dragging here. Open the entry and change <b>Status</b>. For ideas, open the idea, tap <b>Edit</b> and choose a pillar.</p></div></details>
+    <details data-for="admin rep"><summary>It asked &ldquo;Move to For Review anyway?&rdquo;</summary><div><p>The entry has no files under Copy / Drafts or Media Files (raw). Upload the draft first, or confirm to move it anyway.</p></div></details>
+    <details data-for="client"><summary>There's no Upload button in some file sections</summary><div><p>Clients upload to <b>Client Assets</b>. Published / Final is filled by your team.</p></div></details>
+    <details data-for="admin"><summary>The Notebook link isn't showing on an entry</summary><div><p>It appears only when the entry's <b>Notebook Link</b> field is filled in ClickUp, and only for admins.</p></div></details>
+    <details><summary>An entry isn't on the Calendar</summary><div><p>The Calendar uses Publish Date, then Scheduled Date. Fill in one of them.</p></div></details>
+    <details><summary>My new email address isn't working yet</summary><div><p>Click the confirmation link sent to the new address. Until then, sign in with the old one.</p></div></details>
+  </div>
+</section>
+
+<section class="sec" id="glossary" data-group="Help" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">Words used in ContentFlow</p>
+    <h2>Glossary</h2>
+  </div>
+  <dl class="gloss">
+    <dt>Entry</dt><dd>One piece of content in production. Called a task in ClickUp and on some buttons.</dd>
+    <dt>Stage</dt><dd>Where an entry is in the workflow (Idea through Published). Shown as Status.</dd>
+    <dt>Medium</dt><dd>Where it will be posted: Instagram Reel, Blog, Email Blast and so on.</dd>
+    <dt>Account</dt><dd>A client business. Matched to entries by its MKC ID.</dd>
+    <dt>MKC ID</dt><dd>An account's ID from ClickUp's Companies &amp; Accounts list, used when inviting people.</dd>
+    <dt>Next Action Date</dt><dd>When the next step on an entry is due. Drives Overdue, Due this week and Stuck.</dd>
+    <dt>Stuck</dt><dd>An open entry with no Next Action Date and no activity for 7+ days.</dd>
+    <dt>Pillar</dt><dd>One of the 3&ndash;5 themes an account posts about.</dd>
+    <dt>Rhythm</dt><dd>An account's idea source, weekly time and routine.</dd>
+    <dt>Idea</dt><dd>Raw material in the Idea Inbox. Not production work until promoted.</dd>
+    <dt>Promote</dt><dd>Turn an idea into a production entry.</dd>
+    <dt>Foundation profile</dt><dd>A saved version of the brand strategy. &#9733; marks the current one.</dd>
+    <dt>Prompt tag</dt><dd>A placeholder like <span class="tag">{{keywords}}</span> filled from the Foundation.</dd>
+    <dt>Log</dt><dd>An entry's comment thread, shared with ClickUp.</dd>
+    <dt>Messages</dt><dd>The account-wide conversation on the Dashboard.</dd>
+    <dt data-for="admin">Notebook</dt><dd data-for="admin">An admin-only link to private reference notes.</dd>
+  </dl>
+</section>
+
+    <footer class="footer"><span>ContentFlow Guide &middot; matches ContentFlow v1.25</span><span>Example accounts and people are fictional.</span></footer>
+  </main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var ROLES = ['admin', 'rep', 'client'];
+  var ROLE_LABEL = { admin: 'Admin', rep: 'Team', client: 'Client' };
+  var BLURBS = {
+    all: 'Showing everything. Each section is tagged with the roles it applies to.',
+    admin: '<strong>Admin.</strong> You run the workspace: people, accounts, and all the content in between.',
+    rep: '<strong>Team member.</strong> You produce content for the accounts you’re assigned. ContentFlow calls this role “rep”.',
+    client: '<strong>Client.</strong> Follow your content, add ideas and assets, and talk to your team.'
+  };
+  var ROLE_KEY = 'contentflow.guide.role';
+  var THEME_KEY = 'contentflow.theme'; // same key the app uses, so an embedded guide matches the app
+
+  function safeGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+  function safeSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} }
+
+  var params = {};
+  try { new URLSearchParams(window.location.search).forEach(function (v, k) { params[k] = v; }); } catch (e) {}
+  var embed = params.embed === '1';
+  if (embed) document.body.classList.add('embed');
+
+  // ---- Theme: explicit param (from the app) > the app's saved choice > device setting
+  function applyTheme(t) {
+    if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t);
+    else document.documentElement.removeAttribute('data-theme');
+  }
+  applyTheme(params.theme || safeGet(THEME_KEY));
+  window.addEventListener('storage', function (e) { if (e.key === THEME_KEY) applyTheme(e.newValue); });
+
+  // ---- Who-this-applies-to chips under each section heading
+  var sections = Array.prototype.slice.call(document.querySelectorAll('section.sec'));
+  sections.forEach(function (sec) {
+    var forList = (sec.getAttribute('data-for') || '').split(/\s+/);
+    var head = sec.querySelector('.sec-head');
+    if (!head) return;
+    var who = document.createElement('div');
+    who.className = 'who';
+    who.setAttribute('aria-label', 'Applies to');
+    ROLES.forEach(function (r) {
+      var on = forList.indexOf(r) !== -1;
+      var chip = document.createElement('span');
+      chip.className = 'who-chip' + (on ? ' on' : '');
+      chip.textContent = ROLE_LABEL[r];
+      if (!on) chip.setAttribute('aria-label', ROLE_LABEL[r] + ' (not applicable)');
+      who.appendChild(chip);
+    });
+    head.appendChild(who);
+  });
+
+  // ---- Contents (desktop rail + phone select), rebuilt whenever the role changes
+  var toc = document.getElementById('toc');
+  var tocSelect = document.getElementById('toc-select');
+  var tocLinks = {};
+  function buildToc() {
+    var groups = [];
+    var byName = {};
+    sections.forEach(function (sec) {
+      if (sec.hidden) return;
+      var g = sec.getAttribute('data-group') || 'Guide';
+      if (!byName[g]) { byName[g] = []; groups.push(g); }
+      byName[g].push(sec);
+    });
+    toc.innerHTML = '';
+    tocSelect.innerHTML = '';
+    tocLinks = {};
+    groups.forEach(function (g) {
+      var wrap = document.createElement('div');
+      wrap.className = 'toc-group';
+      var title = document.createElement('p');
+      title.className = 'toc-group-title';
+      title.textContent = g;
+      var ul = document.createElement('ul');
+      var og = document.createElement('optgroup');
+      og.label = g;
+      byName[g].forEach(function (sec) {
+        var name = sec.querySelector('h2').textContent;
+        var li = document.createElement('li');
+        var a = document.createElement('a');
+        a.href = '#' + sec.id;
+        a.textContent = name;
+        li.appendChild(a);
+        ul.appendChild(li);
+        tocLinks[sec.id] = a;
+        var opt = document.createElement('option');
+        opt.value = sec.id;
+        opt.textContent = name;
+        og.appendChild(opt);
+      });
+      wrap.appendChild(title);
+      wrap.appendChild(ul);
+      toc.appendChild(wrap);
+      tocSelect.appendChild(og);
+    });
+    if (currentId && tocLinks[currentId]) setActive(currentId);
+  }
+  tocSelect.addEventListener('change', function () {
+    var target = document.getElementById(tocSelect.value);
+    if (target) {
+      target.scrollIntoView({ block: 'start' });
+      try { history.replaceState(null, '', '#' + target.id); } catch (e) {}
+    }
+  });
+
+  var currentId = null;
+  function setActive(id) {
+    currentId = id;
+    Object.keys(tocLinks).forEach(function (k) { tocLinks[k].classList.toggle('active', k === id); });
+    if (tocSelect.value !== id && tocLinks[id]) tocSelect.value = id;
+  }
+  if ('IntersectionObserver' in window) {
+    var visible = {};
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { visible[en.target.id] = en.isIntersecting; });
+      for (var i = 0; i < sections.length; i++) {
+        var s = sections[i];
+        if (!s.hidden && visible[s.id]) { setActive(s.id); break; }
+      }
+    }, { rootMargin: '-15% 0px -70% 0px' });
+    sections.forEach(function (s) { io.observe(s); });
+  }
+
+  // ---- Role filter
+  var roleBtns = Array.prototype.slice.call(document.querySelectorAll('.role-btn'));
+  var blurb = document.getElementById('role-blurb');
+  var filterables = Array.prototype.slice.call(document.querySelectorAll('[data-for]'));
+
+  function applyRole(role) {
+    if (role !== 'all' && ROLES.indexOf(role) === -1) role = 'all';
+    filterables.forEach(function (el) {
+      var list = el.getAttribute('data-for').split(/\s+/);
+      el.hidden = role === 'all' ? el.hasAttribute('data-hide-all') : list.indexOf(role) === -1;
+    });
+    // A callout hidden for this role takes its numbered pin in the mockup with it.
+    Array.prototype.slice.call(document.querySelectorAll('figure.plate')).forEach(function (fig) {
+      var hiddenNums = {};
+      Array.prototype.slice.call(fig.querySelectorAll('.callouts li')).forEach(function (li) {
+        var pin = li.querySelector('.pin');
+        if (pin && li.hidden) hiddenNums[pin.textContent.trim()] = true;
+      });
+      Array.prototype.slice.call(fig.querySelectorAll('.plate-frame .pin')).forEach(function (p) {
+        p.hidden = !!hiddenNums[p.textContent.trim()];
+      });
+    });
+    Array.prototype.slice.call(document.querySelectorAll('#matrix [data-col]')).forEach(function (cell) {
+      var col = cell.getAttribute('data-col');
+      // One role picked: keep just its column, so the table fits a phone without sideways scrolling.
+      cell.hidden = role !== 'all' && col !== role;
+    });
+    roleBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-role') === role)); });
+    blurb.innerHTML = BLURBS[role];
+    document.body.setAttribute('data-role', role);
+    buildToc();
+    return role;
+  }
+
+  roleBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      var r = applyRole(b.getAttribute('data-role'));
+      safeSet(ROLE_KEY, r);
+    });
+  });
+
+  var startRole = params.role || safeGet(ROLE_KEY) || 'all';
+  // Opened from inside ContentFlow by a client: keep the guide on the client view.
+  if (embed && params.role === 'client') {
+    document.getElementById('role-switch-wrap').hidden = true;
+    startRole = 'client';
+  }
+  startRole = applyRole(startRole);
+
+  // A link straight to a section this role hides: show everything instead of landing nowhere.
+  function revealHash() {
+    var id = (window.location.hash || '').slice(1);
+    if (!id) return;
+    var target = document.getElementById(id);
+    if (target && target.closest('[hidden]') && !(embed && params.role === 'client')) {
+      applyRole('all');
+      target.scrollIntoView({ block: 'start' });
+    }
+  }
+  revealHash();
+  window.addEventListener('hashchange', revealHash);
+
+  // Inside ContentFlow: Escape closes the guide layer. Keydown inside this
+  // frame never reaches the app's window, so tell it (same origin only).
+  if (embed && window.parent !== window) {
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      try { window.parent.postMessage({ type: 'contentflow-guide-close' }, window.location.origin); } catch (err) {}
+    });
+  }
+})();
+</script>
+
+</html>

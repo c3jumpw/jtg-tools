@@ -257,3 +257,22 @@ LinkedIn now takes the full profile URL instead of a username.
 - Edit form shows a url-type input with a "Full ... profile URL" placeholder for LinkedIn; every other network keeps the plain username input.
 - No backend change needed.
 - jsdom smoke test now 305/305 passing.
+
+## v1.24.0 (2026-09-27)
+Real favicon and home-screen icons.
+
+- The inline data-URI SVG favicon did nothing on iPhone: iOS Safari doesn't support SVG favicons, and apple-touch-icon needs a real file URL. It had also drifted into an inverted colour scheme versus the in-app logo.
+- New icon set rendered by icon-src/gen.py straight from brandMarkSvg()'s path and colours: favicon.ico (16/32/48), favicon-16/32/48.png, apple-touch-icon.png (180, opaque), icon-192/512.png, icon-512-maskable.png, plus site.webmanifest (display "browser", so the ClickUp OAuth redirect stays inside the browser on iOS).
+- 16/32/48px sizes get a heavier stroke and larger mark so they stay legible.
+- First version that isn't a single self-contained index.html: the icons are sibling files.
+- Known gap: the jsdom smoke suite lived outside the repo and was lost to a sandbox reset; not re-run for this version.
+
+## v1.25.0 (2026-10-30)
+In-app Guide.
+
+- New guide.html beside index.html: a visual walkthrough of every screen, menu and setting, built from styled mockups of the real UI with numbered callouts. Covers the four-layer model, roles and a permissions matrix, sign-in and ClickUp connect, the top bar and Settings menu, Dashboard, the stage pipeline, Board/List/Calendar/Feed, the entry modal and client panel, file categories, the Ideas area (Pillars & Rhythm, Idea Inbox, idea lifecycle), Brand Foundation, Prompt Library, Log vs. Messages, profile/theme/sync, phone use, the Admin panel, admin recipes, troubleshooting and a glossary.
+- Role switch (Everyone / Admin / Team member / Client) hides sections, notes, matrix columns and mockup callouts that don't apply. Light and dark themes, phone-width layout.
+- Opened from a new "?" button in both topnavs, "Open the guide" in Settings, a Guide button in the admin panel (jumps to the Admin panel section), and links on the sign-in, ClickUp-connect and "Almost there" screens.
+- openGuide() shows it in a full-screen layer appended to <body>, outside #app, so render() never reloads it; the guide keeps its place between opens. It passes embed=1, the viewer's role and the current theme; clients are kept on the client view. Theme toggles reach an open guide via the contentflow.theme storage event. Escape closes it from either document.
+- Also ships v1.24.0's icon files, which had not reached the repo.
+- Verified with a Playwright run against a stubbed Supabase client (admin, rep, client, signed out): 46/46 checks passing, including no iframe reload across app re-renders, Escape from inside the guide, theme propagation and the admin-panel deep link. The old jsdom suite is still not rebuilt.
