@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Frontrow">
+  <rect width="64" height="64" rx="16" fill="#15161D"/>
+  <rect x="13" y="14" width="38" height="7" rx="3.5" fill="#FBF8F3"/>
+  <path d="M12 38a5 5 0 0 1 5-5h3a5 5 0 0 1 5 5v12H12z" fill="#FBF8F3" opacity=".55"/>
+  <path d="M26.5 38a5 5 0 0 1 5-5h1a5 5 0 0 1 5 5v12h-11z" fill="#FF5A36"/>
+  <path d="M39 38a5 5 0 0 1 5-5h3a5 5 0 0 1 5 5v12H39z" fill="#FBF8F3" opacity=".55"/>
+</svg>
