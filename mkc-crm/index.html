@@ -15,17 +15,25 @@
 <meta name="apple-mobile-web-app-title" content="MKC CRM">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#111318">
+<meta name="theme-color" content="#161B26">
 <style>
+/* MKC brand: Montserrat (SIL OFL 1.1, media/fonts/OFL-Montserrat.txt),
+   served from this folder, with the GitHub copy as a fallback for places
+   that open this file outside the site. */
+@font-face{font-family:'Montserrat';font-style:normal;font-weight:100 900;font-display:swap;
+  src:url('media/fonts/montserrat-latin-wght.woff2') format('woff2'),url('https://raw.githubusercontent.com/c3jumpw/jtg-tools/main/mkc-crm/media/fonts/montserrat-latin-wght.woff2') format('woff2')}
 :root {
-  --bg-sidebar:#111318;--bg-main:#f4f5f8;--bg-card:#ffffff;--bg-hover:#1e2128;
-  --text-primary:#1a1d24;--text-secondary:#5a6072;--text-muted:#9099ad;
-  --text-sidebar:#c8cdd8;--accent:#4f6ef7;--accent-hover:#3b5ce4;--accent-light:#eef1fe;
-  --border:#e4e7ef;--border-dark:#2a2e38;--sidebar-width:220px;--topbar-height:54px;
-  --success:#22c55e;--warning:#f59e0b;--danger:#ef4444;
+  /* MKC palette: ink #161B26, blue #0A6DC9, bright blue #2297F9 */
+  --bg-sidebar:#161B26;--bg-main:#F4F6F9;--bg-card:#ffffff;--bg-hover:#222A3A;
+  --text-primary:#161B26;--text-secondary:#4F586B;--text-muted:#717B8F;
+  --text-sidebar:#C3CBDA;--accent:#0A6DC9;--accent-hover:#0859A6;--accent-light:#E8F2FD;
+  --accent-bright:#2297F9;
+  --border:#E3E7EE;--border-dark:#2A3242;--sidebar-width:224px;--topbar-height:56px;
+  --success:#16a34a;--warning:#d97706;--danger:#dc2626;
+  --font:'Montserrat',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg-main);color:var(--text-primary);display:flex;height:100vh;overflow:hidden;font-size:14px}
+body{font-family:var(--font);background:var(--bg-main);color:var(--text-primary);display:flex;height:100vh;overflow:hidden;font-size:14px}
 #sidebar{width:var(--sidebar-width);background:var(--bg-sidebar);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;z-index:100}
 .sidebar-logo{padding:16px 20px 12px;border-bottom:1px solid var(--border-dark)}
 .sidebar-logo .brand{font-size:15px;font-weight:700;color:#fff;letter-spacing:.02em}
@@ -314,8 +322,11 @@ input[type=date],input[type=time],input[type=datetime-local]{min-width:0}
   .pf-footer{padding:8px 16px;flex-wrap:wrap;gap:6px}
   .btn-sm{padding:5px 9px;font-size:11.5px}
   .kanban-col{width:200px}
-  td:nth-child(4),th:nth-child(4){display:none}
-  td:nth-child(7),th:nth-child(7){display:none}
+  /* Keep name, status and freshness on phones; drop the rest per list. */
+  table:has(#th-leads) :is(td,th):is(:nth-child(3),:nth-child(6),:nth-child(7)),
+  table:has(#th-contacts) :is(td,th):is(:nth-child(3),:nth-child(6),:nth-child(7)),
+  table:has(#th-pipeline) :is(td,th):is(:nth-child(5),:nth-child(6)),
+  table:has(#th-accounts) :is(td,th):is(:nth-child(4),:nth-child(6)){display:none}
 }
 /* ── AUDIT FIXES (all sizes; placed last so they win over the
    shorthand paddings in the media queries above) ─────────────────── */
@@ -331,17 +342,81 @@ input[type=date],input[type=time],input[type=datetime-local]{min-width:0}
 /* A long email in a search result pushed the status badge off-screen
    (sideways scroll on the Search view on phones). */
 .srp-item>div{min-width:0;overflow-wrap:anywhere}
+/* ── MKC BRAND + POLISH (Nov 2026) ─────────────────────────────────── */
+h1,h2,h3,.page-title,.pf-name,.sc-value{letter-spacing:-.01em}
+.page-title{font-size:16px;font-weight:700}
+/* Sidebar */
+.sidebar-logo{padding:14px 14px 12px;border-bottom:1px solid var(--border-dark)}
+.brand-tile{background:#fff;border-radius:12px;padding:10px 14px;display:flex;justify-content:center}
+.brand-tile img{width:118px;height:auto;display:block}
+.sidebar-section-label{color:#7F8AA0;font-weight:600}
+.nav-item{border-radius:8px;margin:1px 10px;padding:8px 10px;border-left:0;font-weight:500}
+.nav-item:hover{background:var(--bg-hover)}
+.nav-item.active{background:rgba(34,151,249,.14);color:#fff;box-shadow:inset 3px 0 0 var(--accent-bright)}
+.nav-badge{background:rgba(255,255,255,.08);color:#AEB7C8}
+.nav-badge.has-items{background:var(--accent-bright);color:#fff}
+.nav-badge.alert{background:var(--danger);color:#fff}
+/* Top bar search: the icon sat on top of the text (a later input rule reset the padding). */
+#topbar .search-bar input[type=text]{padding-left:34px}
+.search-bar input:focus{box-shadow:0 0 0 3px rgba(10,109,201,.12)}
+/* Buttons and focus */
+.btn{font-weight:600;border-radius:8px}
+.btn:focus-visible,.nav-item:focus-visible,.sc-link:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent-bright);outline-offset:2px}
+.btn-frontrow{background:#15161D;color:#fff;border:1px solid #15161D}
+.btn-frontrow:hover{background:#2A2B35}
+/* Dashboard */
+.sc-link{cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s}
+.sc-link:hover{border-color:#C9D7EA;box-shadow:0 6px 18px rgba(22,27,38,.06);transform:translateY(-1px)}
+.sc-link .sc-meta::after{content:' →';color:var(--accent)}
+.sc-value{font-weight:800}
+.quick-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.card-header h3{font-weight:700}
+.act-item:hover,tbody tr:hover{background:#F3F8FE}
+/* Lists */
+thead{background:#F8FAFC}
+th{color:#6B7488}
+td.cell-name .nm{font-weight:600;color:var(--text-primary)}
+td.cell-name .sub{font-size:11px;color:var(--text-muted);letter-spacing:.03em;margin-top:2px;font-variant-numeric:tabular-nums}
+tbody tr:hover td.cell-name .nm{color:var(--accent)}
+td.cell-date{font-size:12px;color:var(--text-secondary);white-space:nowrap}
+.fresh-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:1px}
+select.filter-select{border-radius:8px;color:var(--text-primary);font-weight:500}
+.btn-clear{color:var(--accent);font-weight:600;padding:5px 8px;flex-shrink:0}
+/* Kanban: one calm header style; the stage colour is a rule and a dot. */
+.kanban-col-header{background:#fff;color:var(--text-primary);border:1px solid var(--border);border-bottom:0;box-shadow:inset 0 3px 0 var(--stage,#CBD2DE);padding-top:12px;letter-spacing:.04em;font-size:11px}
+.kanban-col-header>span:first-child{display:flex;align-items:center;gap:7px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kanban-col-header>span:first-child::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--stage,#CBD2DE);flex-shrink:0}
+.kanban-col-header .kc-count{background:var(--bg-main);color:var(--text-secondary);border-radius:10px;padding:1px 8px;font-size:11px}
+/* Record panel */
+.pf-name{font-weight:800}
+/* Login */
+#login-overlay{background:radial-gradient(1200px 600px at 80% -10%,rgba(34,151,249,.18),transparent 60%),#161B26}
+.login-card{border-radius:16px}
+.login-brand{display:flex;align-items:center;gap:14px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.login-brand img{width:64px;height:auto}
+.login-title{font-size:19px;font-weight:800}
+.login-sub{font-size:12px;color:var(--text-muted);font-weight:500}
+#quick-capture-fab{box-shadow:0 8px 22px rgba(10,109,201,.35)!important}
+/* The record panel footer wraps instead of pushing buttons off-screen. */
+.pf-footer{flex-wrap:wrap;row-gap:8px}
+/* Form controls don't inherit the page font by default. */
+button,input,select,textarea{font-family:inherit}
+/* Phones: the four KPI cards took the whole first screen; two compact rows. */
+@media(max-width:480px){
+  .summary-grid{grid-template-columns:1fr 1fr}
+  .sc{padding:12px 14px}
+  .sc-icon{display:none}
+  .sc-value{font-size:22px}
+}
 </style>
 </head>
 <body>
 <!-- LOGIN -->
 <div id="login-overlay">
   <div class="login-card">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px">
-      <div style="width:40px;height:40px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-      </div>
-      <div><div style="font-size:18px;font-weight:700">MKC CRM</div><div style="font-size:12px;color:var(--text-muted)">Operations Platform</div></div>
+    <div class="login-brand">
+      <img src="media/CLIENT%20MANAGMENT%20HUB%20LOGO.png" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/c3jumpw/jtg-tools/main/mkc-crm/media/CLIENT%20MANAGMENT%20HUB%20LOGO.png'" alt="" width="697" height="525">
+      <div><div class="login-title">MKC CRM</div><div class="login-sub">Operations Platform</div></div>
     </div>
     <div class="form-group">
       <label for="login-id">Select Your MKC ID</label>
@@ -363,9 +438,11 @@ input[type=date],input[type=time],input[type=datetime-local]{min-width:0}
 
 <!-- SIDEBAR -->
 <nav id="sidebar">
-  <div class="sidebar-logo" style="padding:12px 16px 10px">
-  <img src="https://raw.githubusercontent.com/c3jumpw/jtg-tools/main/mkc-crm/media/CLIENT%20MANAGMENT%20HUB%20LOGO.png" alt="MKC Client Management Hub" style="width:160px;height:auto;display:block;filter:brightness(0) invert(1)">
-</div>
+  <div class="sidebar-logo">
+    <div class="brand-tile">
+      <img src="media/CLIENT%20MANAGMENT%20HUB%20LOGO.png" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/c3jumpw/jtg-tools/main/mkc-crm/media/CLIENT%20MANAGMENT%20HUB%20LOGO.png'" alt="MKC Client Management Hub" width="697" height="525">
+    </div>
+  </div>
   <div class="sidebar-section">
     <div class="sidebar-section-label">Main</div>
     <div class="nav-item" data-view="myday">
@@ -455,24 +532,22 @@ input[type=date],input[type=time],input[type=datetime-local]{min-width:0}
     <!-- DASHBOARD -->
     <div class="view active" id="view-dashboard">
       <div class="summary-grid">
-        <div class="sc"><div class="sc-icon" style="background:#eff3ff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="sc-label">Active Leads</div><div class="sc-value" id="d-leads">—</div><div class="sc-meta">Leads list</div></div>
-        <div class="sc"><div class="sc-icon" style="background:#f0fdf4"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="sc-label">Active Deals</div><div class="sc-value" id="d-deals">—</div><div class="sc-meta">Pipeline</div></div>
-        <div class="sc"><div class="sc-icon" style="background:#fffbeb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="sc-label">Contacts</div><div class="sc-value" id="d-contacts">—</div><div class="sc-meta">Contacts list</div></div>
-        <div class="sc"><div class="sc-icon" style="background:#f5f3ff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div><div class="sc-label">Accounts</div><div class="sc-value" id="d-accounts">—</div><div class="sc-meta">Companies</div></div>
+        <div class="sc sc-link" role="button" tabindex="0" onclick="switchView('leads')" onkeydown="if(event.key==='Enter')switchView('leads')"><div class="sc-icon" style="background:#eff3ff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="sc-label">Active Leads</div><div class="sc-value" id="d-leads">—</div><div class="sc-meta">Leads list</div></div>
+        <div class="sc sc-link" role="button" tabindex="0" onclick="switchView('pipeline')" onkeydown="if(event.key==='Enter')switchView('pipeline')"><div class="sc-icon" style="background:#f0fdf4"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="sc-label">Active Deals</div><div class="sc-value" id="d-deals">—</div><div class="sc-meta">Pipeline</div></div>
+        <div class="sc sc-link" role="button" tabindex="0" onclick="switchView('contacts')" onkeydown="if(event.key==='Enter')switchView('contacts')"><div class="sc-icon" style="background:#fffbeb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="sc-label">Contacts</div><div class="sc-value" id="d-contacts">—</div><div class="sc-meta">Contacts list</div></div>
+        <div class="sc sc-link" role="button" tabindex="0" onclick="switchView('accounts')" onkeydown="if(event.key==='Enter')switchView('accounts')"><div class="sc-icon" style="background:#f5f3ff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div><div class="sc-label">Accounts</div><div class="sc-value" id="d-accounts">—</div><div class="sc-meta">Companies</div></div>
       </div>
       <div class="dash-grid">
         <div>
+          <div class="quick-row" aria-label="Quick actions">
+            <button class="btn btn-primary btn-sm" onclick="openNewEntryModal('Lead')">+ New Lead</button>
+            <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Contact')">+ New Contact</button>
+            <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Deal')">+ New Deal</button>
+            <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Account')">+ New Account</button>
+          </div>
           <div class="card" style="margin-bottom:14px">
             <div class="card-header"><h3>Recent Activity</h3><button class="btn btn-ghost btn-sm" onclick="renderDashboard()">Refresh</button></div>
             <div id="dash-activity"></div>
-          </div>
-          <div class="card"><div class="card-header"><h3>Quick Actions</h3></div>
-            <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn btn-primary btn-sm" onclick="openNewEntryModal('Lead')">+ New Lead</button>
-              <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Contact')">+ New Contact</button>
-              <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Deal')">+ New Deal</button>
-              <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Account')">+ New Account</button>
-            </div>
           </div>
         </div>
         <div>
@@ -807,6 +882,10 @@ input[type=date],input[type=time],input[type=datetime-local]{min-width:0}
     <button class="btn btn-ghost btn-sm" onclick="openCatchUpModal()">✨ Catch Up</button>
     <button class="btn btn-ghost btn-sm" id="pf-nb-btn" onclick="openNotebook()" style="display:none">Notebook ↗</button>
     <button class="btn btn-ghost btn-sm" onclick="openInClickUp()">View in ClickUp ↗</button>
+    <button class="btn btn-sm btn-frontrow" id="pf-frontrow-btn" onclick="addToFrontrow()" style="display:none" title="Give this contact a client portal login, or check whether they have one">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1.5" fill="currentColor"/><rect x="3" y="12" width="5" height="8" rx="1.5" fill="currentColor" opacity=".55"/><rect x="9.5" y="12" width="5" height="8" rx="1.5" fill="#FF5A36"/><rect x="16" y="12" width="5" height="8" rx="1.5" fill="currentColor" opacity=".55"/></svg>
+      Add to Frontrow
+    </button>
   </div>
 </div>
 
@@ -1282,6 +1361,10 @@ const APP_CONFIG={
 // ═══════════════════════════════════════════
 // STATUS / BRANCH / TYPE COLOR MAPS
 // ═══════════════════════════════════════════
+// How a ClickUp status is shown. ClickUp's pipeline status is spelled
+// "Oppurtunity"; it's matched as-is everywhere and only displayed fixed.
+const STATUS_LABELS={'oppurtunity':'Opportunity'};
+function stageLabel(s){const k=String(s||'').toLowerCase();return STATUS_LABELS[k]||s;}
 const STATUS_COLORS={
   // ── Leads ──────────────────────────────────────
   'pre-engagement':['#e5e7eb','#374151'],
@@ -2222,12 +2305,11 @@ function renderTable(type){
       const ct=cf['lead/contact type']||'';
       return `<tr onclick="openProfile('${task.id}','${lk}')" class="${isSub?'is-subtask':''}">
         <td onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleRowSelection('${type}','${task.id}',this.checked)" ${isRowSelected(type,task.id)?'checked':''}></td>
-        <td style="font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--text-muted)">${esc(id)}</td>
-        <td><div style="font-weight:500">${esc(name)}</div>${isSub?'<div style="font-size:11px;color:var(--text-muted)">↳ Subtask</div>':''}</td>
+        <td class="cell-name"><div class="nm">${esc(name)}</div><div class="sub">${esc(id)}${isSub?' · ↳ Subtask':''}</div></td>
         <td style="font-size:12.5px;color:var(--text-secondary)">${esc(email)}</td>
         <td style="font-size:12.5px;color:var(--text-secondary)">${esc(phone)}</td>
         <td>${sb}</td><td>${bb}</td><td>${ct?makeTypeBadge(ct):''}</td>
-        <td style="font-size:12px;color:${stale.color}" title="${stale.label}">${upd}</td>
+        <td class="cell-date" title="Last touched: ${esc(stale.label)}"><span class="fresh-dot" style="background:${stale.color}"></span>${upd}</td>
       </tr>`;
     }
     if(type==='pipeline'){
@@ -2235,12 +2317,11 @@ function renderTable(type){
       const asgn=task.assignees?.map(a=>a.username||a.email).join(', ')||'—';
       return `<tr onclick="openProfile('${task.id}','${lk}')" class="${isSub?'is-subtask':''}">
         <td onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleRowSelection('${type}','${task.id}',this.checked)" ${isRowSelected(type,task.id)?'checked':''}></td>
-        <td style="font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--text-muted)">${esc(id)}</td>
-        <td><div style="font-weight:500">${esc(name)}</div></td>
+        <td class="cell-name"><div class="nm">${esc(name)}</div><div class="sub">${esc(id)}</div></td>
         <td style="font-size:12.5px;color:var(--text-secondary)">${esc(acct)}</td>
         <td>${sb}</td><td>${bb}</td>
         <td style="font-size:12.5px;color:var(--text-secondary)">${esc(asgn)}</td>
-        <td style="font-size:12px;color:${stale.color}" title="${stale.label}">${upd}</td>
+        <td class="cell-date" title="Last touched: ${esc(stale.label)}"><span class="fresh-dot" style="background:${stale.color}"></span>${upd}</td>
       </tr>`;
     }
     if(type==='accounts'){
@@ -2248,11 +2329,10 @@ function renderTable(type){
       const as=cf['account status']||'—';
       return `<tr onclick="openProfile('${task.id}','${lk}')" class="${isSub?'is-subtask':''}">
         <td onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleRowSelection('${type}','${task.id}',this.checked)" ${isRowSelected(type,task.id)?'checked':''}></td>
-        <td style="font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--text-muted)">${esc(id)}</td>
-        <td><div style="font-weight:500">${esc(name)}</div></td>
+        <td class="cell-name"><div class="nm">${esc(name)}</div><div class="sub">${esc(id)}</div></td>
         <td>${makeSB(as)}</td><td>${sb}</td><td>${bb}</td>
         <td style="font-size:12.5px;color:var(--text-secondary)">${esc(pc)}</td>
-        <td style="font-size:12px;color:${stale.color}" title="${stale.label}">${upd}</td>
+        <td class="cell-date" title="Last touched: ${esc(stale.label)}"><span class="fresh-dot" style="background:${stale.color}"></span>${upd}</td>
       </tr>`;
     }
     return '';
@@ -2261,10 +2341,10 @@ function renderTable(type){
   const thead=document.getElementById(`th-${type}`);
   if(thead){
     const cols={
-      leads:['MKC ID','Name','Email','Phone','Status','Branch','Type','Last Updated'],
-      pipeline:['MKC ID','Deal Name','Account','Status','Branch','Assignee','Last Updated'],
-      contacts:['MKC ID','Name','Email','Phone','Status','Branch','Type','Last Updated'],
-      accounts:['MKC ID','Account Name','Acct Status','Task Status','Branch','Primary Contact','Last Updated']
+      leads:['Name','Email','Phone','Status','Branch','Type','Last Updated'],
+      pipeline:['Deal Name','Account','Status','Branch','Assignee','Last Updated'],
+      contacts:['Name','Email','Phone','Status','Branch','Type','Last Updated'],
+      accounts:['Account Name','Acct Status','Task Status','Branch','Primary Contact','Last Updated']
     };
     thead.innerHTML=`<tr><th style="width:36px"><input type="checkbox" onchange="toggleSelectAllVisible('${type}',this.checked)" title="Select all on this page"></th>${(cols[type]||[]).map(c=>`<th>${c}</th>`).join('')}</tr>`;
   }
@@ -2299,32 +2379,31 @@ function buildToolbar(type){
       <input type="text" id="fs-search-${type}" placeholder="Filter ${type}…" style="width:100%;height:34px;border:1px solid var(--border);border-radius:7px;padding:0 12px 0 34px;font-size:13px;background:var(--bg-card);outline:none" oninput="filterTable('${type}',this.value)">
     </div>
     ${showStatus?`<select class="filter-select" id="fs-status-${type}" onchange="filterByField('${type}','status',this.value)">
-      <option value="">— Status —</option><option value="">All Statuses</option>${statuses.map(s=>`<option value="${s}">${s}</option>`).join('')}
+      <option value="">All statuses</option>${statuses.map(s=>`<option value="${s}">${s}</option>`).join('')}
     </select>`:''}
     <select class="filter-select" id="fs-branch-${type}" onchange="filterByField('${type}','branch',this.value)">
-      <option value="">— Branch —</option><option value="">All Branches</option>${branches.map(b=>`<option value="${b}">${b}</option>`).join('')}
+      <option value="">All branches</option>${branches.map(b=>`<option value="${b}">${b}</option>`).join('')}
     </select>
     <select class="filter-select" id="fs-subbranch-${type}" onchange="filterByField('${type}','subbranch',this.value)">
-      <option value="">— Sub-Branch —</option><option value="">All Sub-Branches</option>${allSubBranches.map(s=>`<option value="${s}">${s}</option>`).join('')}
+      <option value="">All sub-branches</option>${allSubBranches.map(s=>`<option value="${s}">${s}</option>`).join('')}
     </select>
     ${isStaffOnly()?'':`<select class="filter-select" id="fs-assignee-${type}" onchange="filterByField('${type}','assignee',this.value)">
-      <option value="">— Assignee —</option><option value="">All Assignees</option>${assignees.map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('')}
+      <option value="">All assignees</option>${assignees.map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('')}
     </select>`}
     <select class="filter-select" id="fs-staleness-${type}" onchange="filterByField('${type}','staleness',this.value)">
-      <option value="">— Follow-Up —</option>
-      <option value="">All</option>
+      <option value="">Any follow-up</option>
       <option value="stale">Stale (8+ days)</option>
       <option value="getting_stale">Getting Stale (4-7 days)</option>
       <option value="fresh">Fresh (0-3 days)</option>
     </select>
     <select class="filter-select" id="fs-sort-${type}" onchange="sortTable('${type}',this.value)">
-      <option value="">— Sort by —</option>
+      <option value="">Sort: default</option>
       <option value="date_updated_desc">Last Updated ↓</option>
       <option value="date_updated_asc">Last Updated ↑</option>
       <option value="date_created_desc">Date Created ↓</option>
       <option value="date_created_asc">Date Created ↑</option>
     </select>
-    <button class="btn btn-ghost btn-sm" onclick="clearFilters('${type}')" title="Clear all filters" style="color:var(--text-muted);padding:5px 8px;flex-shrink:0">✕ Clear</button>
+    <button class="btn btn-ghost btn-sm btn-clear" onclick="clearFilters('${type}')" title="Clear all filters">✕ Clear filters</button>
     <button class="btn btn-secondary btn-sm" style="margin-left:auto;flex-shrink:0" onclick="switchView('export')">Export CSV</button>
   `;
   // Bulk-action bar -- built once per toolbar render, shown/hidden based
@@ -2568,16 +2647,16 @@ function renderKanban(type){
     }).join('')||'<div style="font-size:11.5px;color:var(--text-muted);text-align:center;padding:18px">Empty</div>';
 
     return `<div class="kanban-col">
-      <div class="kanban-col-header" style="background:${bg};color:${fg}">
-        <span>${status}</span><span style="font-size:11px;opacity:.8">${cards.length}</span>
+      <div class="kanban-col-header" style="--stage:${bg}">
+        <span>${esc(stageLabel(status))}</span><span class="kc-count">${cards.length}</span>
       </div>
       <div class="kanban-col-body">${cardsHtml}</div>
     </div>`;
   }).join('')+
   // Show catch-all column only if there are transitional entries
   (grouped['other']?.length?`<div class="kanban-col">
-    <div class="kanban-col-header" style="background:#e5e7eb;color:#374151">
-      <span>Other (Migrating)</span><span style="font-size:11px;opacity:.8">${grouped['other'].length}</span>
+    <div class="kanban-col-header" style="--stage:#CBD2DE">
+      <span>Other (Migrating)</span><span class="kc-count">${grouped['other'].length}</span>
     </div>
     <div class="kanban-col-body">${grouped['other'].map(task=>`
       <div class="kanban-card" onclick="openProfile('${task.id}','${type}')">
@@ -4098,7 +4177,7 @@ function renderTasksKanban(){
         '</div>'+
       '</div>';
     }).join('')||'<div style="font-size:11.5px;color:var(--text-muted);text-align:center;padding:18px">Empty</div>';
-    return '<div class="kanban-col"><div class="kanban-col-header" style="background:'+bg+';color:'+fg+'"><span>'+status+'</span><span style="font-size:11px;opacity:.8">'+cards.length+'</span></div><div class="kanban-col-body">'+cardsHtml+'</div></div>';
+    return '<div class="kanban-col"><div class="kanban-col-header" style="--stage:'+bg+'"><span>'+esc(stageLabel(status))+'</span><span class="kc-count">'+cards.length+'</span></div><div class="kanban-col-body">'+cardsHtml+'</div></div>';
   }).join('')+'</div>';
 }
 
@@ -4478,6 +4557,8 @@ function renderPfHeader(task,type){
   S._notebookLink=notebookLink;
   S._clickupLink=`https://app.clickup.com/t/${task.id}`;
   document.getElementById('pf-nb-btn').style.display=notebookLink?'inline-flex':'none';
+  const fr=document.getElementById('pf-frontrow-btn');
+  if(fr)fr.style.display=(type==='contacts'||type==='accounts')?'inline-flex':'none';
 }
 
 async function quickUpdateEntryStatus(newStatus){
@@ -6501,6 +6582,15 @@ function closeProfile(){
 }
 function openNotebook(){if(S._notebookLink)window.open(S._notebookLink,'_blank');}
 function openInClickUp(){if(S._clickupLink)window.open(S._clickupLink,'_blank');}
+// Frontrow (client portal platform). The Manager imports this contact or
+// account from ClickUp, says whether they can sign in (they must be linked to
+// an Active account), and sends their setup link.
+const FRONTROW_MANAGER_URL='https://frontrow-manager.jtgworkspace.com';
+function addToFrontrow(){
+  const t=S.currentEntry&&S.currentEntry.task;
+  if(!t||!t.id)return;
+  window.open(`${FRONTROW_MANAGER_URL}/#/add/${encodeURIComponent(t.id)}`,'_blank','noopener');
+}
 function copyVal(v){navigator.clipboard.writeText(v).then(()=>showToast('Copied: '+v,'success')).catch(()=>showToast('Could not copy -- select and copy it manually.','error'));}
 
 // ═══════════════════════════════════════════
@@ -7608,7 +7698,7 @@ function renderDashboard(){
 function updateBadge(type,count){
   const el=document.getElementById(`badge-${type}`);
   if(!el)return;
-  if(count>0){el.textContent=count;el.style.display='inline-block';el.className='nav-badge has-items';}
+  if(count>0){el.textContent=count;el.style.display='inline-block';el.className='nav-badge has-items'+(type==='qcinbox'?' alert':'');}
   else{el.style.display='none';el.textContent='';el.className='nav-badge';}
 }
 
