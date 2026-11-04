@@ -322,11 +322,6 @@ input[type=date],input[type=time],input[type=datetime-local]{min-width:0}
   .pf-footer{padding:8px 16px;flex-wrap:wrap;gap:6px}
   .btn-sm{padding:5px 9px;font-size:11.5px}
   .kanban-col{width:200px}
-  /* Keep name, status and freshness on phones; drop the rest per list. */
-  table:has(#th-leads) :is(td,th):is(:nth-child(3),:nth-child(6),:nth-child(7)),
-  table:has(#th-contacts) :is(td,th):is(:nth-child(3),:nth-child(6),:nth-child(7)),
-  table:has(#th-pipeline) :is(td,th):is(:nth-child(5),:nth-child(6)),
-  table:has(#th-accounts) :is(td,th):is(:nth-child(4),:nth-child(6)){display:none}
 }
 /* ── AUDIT FIXES (all sizes; placed last so they win over the
    shorthand paddings in the media queries above) ─────────────────── */
@@ -407,6 +402,123 @@ button,input,select,textarea{font-family:inherit}
   .sc{padding:12px 14px}
   .sc-icon{display:none}
   .sc-value{font-size:22px}
+}
+/* ── TIER 2 UX (Nov 2026) ─────────────────────────────────────────── */
+/* Dashboard: today first */
+.today-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.today-hello{font-size:22px;font-weight:800;letter-spacing:-.015em}
+.today-sub{font-size:13px;color:var(--text-secondary);margin-top:3px}
+.today-head .quick-row{margin-bottom:0}
+.today-card .card-header h3::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent-bright);margin-right:8px;vertical-align:1px}
+.today-item{display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border)}
+.today-item:last-child{border-bottom:0}
+.today-item.clickable{cursor:pointer}
+.today-item.clickable:hover{background:#F3F8FE}
+.today-tag{flex-shrink:0;width:86px;text-align:center;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:6px;padding:4px 0}
+.today-tag.red{background:#FDECEC;color:#B42318}
+.today-tag.amber{background:#FEF3E2;color:#9A5B00}
+.today-tag.blue{background:#E8F2FD;color:#0859A6}
+.today-main{flex:1;min-width:0}
+.today-title{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.today-sub{overflow-wrap:anywhere}
+.today-main .today-sub{font-size:12px;color:var(--text-muted);margin-top:1px}
+.today-side{display:flex;gap:6px;flex-shrink:0}
+.today-more{display:block;width:100%;padding:10px 18px;border:0;border-top:1px solid var(--border);background:#F8FAFC;color:var(--accent);font-weight:600;font-size:12.5px;text-align:left;cursor:pointer}
+.today-empty{display:flex;gap:14px;align-items:center;padding:22px 18px;font-size:13px;color:var(--text-secondary)}
+.today-empty b{color:var(--text-primary)}
+.today-check{width:34px;height:34px;border-radius:50%;background:#E7F6EC;color:#16a34a;display:grid;place-items:center;font-weight:800;flex-shrink:0}
+
+/* ⌘K palette */
+.kbd-hint{position:absolute;right:8px;top:50%;transform:translateY(-50%);font:600 10.5px/1 var(--font);color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:5px;padding:4px 6px;pointer-events:none}
+#topbar .search-bar input[type=text]{cursor:pointer;padding-right:52px}
+#cmdk-btn{display:none}
+.cmdk{position:fixed;inset:0;z-index:950;background:rgba(22,27,38,.45);backdrop-filter:blur(2px);display:flex;align-items:flex-start;justify-content:center;padding:12vh 16px 16px}
+.cmdk[hidden]{display:none}
+.cmdk-box{width:100%;max-width:620px;background:var(--bg-card);border-radius:14px;box-shadow:0 24px 70px rgba(22,27,38,.35);overflow:hidden;display:flex;flex-direction:column;max-height:70vh}
+.cmdk-input{display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--border)}
+.cmdk-input svg{width:17px;height:17px;color:var(--text-muted);flex-shrink:0}
+.cmdk-input input[type=text]{flex:1;border:0;height:54px;padding:0;font-size:15.5px;outline:none;background:transparent}
+.cmdk-input kbd,.cmdk-foot kbd{font:600 10.5px/1 var(--font);color:var(--text-muted);border:1px solid var(--border);border-radius:5px;padding:3px 5px;background:#F8FAFC}
+.cmdk-list{overflow-y:auto;padding:6px 0 8px}
+.cmdk-group{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);padding:10px 18px 4px}
+.cmdk-item{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 8px;padding:9px 10px;border-radius:8px;cursor:pointer}
+.cmdk-item.sel{background:#E8F2FD}
+.cmdk-label{font-size:13.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmdk-sub{font-weight:400;color:var(--text-muted);font-size:12px;margin-left:8px}
+.cmdk-empty{padding:26px 18px;color:var(--text-muted);font-size:13px;text-align:center}
+.cmdk-foot{display:flex;gap:16px;padding:9px 16px;border-top:1px solid var(--border);font-size:11.5px;color:var(--text-muted);background:#F8FAFC}
+
+/* Record panel header */
+.pf-header{padding:18px 24px 14px}
+.pf-kicker{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:3px}
+.pf-mkcid{display:none}
+.pf-badges{margin-top:8px}
+.pf-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px;padding:12px 14px;background:#F8FAFC;border:1px solid var(--border);border-radius:10px}
+.pf-facts:empty{display:none}
+.fact-k{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}
+.fact-v{font-size:13px;font-weight:600;margin-top:3px;min-width:0;overflow-wrap:anywhere}
+.fact-v .muted{color:var(--text-muted);font-weight:500}
+.fact-v .late{color:#B42318}
+.fact-note{display:block;font-weight:500;font-size:11.5px;color:var(--text-secondary);margin-top:1px}
+.pf-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.pf-actions .btn svg{width:14px;height:14px}
+.pf-footer .btn-primary{background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border)}
+.pf-footer .btn-primary:hover{background:var(--bg-main)}
+
+/* Phone bottom navigation (hidden on larger screens) */
+#bottom-nav{display:none}
+@media(max-width:768px){
+  #bottom-nav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:140;background:#161B26;border-top:1px solid #2A3242;padding:6px 6px calc(6px + env(safe-area-inset-bottom));justify-content:space-around;align-items:center}
+  #bottom-nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:0;color:#AEB7C8;font:600 10.5px/1 var(--font);padding:6px 0;cursor:pointer;min-height:48px;justify-content:center}
+  #bottom-nav button svg{width:20px;height:20px}
+  #bottom-nav button.active{color:#fff}
+  #bottom-nav button.active svg{color:var(--accent-bright)}
+  #bottom-nav .bn-new{flex:0 0 auto;width:52px;height:52px;min-height:0;border-radius:16px;background:var(--accent);color:#fff;margin:-18px 6px 0;box-shadow:0 6px 18px rgba(10,109,201,.45)}
+  #bottom-nav .bn-new svg{width:24px;height:24px}
+  #quick-capture-fab{bottom:calc(86px + env(safe-area-inset-bottom))!important;width:48px!important;height:48px!important;font-size:21px!important}
+  #content{padding-bottom:170px}
+  .today-head .quick-row{display:none} /* the + in the bottom bar does this on phones */
+  .pf-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:480px){
+  #cmdk-btn{display:inline-flex}
+  .cmdk{padding:10px}
+  .cmdk-box{max-height:82vh}
+  .today-hello{font-size:19px}
+  .today-tag{width:72px;font-size:9.5px}
+  .today-item{padding:10px 12px;gap:10px;flex-wrap:wrap}
+  .today-side{width:100%;padding-left:82px}
+  .pf-header{padding:14px 16px 12px}
+}
+
+@media(max-width:768px){.kbd-hint{display:none}#topbar .search-bar input[type=text]{padding-right:12px}}
+/* Phone: filters fold behind one button so the list starts higher */
+.filter-toggle{display:none}
+@media(max-width:640px){
+  .list-toolbar>div:first-child{flex:1 1 0!important;min-width:0!important}
+  .filter-toggle{display:inline-flex;height:34px;align-items:center}
+  .list-toolbar>select.filter-select,.list-toolbar>.btn-clear,.list-toolbar>button[onclick*="export"]{display:none}
+  .list-toolbar.show-filters>select.filter-select{display:block;flex:1 1 45%}
+  .list-toolbar.show-filters>.btn-clear,.list-toolbar.show-filters>button[onclick*="export"]{display:inline-flex}
+  .list-toolbar.show-filters .filter-toggle{background:var(--accent-light);color:var(--accent);border-color:#BFDAF5}
+}
+/* Phone: list rows become cards */
+@media(max-width:640px){
+  .table-wrap{background:transparent;border:0;overflow:visible}
+  .table-wrap table,.table-wrap tbody{display:block}
+  .table-wrap thead{display:none}
+  .table-wrap tbody tr{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:12px 14px;margin-bottom:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px}
+  .table-wrap tbody td{display:block;border:0;padding:0}
+  .table-wrap tbody td.cell-ck{order:0}
+  .table-wrap tbody td.cell-name{order:1;flex:1 1 52%;min-width:0}
+  .table-wrap tbody td.cell-name .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+  .table-wrap tbody td.cell-date{order:2;font-size:11px;color:var(--text-muted)}
+  .table-wrap tbody td.cell-badge{order:3}
+  .table-wrap tbody td.cell-line{order:4;flex:1 1 100%;font-size:12px!important;color:var(--text-secondary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .table-wrap tbody td.cell-line.cell-2nd,.table-wrap tbody td.is-empty{display:none}
+  .table-wrap tbody td.cell-badge:empty{display:none}
+  .table-wrap tbody tr td[colspan]{flex:1 1 100%}
+  .table-wrap .pagination{background:var(--bg-card);border:1px solid var(--border);border-radius:12px}
 }
 </style>
 </head>
@@ -513,11 +625,15 @@ button,input,select,textarea{font-family:inherit}
     <span class="page-title" id="page-title">Dashboard</span>
     <div class="search-bar" id="gsw">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" placeholder="Search entries…" id="gsi" autocomplete="off">
+      <input type="text" placeholder="Search or jump to…" id="gsi" autocomplete="off" aria-label="Search or jump to (opens the command bar)">
+      <kbd class="kbd-hint" aria-hidden="true">⌘K</kbd>
       <div class="srp" id="srp"></div>
     </div>
     <div class="topbar-right">
       <div class="sync-indicator"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Ready</span></div>
+      <button class="btn btn-ghost btn-sm" id="cmdk-btn" onclick="openCmdk()" title="Search" aria-label="Search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
       <button class="btn btn-ghost btn-sm" onclick="refreshAll()" title="Refresh" aria-label="Refresh">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
       </button>
@@ -531,6 +647,15 @@ button,input,select,textarea{font-family:inherit}
 
     <!-- DASHBOARD -->
     <div class="view active" id="view-dashboard">
+      <div class="today-head">
+        <div><div class="today-hello" id="today-hello">Today</div><div class="today-sub" id="today-sub"></div></div>
+        <div class="quick-row" aria-label="Quick actions">
+          <button class="btn btn-primary btn-sm" onclick="openNewEntryModal('Lead')">+ New Lead</button>
+          <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Contact')">+ New Contact</button>
+          <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Deal')">+ New Deal</button>
+          <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Account')">+ New Account</button>
+        </div>
+      </div>
       <div class="summary-grid">
         <div class="sc sc-link" role="button" tabindex="0" onclick="switchView('leads')" onkeydown="if(event.key==='Enter')switchView('leads')"><div class="sc-icon" style="background:#eff3ff"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="sc-label">Active Leads</div><div class="sc-value" id="d-leads">—</div><div class="sc-meta">Leads list</div></div>
         <div class="sc sc-link" role="button" tabindex="0" onclick="switchView('pipeline')" onkeydown="if(event.key==='Enter')switchView('pipeline')"><div class="sc-icon" style="background:#f0fdf4"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="sc-label">Active Deals</div><div class="sc-value" id="d-deals">—</div><div class="sc-meta">Pipeline</div></div>
@@ -539,11 +664,9 @@ button,input,select,textarea{font-family:inherit}
       </div>
       <div class="dash-grid">
         <div>
-          <div class="quick-row" aria-label="Quick actions">
-            <button class="btn btn-primary btn-sm" onclick="openNewEntryModal('Lead')">+ New Lead</button>
-            <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Contact')">+ New Contact</button>
-            <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Deal')">+ New Deal</button>
-            <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Account')">+ New Account</button>
+          <div class="card today-card" style="margin-bottom:14px">
+            <div class="card-header"><h3>Needs you today</h3><button class="btn btn-ghost btn-sm" onclick="switchView('myday')">My Day →</button></div>
+            <div id="dash-today"><div style="padding:16px 18px;font-size:13px;color:var(--text-muted)">Loading…</div></div>
           </div>
           <div class="card" style="margin-bottom:14px">
             <div class="card-header"><h3>Recent Activity</h3><button class="btn btn-ghost btn-sm" onclick="renderDashboard()">Refresh</button></div>
@@ -552,7 +675,7 @@ button,input,select,textarea{font-family:inherit}
         </div>
         <div>
           <div class="card" style="margin-bottom:14px">
-            <div class="card-header"><h3>Needs Follow-Up</h3></div>
+            <div class="card-header"><h3>Team follow-up</h3><span style="font-size:11.5px;color:var(--text-muted)">everyone’s, stalest first</span></div>
             <div id="dash-followup"></div>
           </div>
           <div class="card"><div class="card-header"><h3>Pipeline by Stage</h3></div><div class="card-body" id="dash-pipeline"></div></div>
@@ -862,10 +985,21 @@ button,input,select,textarea{font-family:inherit}
 <div id="profile-panel">
   <div class="pf-header">
     <div class="pf-header-top">
-      <div><div class="pf-name" id="pf-name">—</div><div class="pf-mkcid" id="pf-mkcid"></div><div class="pf-badges" id="pf-badges"></div></div>
+      <div style="min-width:0"><div class="pf-kicker" id="pf-kicker"></div><div class="pf-name" id="pf-name">—</div><div class="pf-mkcid" id="pf-mkcid"></div><div class="pf-badges" id="pf-badges"></div></div>
       <button class="pf-close" aria-label="Close" onclick="closeProfile()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
+    <div class="pf-facts" id="pf-facts"></div>
     <div class="pf-contact-row" id="pf-contacts-row"></div>
+    <div class="pf-actions" id="pf-actions">
+      <button class="btn btn-primary btn-sm" onclick="openActivityModal()">Log activity</button>
+      <button class="btn btn-secondary btn-sm" id="pf-addtask-btn" onclick="openNewTaskModal(S.currentEntry?.task?.id||'',S.currentEntry?.task?.name||'')">+ Task</button>
+      <button class="btn btn-secondary btn-sm" id="pf-message-btn" onclick="pfGoTab('actions')" title="Write an email or text from CRM Actions">Message</button>
+      <a class="btn btn-secondary btn-sm" id="pf-call-btn" href="#" style="display:none">Call</a>
+      <button class="btn btn-sm btn-frontrow" id="pf-frontrow-btn" onclick="addToFrontrow()" style="display:none" title="Give this contact a client portal login, or check whether they have one">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1.5" fill="currentColor"/><rect x="3" y="12" width="5" height="8" rx="1.5" fill="currentColor" opacity=".55"/><rect x="9.5" y="12" width="5" height="8" rx="1.5" fill="#FF5A36"/><rect x="16" y="12" width="5" height="8" rx="1.5" fill="currentColor" opacity=".55"/></svg>
+      Add to Frontrow
+    </button>
+    </div>
   </div>
   <div class="pf-tabs">
     <div class="pf-tab active" onclick="switchPfTab('details',this)">Details</div>
@@ -877,15 +1011,9 @@ button,input,select,textarea{font-family:inherit}
   <div class="pf-body" id="pf-body"></div>
   <div class="pf-footer">
     <button class="btn btn-primary" onclick="openUpdateProfile()">Edit Record</button>
-    <button class="btn btn-secondary" onclick="openActivityModal()">Log New Activity</button>
-    <button class="btn btn-success" id="pf-addtask-btn" onclick="openNewTaskModal(S.currentEntry?.task?.id||'',S.currentEntry?.task?.name||'')">+ Add Task</button>
     <button class="btn btn-ghost btn-sm" onclick="openCatchUpModal()">✨ Catch Up</button>
     <button class="btn btn-ghost btn-sm" id="pf-nb-btn" onclick="openNotebook()" style="display:none">Notebook ↗</button>
     <button class="btn btn-ghost btn-sm" onclick="openInClickUp()">View in ClickUp ↗</button>
-    <button class="btn btn-sm btn-frontrow" id="pf-frontrow-btn" onclick="addToFrontrow()" style="display:none" title="Give this contact a client portal login, or check whether they have one">
-      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1.5" fill="currentColor"/><rect x="3" y="12" width="5" height="8" rx="1.5" fill="currentColor" opacity=".55"/><rect x="9.5" y="12" width="5" height="8" rx="1.5" fill="#FF5A36"/><rect x="16" y="12" width="5" height="8" rx="1.5" fill="currentColor" opacity=".55"/></svg>
-      Add to Frontrow
-    </button>
   </div>
 </div>
 
@@ -1302,6 +1430,24 @@ button,input,select,textarea{font-family:inherit}
      z-index 150 (was 250): sits below the record panel (#profile-panel,
      200) so it no longer covers that panel's footer buttons ("View in
      ClickUp" on desktop) -- the panel has its own Log New Activity. -->
+<div id="cmdk" class="cmdk" hidden role="dialog" aria-modal="true" aria-label="Search and commands">
+  <div class="cmdk-box">
+    <div class="cmdk-input">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="cmdk-q" placeholder="Search people, deals, accounts — or type a command" autocomplete="off" role="combobox" aria-expanded="true" aria-controls="cmdk-list">
+      <kbd>Esc</kbd>
+    </div>
+    <div class="cmdk-list" id="cmdk-list" role="listbox"></div>
+    <div class="cmdk-foot"><span><kbd>↑</kbd> <kbd>↓</kbd> move</span><span><kbd>↵</kbd> open</span><span><kbd>/</kbd> or <kbd class="kbd-hint-inline">⌘K</kbd> from anywhere</span></div>
+  </div>
+</div>
+<nav id="bottom-nav" aria-label="Main">
+  <button type="button" data-view="dashboard" onclick="switchView('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Today</button>
+  <button type="button" data-view="leads" onclick="switchView('leads')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Leads</button>
+  <button type="button" class="bn-new" onclick="openNewEntryModal()" aria-label="New entry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+  <button type="button" data-view="pipeline" onclick="switchView('pipeline')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Pipeline</button>
+  <button type="button" onclick="toggleMobileMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>More</button>
+</nav>
 <button id="quick-capture-fab" onclick="openQuickCapture()" title="Quick Capture" aria-label="Quick Capture" style="position:fixed;bottom:22px;right:22px;z-index:150;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;border:none;box-shadow:0 4px 14px rgba(0,0,0,.25);font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center">✎</button>
 
 <div id="quick-capture-modal" style="display:none" class="modal-overlay">
@@ -2231,6 +2377,7 @@ function switchView(view){
   if(view==='settings')renderTemplateEditor();
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.querySelector(`.nav-item[data-view="${view}"]`)?.classList.add('active');
+  syncBottomNav(view);
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const el=document.getElementById(`view-${view}`);
   if(el)el.classList.add('active');
@@ -2304,11 +2451,11 @@ function renderTable(type){
     if(type==='leads'||type==='contacts'){
       const ct=cf['lead/contact type']||'';
       return `<tr onclick="openProfile('${task.id}','${lk}')" class="${isSub?'is-subtask':''}">
-        <td onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleRowSelection('${type}','${task.id}',this.checked)" ${isRowSelected(type,task.id)?'checked':''}></td>
+        <td class="cell-ck" onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleRowSelection('${type}','${task.id}',this.checked)" ${isRowSelected(type,task.id)?'checked':''}></td>
         <td class="cell-name"><div class="nm">${esc(name)}</div><div class="sub">${esc(id)}${isSub?' · ↳ Subtask':''}</div></td>
-        <td style="font-size:12.5px;color:var(--text-secondary)">${esc(email)}</td>
-        <td style="font-size:12.5px;color:var(--text-secondary)">${esc(phone)}</td>
-        <td>${sb}</td><td>${bb}</td><td>${ct?makeTypeBadge(ct):''}</td>
+        <td class="cell-line${email==='—'?' is-empty':''}" style="font-size:12.5px;color:var(--text-secondary)">${esc(email)}</td>
+        <td class="cell-line${email!=='—'?' cell-2nd':''}${phone==='—'?' is-empty':''}" style="font-size:12.5px;color:var(--text-secondary)">${esc(phone)}</td>
+        <td class="cell-badge">${sb}</td><td class="cell-badge">${bb}</td><td class="cell-badge">${ct?makeTypeBadge(ct):''}</td>
         <td class="cell-date" title="Last touched: ${esc(stale.label)}"><span class="fresh-dot" style="background:${stale.color}"></span>${upd}</td>
       </tr>`;
     }
@@ -2316,11 +2463,11 @@ function renderTable(type){
       const acct=cf['company/account name']||'—';
       const asgn=task.assignees?.map(a=>a.username||a.email).join(', ')||'—';
       return `<tr onclick="openProfile('${task.id}','${lk}')" class="${isSub?'is-subtask':''}">
-        <td onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleRowSelection('${type}','${task.id}',this.checked)" ${isRowSelected(type,task.id)?'checked':''}></td>
+        <td class="cell-ck" onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleRowSelection('${type}','${task.id}',this.checked)" ${isRowSelected(type,task.id)?'checked':''}></td>
         <td class="cell-name"><div class="nm">${esc(name)}</div><div class="sub">${esc(id)}</div></td>
-        <td style="font-size:12.5px;color:var(--text-secondary)">${esc(acct)}</td>
-        <td>${sb}</td><td>${bb}</td>
-        <td style="font-size:12.5px;color:var(--text-secondary)">${esc(asgn)}</td>
+        <td class="cell-line${acct==='—'?' is-empty':''}" style="font-size:12.5px;color:var(--text-secondary)">${esc(acct)}</td>
+        <td class="cell-badge">${sb}</td><td class="cell-badge">${bb}</td>
+        <td class="cell-line cell-2nd" style="font-size:12.5px;color:var(--text-secondary)">${esc(asgn)}</td>
         <td class="cell-date" title="Last touched: ${esc(stale.label)}"><span class="fresh-dot" style="background:${stale.color}"></span>${upd}</td>
       </tr>`;
     }
@@ -2328,10 +2475,10 @@ function renderTable(type){
       const pc=cf._byId[CU_FIELDS.MAIN_CONTACT]||'—';
       const as=cf['account status']||'—';
       return `<tr onclick="openProfile('${task.id}','${lk}')" class="${isSub?'is-subtask':''}">
-        <td onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleRowSelection('${type}','${task.id}',this.checked)" ${isRowSelected(type,task.id)?'checked':''}></td>
+        <td class="cell-ck" onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleRowSelection('${type}','${task.id}',this.checked)" ${isRowSelected(type,task.id)?'checked':''}></td>
         <td class="cell-name"><div class="nm">${esc(name)}</div><div class="sub">${esc(id)}</div></td>
-        <td>${makeSB(as)}</td><td>${sb}</td><td>${bb}</td>
-        <td style="font-size:12.5px;color:var(--text-secondary)">${esc(pc)}</td>
+        <td class="cell-badge${as==='—'?' is-empty':''}">${makeSB(as)}</td><td class="cell-badge">${sb}</td><td class="cell-badge">${bb}</td>
+        <td class="cell-line${pc==='—'?' is-empty':''}" style="font-size:12.5px;color:var(--text-secondary)">${esc(pc)}</td>
         <td class="cell-date" title="Last touched: ${esc(stale.label)}"><span class="fresh-dot" style="background:${stale.color}"></span>${upd}</td>
       </tr>`;
     }
@@ -2378,6 +2525,7 @@ function buildToolbar(type){
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-muted);pointer-events:none"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input type="text" id="fs-search-${type}" placeholder="Filter ${type}…" style="width:100%;height:34px;border:1px solid var(--border);border-radius:7px;padding:0 12px 0 34px;font-size:13px;background:var(--bg-card);outline:none" oninput="filterTable('${type}',this.value)">
     </div>
+    <button type="button" class="btn btn-secondary btn-sm filter-toggle" onclick="document.getElementById('tb-${type}').classList.toggle('show-filters')" aria-label="Show filters">Filters</button>
     ${showStatus?`<select class="filter-select" id="fs-status-${type}" onchange="filterByField('${type}','status',this.value)">
       <option value="">All statuses</option>${statuses.map(s=>`<option value="${s}">${s}</option>`).join('')}
     </select>`:''}
@@ -2936,7 +3084,7 @@ async function renderMyDay(){
     `<div class="act-item" onclick="openProfile('${t.id}','${typeKeys[t._t]}')">
       <div class="act-dot" style="background:${t._stale.color}"></div>
       <div><div style="font-size:13px;font-weight:500">${esc(t.name)}</div>
-      <div style="font-size:11.5px;color:${t._stale.color}">${t._t} · ${esc(t.status?.status||'—')} · ${t._stale.label}</div></div>
+      <div style="font-size:11.5px;color:${t._stale.color}">${t._t} · ${esc(stageLabel(t.status?.status||'—'))} · ${t._stale.label}</div></div>
     </div>`
   ).join(''):'<div class="empty-state" style="padding:20px"><p>Nothing stale — nice work</p></div>';
 
@@ -4489,7 +4637,9 @@ async function openProfile(taskId,type){
   // the Account field layout and Contact statuses, and the Follow-Up
   // action could never be found for Leads/Contacts.
   type={Lead:'leads',Deal:'pipeline',Contact:'contacts',Account:'accounts',deals:'pipeline'}[type]||type;
+  recentPush(taskId,type);
   document.getElementById('pf-name').textContent='Loading…';
+  ['pf-kicker','pf-facts'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
   document.getElementById('pf-mkcid').textContent='';
   document.getElementById('pf-badges').innerHTML='';
   document.getElementById('pf-contacts-row').innerHTML='';
@@ -4537,7 +4687,7 @@ function renderPfHeader(task,type){
       ${statuses.map(s=>`<option value="${esc(s)}"${s.toLowerCase()===status.toLowerCase()?' selected':''}>${esc(s)}</option>`).join('')}
     </select>
     <span class="badge" style="background:${sbg};color:${sfg};cursor:pointer;padding-right:20px" title="Click to change status">
-      ${esc(status||'—')} <span style="font-size:9px;opacity:.7">▼</span>
+      ${esc(stageLabel(status)||'—')} <span style="font-size:9px;opacity:.7">▼</span>
     </span>
   </span>`;
 
@@ -4545,10 +4695,8 @@ function renderPfHeader(task,type){
   document.getElementById('pf-name').textContent=name;
   document.getElementById('pf-mkcid').textContent=(task.id||'').toUpperCase();
   document.getElementById('pf-badges').innerHTML=`
-    <span class="badge" style="background:var(--accent-light);color:var(--accent)">${typeLabel}</span>
     ${statusBadge}${branch?makeBB(branch):''}
     ${cf['lead/contact type']?makeTypeBadge(cf['lead/contact type']):''}
-    <span class="badge" style="background:transparent;border:1px solid ${stale.color};color:${stale.color}">Last touched: ${stale.label}</span>
   `;
   document.getElementById('pf-contacts-row').innerHTML=`
     ${email?`<div class="contact-chip" onclick="copyVal('${escJsAttr(email)}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${esc(email)}</div>`:''}
@@ -4559,6 +4707,7 @@ function renderPfHeader(task,type){
   document.getElementById('pf-nb-btn').style.display=notebookLink?'inline-flex':'none';
   const fr=document.getElementById('pf-frontrow-btn');
   if(fr)fr.style.display=(type==='contacts'||type==='accounts')?'inline-flex':'none';
+  renderPfFacts(task,type);
 }
 
 async function quickUpdateEntryStatus(newStatus){
@@ -7665,7 +7814,7 @@ function renderDashboard(){
     `<div class="act-item" onclick="openProfile('${t.id}','${typeKeys[t._t]}')">
       <div class="act-dot" style="background:${typeColors[t._t]}"></div>
       <div><div style="font-size:13px;font-weight:500">${esc(t.name)}</div>
-      <div style="font-size:11.5px;color:var(--text-muted)">${t._t} · ${esc(t.status?.status||'—')} · ${fmtDateShort(t.date_updated)}</div></div>
+      <div style="font-size:11.5px;color:var(--text-muted)">${t._t} · ${esc(stageLabel(t.status?.status||'—'))} · ${fmtDateShort(t.date_updated)}</div></div>
     </div>`
   ).join('')||'<div class="empty-state" style="padding:20px"><p>No recent activity</p></div>';
 
@@ -7683,7 +7832,7 @@ function renderDashboard(){
     `<div class="act-item" onclick="openProfile('${t.id}','${typeKeys[t._t]}')">
       <div class="act-dot" style="background:${t._stale.color}"></div>
       <div><div style="font-size:13px;font-weight:500">${esc(t.name)}</div>
-      <div style="font-size:11.5px;color:${t._stale.color}">${t._t} · ${esc(t.status?.status||'—')} · ${t._stale.label}</div></div>
+      <div style="font-size:11.5px;color:${t._stale.color}">${t._t} · ${esc(stageLabel(t.status?.status||'—'))} · ${t._stale.label}</div></div>
     </div>`
   ).join('')||'<div class="empty-state" style="padding:20px"><p>Nothing overdue — nice work</p></div>';
 
@@ -7693,6 +7842,7 @@ function renderDashboard(){
     const[bg]=STATUS_COLORS[s.toLowerCase()]||['#e5e7eb'];
     return `<div class="stage-row"><div class="stage-dot" style="background:${bg}"></div><div style="flex:1;color:var(--text-secondary)">${esc(s)}</div><div style="font-weight:600">${c}</div></div>`;
   }).join('')||'<div class="empty-state" style="padding:20px"><p>No pipeline data</p></div>';
+  renderToday();
 }
 
 function updateBadge(type,count){
@@ -9197,7 +9347,7 @@ function escJsAttr(s){if(s==null)return'';return esc(String(s).replace(/\\/g,'\\
 function makeSB(status){
   const key=(status||'').toLowerCase();
   const[bg,fg]=STATUS_COLORS[key]||['#e5e7eb','#374151'];
-  return`<span class="badge" style="background:${bg};color:${fg}">${esc(status||'—')}</span>`;
+  return`<span class="badge" style="background:${bg};color:${fg}">${esc(stageLabel(status)||'—')}</span>`;
 }
 function makeBB(branch){
   if(!branch||branch==='—')return'';
@@ -9512,6 +9662,222 @@ function showToast(msg,type='info'){
   t.innerHTML=`<span>${{success:'✓',error:'✕',info:'ℹ'}[type]||'•'}</span><span>${esc(msg)}</span>`;
   c.appendChild(t);setTimeout(()=>t.remove(),4500);
 }
+
+// ═══════════════════════════════════════════
+// TIER 2 UX (Nov 2026): Today, ⌘K, record header, phone nav
+// ═══════════════════════════════════════════
+
+// ---------- Dashboard: "Needs you today" ----------
+// Pulls together what My Day shows across four cards -- my overdue and
+// due-today tasks, my follow-ups dated today or earlier, messages waiting
+// for my confirmation, and my entries going stale -- into one list, worst
+// first. My Day stays as the full view.
+let TODAY_MSGS={at:0,items:[],failed:false};
+async function loadTodayMessages(force){
+  if(!force&&Date.now()-TODAY_MSGS.at<60000)return TODAY_MSGS;
+  try{
+    const mine=await authFetch('/api/scheduled-messages','GET',{createdByMkcId:S.user?.mkcId||''});
+    TODAY_MSGS={at:Date.now(),items:Array.isArray(mine)?mine:[],failed:false};
+  }catch(e){TODAY_MSGS={at:Date.now(),items:[],failed:true};}
+  return TODAY_MSGS;
+}
+async function todayMsg(kind,id){
+  await (kind==='confirm'?confirmScheduledMessageNow(id):cancelScheduledMessage(id));
+  await loadTodayMessages(true);
+  renderToday();
+}
+function dayBounds(){const a=new Date();a.setHours(0,0,0,0);const b=new Date();b.setHours(23,59,59,999);return[a.getTime(),b.getTime()];}
+async function renderToday(){
+  const el=document.getElementById('dash-today');
+  if(!el)return;
+  const now=Date.now();const[,end]=dayBounds();
+  const typeKeys={Lead:'leads',Deal:'pipeline',Contact:'contacts',Account:'accounts'};
+  const isOpen=t=>!CLOSED_STATUSES.includes((t.status?.status||'').toLowerCase());
+  const tasks=(typeof S_masterTasks!=='undefined'&&S_masterTasks||[]).filter(t=>{
+    if(!isAssignedToMe(t)||!t.due_date)return false;
+    const s=(t.status?.status||'').toUpperCase();
+    return !(s.includes('COMPLETED')||s.includes('APPROVED'));
+  });
+  const overdue=tasks.filter(t=>+t.due_date<now).sort((a,b)=>a.due_date-b.due_date);
+  const dueToday=tasks.filter(t=>+t.due_date>=now&&+t.due_date<=end).sort((a,b)=>a.due_date-b.due_date);
+  const mine=[];
+  Object.entries(typeKeys).forEach(([label,key])=>(S.entries[key]||[]).forEach(t=>{if(!t.parent&&isOpen(t)&&isAssignedToMe(t))mine.push({...t,_t:label,_k:key});}));
+  const followUps=mine.filter(t=>{const d=Number(getCF(t)['next action date']);return d&&d<=end;}).sort((a,b)=>Number(getCF(a)['next action date'])-Number(getCF(b)['next action date']));
+  const fuIds=new Set(followUps.map(t=>t.id));
+  const stale=mine.filter(t=>!fuIds.has(t.id)).map(t=>({...t,_s:staleDaysInfo(t.date_updated)})).filter(t=>t._s.days!=null&&t._s.days>=4).sort((a,b)=>b._s.days-a._s.days);
+  const msgs=(await loadTodayMessages()).items.filter(it=>it.status==='awaiting_confirmation');
+
+  const rows=[];
+  const row=(o)=>`<div class="today-item${o.onclick?' clickable':''}"${o.onclick?` onclick="${o.onclick}" role="button" tabindex="0" onkeydown="if(event.key==='Enter')this.click()"`:''}>
+      <span class="today-tag ${o.tone}">${o.tag}</span>
+      <div class="today-main"><div class="today-title">${esc(o.title)}</div><div class="today-sub">${o.sub}</div></div>
+      ${o.side||''}
+    </div>`;
+  overdue.forEach(t=>{const d=Math.max(1,Math.floor((now-t.due_date)/864e5));rows.push(row({tone:'red',tag:'Overdue',title:t.name,sub:`Task · due ${fmtDateShort(t.due_date)} · ${d} day${d===1?'':'s'} late`,onclick:`openTaskProfile('${t.id}')`}));});
+  msgs.forEach(it=>rows.push(row({tone:'amber',tag:'Confirm',title:it.entry_name||'Scheduled message',sub:`${it.channel==='email'?'Email':'Text'} · ${esc(new Date(it.scheduled_for).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}))} · waiting for you`,
+    side:`<div class="today-side"><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();todayMsg('confirm','${esc(String(it.id))}')">Send now</button><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();todayMsg('cancel','${esc(String(it.id))}')">Cancel</button></div>`})));
+  dueToday.forEach(t=>rows.push(row({tone:'amber',tag:'Today',title:t.name,sub:`Task · due ${new Date(+t.due_date).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}`,onclick:`openTaskProfile('${t.id}')`})));
+  followUps.forEach(t=>{const d=Number(getCF(t)['next action date']);rows.push(row({tone:d<dayBounds()[0]?'red':'blue',tag:'Follow up',title:t.name,sub:`${t._t} · next action ${fmtDateShort(d)} · ${esc(stageLabel(t.status?.status||'—'))}`,onclick:`openProfile('${t.id}','${t._k}')`}));});
+  stale.slice(0,6).forEach(t=>rows.push(row({tone:t._s.days>=8?'red':'amber',tag:'Going stale',title:t.name,sub:`${t._t} · ${esc(stageLabel(t.status?.status||'—'))} · ${t._s.label}`,onclick:`openProfile('${t.id}','${t._k}')`})));
+
+  const MAX=12;
+  el.innerHTML=rows.length
+    ? rows.slice(0,MAX).join('')+(rows.length>MAX?`<button class="today-more" onclick="switchView('myday')">${rows.length-MAX} more in My Day →</button>`:'')
+    : '<div class="today-empty"><div class="today-check" aria-hidden="true">✓</div><div><b>You’re all caught up.</b><br><span>No overdue tasks, follow-ups or stale entries assigned to you.</span></div></div>';
+
+  // Greeting and one-line summary
+  const h=new Date().getHours();
+  const first=(S.user?.name||'').split(' ')[0];
+  const hello=document.getElementById('today-hello');
+  if(hello)hello.textContent=`Good ${h<12?'morning':h<17?'afternoon':'evening'}${first?`, ${first}`:''}`;
+  const bits=[];
+  if(overdue.length)bits.push(`${overdue.length} overdue`);
+  if(dueToday.length)bits.push(`${dueToday.length} due today`);
+  if(followUps.length)bits.push(`${followUps.length} follow-up${followUps.length===1?'':'s'}`);
+  if(msgs.length)bits.push(`${msgs.length} to confirm`);
+  if(stale.length)bits.push(`${stale.length} going stale`);
+  const sub=document.getElementById('today-sub');
+  if(sub)sub.textContent=new Date().toLocaleDateString([],{weekday:'long',month:'long',day:'numeric'})+(bits.length?' · '+bits.join(' · '):' · all caught up');
+}
+
+// ---------- ⌘K: search and commands ----------
+const CMDK_IS_MAC=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent||'');
+const CMDK_COMMANDS=[
+  {group:'Create',label:'New lead',kw:'add create lead',run:()=>openNewEntryModal('Lead')},
+  {group:'Create',label:'New contact',kw:'add create contact person',run:()=>openNewEntryModal('Contact')},
+  {group:'Create',label:'New deal',kw:'add create deal opportunity pipeline',run:()=>openNewEntryModal('Deal')},
+  {group:'Create',label:'New account',kw:'add create account company',run:()=>openNewEntryModal('Account')},
+  {group:'Create',label:'Quick capture',kw:'note capture jot',run:()=>openQuickCapture()},
+  {group:'Go to',label:'Dashboard',kw:'home today',run:()=>switchView('dashboard')},
+  {group:'Go to',label:'My Day',kw:'today overdue',run:()=>switchView('myday')},
+  {group:'Go to',label:'My Work',kw:'mine assigned',run:()=>switchView('mywork')},
+  {group:'Go to',label:'Leads',kw:'list',run:()=>switchView('leads')},
+  {group:'Go to',label:'Pipeline',kw:'deals kanban',run:()=>switchView('pipeline')},
+  {group:'Go to',label:'Contacts',kw:'people list',run:()=>switchView('contacts')},
+  {group:'Go to',label:'Accounts',kw:'companies list',run:()=>switchView('accounts')},
+  {group:'Go to',label:'Activity Inbox',kw:'qc inbox review',run:()=>switchView('qcinbox')},
+  {group:'Go to',label:'Action Hub',kw:'tasks',run:()=>switchView('tasks')},
+  {group:'Go to',label:'Export',kw:'csv download',run:()=>switchView('export')},
+  {group:'Go to',label:'Resources',kw:'help how to guide',run:()=>switchView('resources')},
+  {group:'Do',label:'Refresh data',kw:'sync reload',run:()=>refreshAll()}
+];
+const CMDK={open:false,items:[],sel:0,lastFocus:null};
+function recentGet(){try{return JSON.parse(localStorage.getItem('mkc_recent')||'[]')}catch(e){return[]}}
+function recentPush(id,type){
+  if(!id||!['leads','pipeline','contacts','accounts'].includes(type))return;
+  try{const r=recentGet().filter(x=>x.id!==id);r.unshift({id,type});localStorage.setItem('mkc_recent',JSON.stringify(r.slice(0,8)));}catch(e){}
+}
+function cmdkRecent(){
+  const label={leads:'Lead',pipeline:'Deal',contacts:'Contact',accounts:'Account'};
+  return recentGet().map(r=>{const t=(S.entries[r.type]||[]).find(x=>x.id===r.id);return t?{group:'Recent',label:t.name,sub:label[r.type],badge:t.status?.status||'',run:()=>openProfile(t.id,r.type)}:null;}).filter(Boolean).slice(0,5);
+}
+function cmdkResults(q){
+  const words=q.toLowerCase().split(/\s+/).filter(Boolean);
+  if(!words.length)return[...cmdkRecent(),...CMDK_COMMANDS];
+  // Commands whose name matches beat ones that only match a keyword.
+  const score=c=>{const l=c.label.toLowerCase();return words.every(w=>l.includes(w))?(l.startsWith(words[0])?3:2):1;};
+  const cmds=CMDK_COMMANDS.filter(c=>words.every(w=>(c.label+' '+c.kw+' '+c.group).toLowerCase().includes(w)))
+    .map(c=>({...c,_s:score(c)})).sort((a,b)=>b._s-a._s).map(c=>({...c,group:'Commands',sub:c.group}));
+  const recs=(q.trim().length>=2?searchAll(q.trim().toLowerCase()):[]).slice(0,12).map(r=>({group:r.type+'s',label:r.name,sub:r.email||(r.id||'').toUpperCase(),badge:r.status||'',run:()=>openProfile(r.id,r.key)}));
+  return[...recs,...cmds];
+}
+function cmdkRender(){
+  const list=document.getElementById('cmdk-list');
+  const q=document.getElementById('cmdk-q').value;
+  CMDK.items=cmdkResults(q);
+  if(CMDK.sel>=CMDK.items.length)CMDK.sel=0;
+  if(!CMDK.items.length){list.innerHTML=`<div class="cmdk-empty">Nothing matches “${esc(q)}”. Try a name, email, phone or MKC ID.</div>`;return;}
+  let html='',group='';
+  CMDK.items.forEach((it,i)=>{
+    if(it.group!==group){group=it.group;html+=`<div class="cmdk-group">${esc(group)}</div>`;}
+    html+=`<div class="cmdk-item${i===CMDK.sel?' sel':''}" role="option" id="cmdk-i${i}" aria-selected="${i===CMDK.sel}" data-i="${i}">
+      <div class="cmdk-label">${esc(it.label)}${it.sub?`<span class="cmdk-sub">${esc(it.sub)}</span>`:''}</div>${it.badge?makeSB(stageLabel(it.badge)):''}</div>`;
+  });
+  list.innerHTML=html;
+  document.getElementById('cmdk-q').setAttribute('aria-activedescendant',`cmdk-i${CMDK.sel}`);
+  document.getElementById(`cmdk-i${CMDK.sel}`)?.scrollIntoView({block:'nearest'});
+}
+function openCmdk(prefill=''){
+  const box=document.getElementById('cmdk');
+  if(!box||!S.user)return;
+  CMDK.lastFocus=document.activeElement;
+  CMDK.open=true;CMDK.sel=0;
+  box.hidden=false;
+  const q=document.getElementById('cmdk-q');
+  q.value=prefill;cmdkRender();
+  setTimeout(()=>q.focus(),0);
+}
+function closeCmdk(){
+  const box=document.getElementById('cmdk');
+  if(!box||box.hidden)return;
+  box.hidden=true;CMDK.open=false;
+  try{CMDK.lastFocus&&CMDK.lastFocus.focus&&CMDK.lastFocus.id!=='gsi'&&CMDK.lastFocus.focus();}catch(e){}
+}
+function cmdkRun(i){
+  const it=CMDK.items[i];if(!it)return;
+  closeCmdk();
+  try{it.run();}catch(e){showToast(e.message,'error');}
+}
+function setupCmdk(){
+  const box=document.getElementById('cmdk');if(!box)return;
+  const q=document.getElementById('cmdk-q');
+  q.addEventListener('input',()=>{CMDK.sel=0;cmdkRender();});
+  q.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'){e.preventDefault();CMDK.sel=Math.min(CMDK.items.length-1,CMDK.sel+1);cmdkRender();}
+    else if(e.key==='ArrowUp'){e.preventDefault();CMDK.sel=Math.max(0,CMDK.sel-1);cmdkRender();}
+    else if(e.key==='Enter'){e.preventDefault();cmdkRun(CMDK.sel);}
+    else if(e.key==='Escape'){e.preventDefault();closeCmdk();}
+  });
+  document.getElementById('cmdk-list').addEventListener('click',e=>{const it=e.target.closest('.cmdk-item');if(it)cmdkRun(Number(it.dataset.i));});
+  document.getElementById('cmdk-list').addEventListener('mousemove',e=>{const it=e.target.closest('.cmdk-item');if(it&&Number(it.dataset.i)!==CMDK.sel){CMDK.sel=Number(it.dataset.i);cmdkRender();}});
+  box.addEventListener('mousedown',e=>{if(e.target===box)closeCmdk();});
+  document.addEventListener('keydown',e=>{
+    if((e.metaKey||e.ctrlKey)&&!e.shiftKey&&!e.altKey&&e.key.toLowerCase()==='k'){e.preventDefault();CMDK.open?closeCmdk():openCmdk();return;}
+    const tag=(e.target.tagName||'').toLowerCase();
+    if(e.key==='/'&&!CMDK.open&&!['input','textarea','select'].includes(tag)&&!e.target.isContentEditable&&!document.querySelector('.modal-overlay[style*="flex"]')){e.preventDefault();openCmdk();}
+  });
+  // The top-bar search opens the same palette, carrying what was typed.
+  const gsi=document.getElementById('gsi');
+  if(gsi){
+    gsi.addEventListener('focus',()=>{const v=gsi.value;gsi.value='';gsi.blur();document.getElementById('srp')?.classList.remove('open');openCmdk(v);});
+  }
+  document.querySelectorAll('.kbd-hint,.kbd-hint-inline').forEach(k=>{k.textContent=CMDK_IS_MAC?'⌘K':'Ctrl K';});
+}
+
+// ---------- Record panel ----------
+function pfGoTab(tab){if(S.currentEntry)switchPfTab(tab,null);}
+function renderPfFacts(task,type){
+  const cf=getCF(task);
+  const facts=[];
+  const owners=(task.assignees||[]).map(a=>a.username||a.email).filter(Boolean);
+  facts.push(['Owner',owners.length?esc(owners.join(', ')):'<span class="muted">Unassigned</span>']);
+  const st=staleDaysInfo(task.date_updated);
+  facts.push(['Last touched',`<span class="fresh-dot" style="background:${st.color}"></span>${esc(st.label)}`]);
+  if(type==='master'){
+    if(task.due_date)facts.push(['Due',esc(fmtDateShort(task.due_date))]);
+  }else if(cf['next action date']){
+    const d=Number(cf['next action date']);const[start]=dayBounds();
+    facts.push(['Next action',`<span${d<start?' class="late"':''}>${esc(fmtDateShort(d))}</span>${cf['next action']?`<span class="fact-note">${esc(cf['next action'])}</span>`:''}`]);
+  }
+  if(type==='accounts'&&cf['account status'])facts.push(['Account status',esc(cf['account status'])]);
+  else if(task.date_created)facts.push(['Created',esc(fmtDateShort(task.date_created))]);
+  const el=document.getElementById('pf-facts');
+  if(el)el.innerHTML=facts.slice(0,4).map(([k,v])=>`<div class="fact"><div class="fact-k">${k}</div><div class="fact-v">${v}</div></div>`).join('');
+  const typeLabel={leads:'Lead',pipeline:'Deal',contacts:'Contact',accounts:'Account',master:'Task'}[type]||type;
+  const kick=document.getElementById('pf-kicker');
+  if(kick)kick.textContent=`${typeLabel} · ${(task.id||'').toUpperCase()}`;
+  const phone=cf.phone||cf['primary contact phone']||'';
+  const call=document.getElementById('pf-call-btn');
+  if(call){const digits=phone.replace(/[^\d+]/g,'');call.style.display=digits.length>=7?'inline-flex':'none';call.href=digits?`tel:${digits}`:'#';}
+  const msg=document.getElementById('pf-message-btn');
+  if(msg)msg.style.display=type==='master'?'none':'inline-flex';
+}
+
+// ---------- Phone: bottom navigation ----------
+function syncBottomNav(view){
+  document.querySelectorAll('#bottom-nav [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
+}
+document.addEventListener('DOMContentLoaded',()=>{setupCmdk();syncBottomNav('dashboard');});
 </script>
 </body>
 </html>
