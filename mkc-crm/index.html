@@ -197,9 +197,15 @@ tbody tr.is-subtask{opacity:.7;background:#fafafa}
 .form-group{margin-bottom:13px}
 .form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px}
 .form-group label .req{color:var(--danger);margin-left:2px}
-input[type=text],input[type=email],input[type=tel],input[type=date],input[type=url],input[type=password],select.form-select,textarea.form-textarea{width:100%;height:36px;border:1px solid var(--border);border-radius:7px;padding:0 12px;font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--bg-card);outline:none;transition:border-color .15s}
+input[type=text],input[type=email],input[type=tel],input[type=date],input[type=time],input[type=datetime-local],input[type=url],input[type=password],select.form-select,textarea.form-textarea{width:100%;height:36px;border:1px solid var(--border);border-radius:7px;padding:0 12px;font-size:13px;font-family:inherit;color:var(--text-primary);background:var(--bg-card);outline:none;transition:border-color .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:72px}
+/* Date+time pairs (New Task, Edit Task) sit in a flex row inside a
+   .form-row grid cell. Grid/flex items default to min-width:auto, so the
+   cell couldn't shrink below the native controls' intrinsic width and the
+   time input ran ~20px past the modal's right edge (more on phones). */
+.form-row>*{min-width:0}
+input[type=date],input[type=time],input[type=datetime-local]{min-width:0}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 /* DASHBOARD */
 .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
@@ -252,7 +258,11 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
 
 /* ── MOBILE RESPONSIVE ─────────────────────────────────────────── */
 @media(max-width:768px){
-  input[type=text],input[type=email],input[type=tel],input[type=date],input[type=url],input[type=password],select.form-select,textarea.form-textarea{font-size:16px}
+  /* iOS zooms the whole page when a focused control's text is under 16px.
+     The old list here missed time/datetime-local inputs, every select
+     without .form-select, and inputs with an inline font-size (Quick
+     Capture, list filter, CRM Actions draft) -- !important beats those. */
+  input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea{font-size:16px!important}
   .qc-item-actions{display:none!important}
   :root{--sidebar-width:0px;--topbar-height:54px}
   #sidebar{position:fixed;left:0;top:0;bottom:0;width:240px;z-index:300;transform:translateX(-100%);transition:transform .25s ease}
@@ -270,7 +280,19 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
   table{font-size:12px}
   th,td{padding:7px 10px}
   .list-toolbar{gap:6px}
-  select.filter-select{height:32px;font-size:12px}
+  select.filter-select{height:32px;min-height:34px}
+  /* List-view text filter was squeezed to ~60px ("Fi…") by its inline
+     flex:1/max-width; give it its own full-width row on phones. */
+  .list-toolbar>div:first-child{flex:1 1 100%!important;max-width:none!important}
+  /* Action Hub / My Work task rows: the status+date+select column never
+     shrinks, so task names were cut to a few letters. Wrap it below. */
+  .task-item{flex-wrap:wrap}
+  .task-item .task-info{flex:1 1 calc(100% - 30px)}
+  .task-item .task-meta{flex-wrap:wrap;padding-left:19px}
+  /* Same for the status dropdown on the record panel's Tasks tab rows. */
+  .related-item{flex-wrap:wrap}
+  .related-item>select{flex:1 1 100%}
+  .pf-close{width:44px;height:44px}
   #profile-panel{width:100vw;max-width:100vw}
   .kanban-board{gap:10px}
   .kanban-col{width:220px}
@@ -295,6 +317,20 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
   td:nth-child(4),th:nth-child(4){display:none}
   td:nth-child(7),th:nth-child(7){display:none}
 }
+/* ── AUDIT FIXES (all sizes; placed last so they win over the
+   shorthand paddings in the media queries above) ─────────────────── */
+/* Room to scroll the last row/card out from under the Quick Capture FAB. */
+#content{padding-bottom:96px}
+/* 1fr tracks can't shrink below their nowrap event chips, so on a phone
+   the grid overflowed and .calendar-wrap's overflow:hidden cut off
+   Thu-Sat entirely. minmax(0,1fr) lets the chips ellipsize instead. */
+.cal-grid{grid-template-columns:repeat(7,minmax(0,1fr))}
+/* Desktop list filter was ~66px wide ("Filt…"). */
+.list-toolbar>div:first-child{min-width:180px}
+.sync-dot.error{background:var(--danger)}
+/* A long email in a search result pushed the status badge off-screen
+   (sideways scroll on the Search view on phones). */
+.srp-item>div{min-width:0;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -308,7 +344,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
       <div><div style="font-size:18px;font-weight:700">MKC CRM</div><div style="font-size:12px;color:var(--text-muted)">Operations Platform</div></div>
     </div>
     <div class="form-group">
-      <label>Select Your MKC ID</label>
+      <label for="login-id">Select Your MKC ID</label>
       <select class="form-select" id="login-id" onchange="onLoginChange()"><option value="">— Loading… —</option></select>
     </div>
     <div class="form-group" id="login-name-row" style="display:none">
@@ -316,7 +352,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
       <div id="login-name" style="font-size:14px;font-weight:600;padding:6px 0"></div>
     </div>
     <div class="form-group">
-      <label>Workspace Passcode</label>
+      <label for="login-pass">Workspace Passcode</label>
       <input type="password" inputmode="numeric" pattern="[0-9]*" id="login-pass" placeholder="Enter your passcode…" onkeydown="if(event.key==='Enter')attemptLogin()">
     </div>
     <div id="login-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:7px;padding:9px 13px;font-size:12px;color:#dc2626;margin-bottom:12px;line-height:1.5"></div>
@@ -394,7 +430,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
 <!-- MAIN -->
 <div id="main">
   <div id="topbar">
-    <button id="menu-toggle" style="display:none" onclick="toggleMobileMenu()" title="Menu">
+    <button id="menu-toggle" style="display:none" onclick="toggleMobileMenu()" title="Menu" aria-label="Open menu">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <span class="page-title" id="page-title">Dashboard</span>
@@ -405,7 +441,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
     </div>
     <div class="topbar-right">
       <div class="sync-indicator"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Ready</span></div>
-      <button class="btn btn-ghost btn-sm" onclick="refreshAll()" title="Refresh">
+      <button class="btn btn-ghost btn-sm" onclick="refreshAll()" title="Refresh" aria-label="Refresh">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
       </button>
       <button class="btn btn-primary btn-sm" onclick="openNewEntryModal()">
@@ -752,7 +788,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
   <div class="pf-header">
     <div class="pf-header-top">
       <div><div class="pf-name" id="pf-name">—</div><div class="pf-mkcid" id="pf-mkcid"></div><div class="pf-badges" id="pf-badges"></div></div>
-      <button class="pf-close" onclick="closeProfile()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      <button class="pf-close" aria-label="Close" onclick="closeProfile()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="pf-contact-row" id="pf-contacts-row"></div>
   </div>
@@ -777,7 +813,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
 <!-- MODALS -->
 <div id="entry-modal" style="display:none" class="modal-overlay">
   <div class="modal">
-    <div class="modal-header"><h3 id="em-title">New Entry</h3><button class="pf-close" onclick="closeModal('entry-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><h3 id="em-title">New Entry</h3><button class="pf-close" aria-label="Close" onclick="closeModal('entry-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body" id="em-body"></div>
     <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('entry-modal')">Cancel</button><button class="btn btn-primary" id="em-submit" onclick="submitEntry()">Create</button></div>
   </div>
@@ -785,7 +821,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
 
 <div id="activity-modal" style="display:none" class="modal-overlay">
   <div class="modal" style="max-width:460px">
-    <div class="modal-header"><h3>Log New Activity</h3><button class="pf-close" onclick="closeModal('activity-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><h3>Log New Activity</h3><button class="pf-close" aria-label="Close" onclick="closeModal('activity-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body">
       <div class="form-group"><label>Activity Type</label>
         <div class="hash-row">
@@ -840,7 +876,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
 
 <div id="task-modal" style="display:none" class="modal-overlay">
   <div class="modal" style="max-width:520px">
-    <div class="modal-header"><h3 id="tm-title">New Task</h3><button class="pf-close" onclick="closeModal('task-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><h3 id="tm-title">New Task</h3><button class="pf-close" aria-label="Close" onclick="closeModal('task-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body">
       <div class="form-group"><label>Task Name <span class="req">*</span></label><input type="text" id="nt-name" placeholder="e.g. Follow up call with Nina"></div>
       <div class="form-row">
@@ -897,7 +933,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
      anchor tag click doesn't have this problem. -->
 <div id="gcal-prompt-modal" style="display:none" class="modal-overlay">
   <div class="modal" style="max-width:380px">
-    <div class="modal-header"><h3>📅 Add to Calendar</h3><button class="pf-close" onclick="closeModal('gcal-prompt-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><h3>📅 Add to Calendar</h3><button class="pf-close" aria-label="Close" onclick="closeModal('gcal-prompt-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body">
       <p style="font-size:13.5px;color:var(--text-secondary);margin:0">Opens Google Calendar in a new tab, pre-filled with the details -- just review and hit Save on Google's side. If it doesn't open, copy the link instead and paste it into Safari or your calendar app.</p>
     </div>
@@ -912,7 +948,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
 <!-- QC INBOX: thread / chat view + markdown export -->
 <div id="qc-thread-modal" style="display:none" class="modal-overlay">
   <div class="modal" style="max-width:640px;max-height:82vh;display:flex;flex-direction:column">
-    <div class="modal-header"><h3 id="qct-title">Activity Thread</h3><button class="pf-close" onclick="closeModal('qc-thread-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><h3 id="qct-title">Activity Thread</h3><button class="pf-close" aria-label="Close" onclick="closeModal('qc-thread-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body" id="qct-body" style="overflow-y:auto;flex:1"></div>
     <div class="modal-footer" style="justify-content:space-between">
       <button class="btn btn-secondary btn-sm" onclick="qcExportMarkdown()">
@@ -920,7 +956,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
       </button>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-secondary" id="qct-callfix-btn" style="display:none" onclick="qcMarkNotAnswered()" title="Correct this if it was actually a voicemail or went unanswered">Mark as No Answer</button>
-        <button class="btn btn-ghost" id="qct-archive-btn" onclick="qcArchive(S.qc.current);closeModal('qc-thread-modal')">Archive</button>
+        <button class="btn btn-ghost" id="qct-archive-btn" onclick="qcArchive(S.qc.current).then(ok=>{if(ok)closeModal('qc-thread-modal')})">Archive</button>
         <button class="btn btn-secondary" onclick="closeModal('qc-thread-modal')">Close</button>
         <button class="btn btn-primary" id="qct-assign-btn" onclick="qcOpenAssign(S.qc.current,true)">Assign…</button>
       </div>
@@ -931,7 +967,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
 <!-- QC INBOX: assign-to-record search -->
 <div id="qc-assign-modal" style="display:none" class="modal-overlay">
   <div class="modal" style="max-width:480px">
-    <div class="modal-header"><h3>Assign to Record</h3><button class="pf-close" onclick="closeModal('qc-assign-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><h3>Assign to Record</h3><button class="pf-close" aria-label="Close" onclick="closeModal('qc-assign-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body" id="qc-assign-body">
       <div id="qc-assign-context" style="font-size:12.5px;color:var(--text-secondary);margin-bottom:10px"></div>
 
@@ -980,7 +1016,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
 <!-- CATCH UP: on-demand AI activity summary, ephemeral -- never stored or logged -->
 <div id="catchup-modal" style="display:none" class="modal-overlay">
   <div class="modal" style="max-width:520px">
-    <div class="modal-header"><h3>✨ Catch Up</h3><button class="pf-close" onclick="closeModal('catchup-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><h3>✨ Catch Up</h3><button class="pf-close" aria-label="Close" onclick="closeModal('catchup-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body">
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Generated on demand from this entry's activity log — not saved anywhere, so there's nothing to keep in sync if you regenerate it.</div>
       <div class="form-group"><label>Time scope</label>
@@ -1009,7 +1045,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
 <!-- ADD TEAM MEMBER: creates the ClickUp task + matching Sheet row in one action -->
 <div id="add-team-modal" style="display:none" class="modal-overlay">
   <div class="modal" style="max-width:560px;max-height:85vh;overflow-y:auto">
-    <div class="modal-header"><h3>+ Add Team Member</h3><button class="pf-close" onclick="closeAddTeamMemberModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><h3>+ Add Team Member</h3><button class="pf-close" aria-label="Close" onclick="closeAddTeamMemberModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body">
       <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px">Creates a real record in ClickUp's Team Member Directory and the matching Google Sheet row together — this is what keeps the two from drifting apart the way the old manual process could.</div>
 
@@ -1072,7 +1108,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
 <!-- EDIT PROFILE: self-service passcode change + send-identity update, syncs both ClickUp and the Sheet -->
 <div id="edit-profile-modal" style="display:none" class="modal-overlay">
   <div class="modal" style="max-width:480px">
-    <div class="modal-header"><h3>Edit Profile</h3><button class="pf-close" onclick="closeModal('edit-profile-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><h3>Edit Profile</h3><button class="pf-close" aria-label="Close" onclick="closeModal('edit-profile-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body">
       <div style="display:flex;gap:16px;font-size:12.5px;color:var(--text-secondary);margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
         <div><div style="color:var(--text-muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em">Name</div><div id="ep-name" style="font-weight:600"></div></div>
@@ -1116,7 +1152,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
 <!-- MARK AS CLOSED/WON: logs deposit/balance terms as a structured comment (no custom fields exist for these yet), with an explicit Archive step using the one confirmed status value -->
 <div id="closedwon-modal" style="display:none" class="modal-overlay">
   <div class="modal" style="max-width:480px">
-    <div class="modal-header"><h3>Mark as Closed/Won</h3><button class="pf-close" onclick="closeClosedWonModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><h3>Mark as Closed/Won</h3><button class="pf-close" aria-label="Close" onclick="closeClosedWonModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body">
       <div class="form-group"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:400"><input type="checkbox" id="cw-deposit-made" onchange="toggleDepositAmount()"> Deposit made</label></div>
       <div class="form-group" id="cw-deposit-amount-group" style="display:none"><label>Deposit Amount</label><input type="text" id="cw-deposit-amount" class="form-select" placeholder="$"></div>
@@ -1136,7 +1172,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
 <!-- MARK AS CLOSED/LOST -->
 <div id="closedlost-modal" style="display:none" class="modal-overlay">
   <div class="modal" style="max-width:480px">
-    <div class="modal-header"><h3>Mark as Closed/Lost</h3><button class="pf-close" onclick="closeClosedLostModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><h3>Mark as Closed/Lost</h3><button class="pf-close" aria-label="Close" onclick="closeClosedLostModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body">
       <div class="form-group"><label>Reason <span style="font-weight:400;color:var(--text-muted);font-size:11px">(optional, but useful for later reference)</span></label><textarea class="form-textarea" id="cl-reason" rows="4" placeholder="Why did this deal not close?"></textarea></div>
       <div id="closedlost-status" style="font-size:12.5px;color:var(--text-secondary)"></div>
@@ -1152,7 +1188,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
 <!-- BULK ASSIGN: applies to whatever's currently checked in the list view -->
 <div id="bulk-assign-modal" style="display:none" class="modal-overlay">
   <div class="modal" style="max-width:420px">
-    <div class="modal-header"><h3>Bulk Assign</h3><button class="pf-close" onclick="closeModal('bulk-assign-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><h3>Bulk Assign</h3><button class="pf-close" aria-label="Close" onclick="closeModal('bulk-assign-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body">
       <div id="bulk-assign-count" style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px"></div>
       <div class="form-group"><label>Assign to</label>
@@ -1174,7 +1210,7 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
      time thread review, no new UI needed for that tier). -->
 <div id="triage-modal" style="display:none" class="modal-overlay">
   <div class="modal" style="max-width:760px;max-height:88vh;display:flex;flex-direction:column">
-    <div class="modal-header"><h3>Smart Triage</h3><button class="pf-close" onclick="closeModal('triage-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><h3>Smart Triage</h3><button class="pf-close" aria-label="Close" onclick="closeModal('triage-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body" id="triage-body" style="overflow-y:auto;flex:1"></div>
   </div>
 </div>
@@ -1183,26 +1219,29 @@ textarea.form-textarea{height:auto;padding:10px 12px;resize:vertical;min-height:
      happened outside the CRM entirely -- a live conversation, a text on
      a personal phone, a stray idea. Deliberately zero required fields;
      sorting out who/what happens later via Smart Triage, not at the
-     moment of capture. -->
-<button id="quick-capture-fab" onclick="openQuickCapture()" title="Quick Capture" style="position:fixed;bottom:22px;right:22px;z-index:250;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;border:none;box-shadow:0 4px 14px rgba(0,0,0,.25);font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center">✎</button>
+     moment of capture.
+     z-index 150 (was 250): sits below the record panel (#profile-panel,
+     200) so it no longer covers that panel's footer buttons ("View in
+     ClickUp" on desktop) -- the panel has its own Log New Activity. -->
+<button id="quick-capture-fab" onclick="openQuickCapture()" title="Quick Capture" aria-label="Quick Capture" style="position:fixed;bottom:22px;right:22px;z-index:150;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff;border:none;box-shadow:0 4px 14px rgba(0,0,0,.25);font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center">✎</button>
 
 <div id="quick-capture-modal" style="display:none" class="modal-overlay">
   <div class="modal" style="max-width:480px">
-    <div class="modal-header"><h3>Quick Capture</h3><button class="pf-close" onclick="closeModal('quick-capture-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-header"><h3>Quick Capture</h3><button class="pf-close" aria-label="Close" onclick="closeQuickCapture()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body">
       <textarea id="qcap-text" class="form-textarea" rows="5" placeholder="What happened? Who, what was discussed, any next steps -- write it however it comes out, it'll get sorted out later." style="font-size:14px"></textarea>
       <div style="font-size:11.5px;color:var(--text-muted);margin-top:6px">On your phone, tap the keyboard's mic to talk instead of type. No need to say who this is about -- that gets figured out during review.</div>
       <div id="qcap-status" style="font-size:12.5px;color:var(--text-secondary);margin-top:8px"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('quick-capture-modal')">Cancel</button>
+      <button class="btn btn-secondary" onclick="closeQuickCapture()">Cancel</button>
       <button class="btn btn-primary" id="qcap-submit-btn" onclick="submitQuickCapture()">Capture</button>
     </div>
   </div>
 </div>
 
 <div id="sidebar-overlay" onclick="toggleMobileMenu()"></div>
-<div id="toast-container"></div>
+<div id="toast-container" role="status" aria-live="polite"></div>
 <script>
 // ═══════════════════════════════════════════
 // CONFIG & CREDENTIALS
@@ -1637,6 +1676,10 @@ async function authFetch(path,method='GET',params=null){
 function handleSessionExpired(){
   if(S._sessionExpiredHandled)return;
   S._sessionExpiredHandled=true;
+  // Stop the 5-minute auto-refresh: with no token it can only fail, and
+  // each failure stacked "Failed to load X" toasts over the login
+  // screen. init() restarts it after the next successful sign-in.
+  if(S.autoTimer){clearInterval(S.autoTimer);S.autoTimer=null;}
   localStorage.removeItem('mkc_session');
   localStorage.removeItem('mkc_session_token');
   sessionStorage.clear(); // still fine to blanket-clear -- only the legacy mkc_cu token and similar live here now
@@ -1777,6 +1820,14 @@ document.addEventListener('DOMContentLoaded',()=>{
  */
 async function showLogin(){
   document.getElementById('login-overlay').style.display='flex';
+  // attemptLogin() only resets the button on FAILURE, so after a
+  // successful sign-in earlier in this page session it stayed disabled
+  // with its spinner -- a session timeout then left no way to sign back
+  // in without reloading. Also clears the passcode left in the field.
+  const loginBtn=document.getElementById('login-btn');
+  if(loginBtn){loginBtn.disabled=false;loginBtn.textContent='Sign In';}
+  const loginPass=document.getElementById('login-pass');
+  if(loginPass)loginPass.value='';
   const sel=document.getElementById('login-id');
   sel.innerHTML='<option value="">— Loading… —</option>';
   try{
@@ -1855,44 +1906,53 @@ async function init(){
   setSyncState('syncing','Loading…');
   await loadRef();
   await loadTemplateOverrides();
-  await loadAllEntries();
+  const failed=await loadAllEntries();
   await loadMasterTasks();
   populateTaskFilters();
+  // loadAllEntries() already called renderTasks(), but before
+  // loadMasterTasks() had run -- so the Action Hub badge said 0 until
+  // the Action Hub was opened. Re-render now that tasks are loaded.
+  renderTasks();
   renderDashboard();
   renderMyWork();
   refreshQcBadge();
   startAutoRefresh();
-  setSyncState('ok','Synced '+new Date().toLocaleTimeString());
+  setSyncState(failed?'error':'ok',failed?'Sync incomplete':'Synced '+new Date().toLocaleTimeString());
 }
 
 function startAutoRefresh(){
   if(S.autoTimer)clearInterval(S.autoTimer);
   S.autoTimer=setInterval(async()=>{
     setSyncState('syncing','Refreshing…');
-    await loadAllEntries();
+    const failed=await loadAllEntries();
     renderDashboard();
     renderMyWork();
-    setSyncState('ok','Synced '+new Date().toLocaleTimeString());
+    setSyncState(failed?'error':'ok',failed?'Sync incomplete':'Synced '+new Date().toLocaleTimeString());
   },5*60*1000);
 }
 
 async function refreshAll(){
   setSyncState('syncing','Refreshing…');
   await loadRef();
-  await loadAllEntries();
+  const failed=await loadAllEntries();
   await loadMasterTasks();
   populateTaskFilters();
   renderDashboard();
   renderTasks();
   renderMyWork();
   refreshQcBadge();
-  setSyncState('ok','Synced '+new Date().toLocaleTimeString());
-  showToast('Data refreshed.','success');
+  // Previously always "Synced"/"Data refreshed." -- even right after the
+  // per-list "Failed to load X" error toasts, or after a 401 had already
+  // dropped the user back to the login screen.
+  if(!S.creds.sessionToken){setSyncState('error','Signed out');return;}
+  setSyncState(failed?'error':'ok',failed?'Sync incomplete':'Synced '+new Date().toLocaleTimeString());
+  if(failed)showToast(`Refresh incomplete — ${failed} list${failed>1?'s':''} failed to load.`,'error');
+  else showToast('Data refreshed.','success');
 }
 
 function setSyncState(state,label){
   const dot=document.getElementById('sync-dot');
-  if(dot)dot.className='sync-dot'+(state==='syncing'?' syncing':'');
+  if(dot)dot.className='sync-dot'+(state==='syncing'?' syncing':state==='error'?' error':'');
   const lbl=document.getElementById('sync-label');
   if(lbl)lbl.textContent=label;
 }
@@ -2034,6 +2094,7 @@ async function loadAllEntries(){
   S._contactEntryLookup=null;
   const lists={leads:S.creds.listLeads,pipeline:S.creds.listPipeline,contacts:S.creds.listContacts,accounts:S.creds.listAccounts};
   const typeKeys=Object.keys(lists);
+  let failed=0;
   // The four lists are independent -- each writes only its own S.entries
   // key and renders only its own table -- so they load in parallel. This
   // is the slowest step of every login, and it was strictly sequential.
@@ -2057,12 +2118,16 @@ async function loadAllEntries(){
       if(mode==='kanban')renderKanban(type);
       if(mode==='calendar')renderCalendar(type);
     }catch(e){
+      failed++;
       console.error('Load:',type,e);
-      showToast(`Failed to load ${type}: ${e.message}`,'error');
+      // After a 401, handleSessionExpired() has already told the user and
+      // shown the login screen -- don't stack one more toast per list.
+      if(S.creds.sessionToken)showToast(`Failed to load ${type}: ${e.message}`,'error');
     }
   }));
   refreshEntityBadges();
   renderTasks();
+  return failed; // lets init/refreshAll/auto-refresh stop claiming "Synced" after a failure
 }
 
 // ═══════════════════════════════════════════
@@ -2086,7 +2151,7 @@ function switchView(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const el=document.getElementById(`view-${view}`);
   if(el)el.classList.add('active');
-  const titles={dashboard:'Dashboard',mywork:'My Work',leads:'Leads',pipeline:'Pipeline',contacts:'Contacts',accounts:'Accounts',tasks:'Action Hub',qcinbox:'Activity Inbox','search-view':'Search',export:'Export',settings:'Settings'};
+  const titles={dashboard:'Dashboard',myday:'My Day',resources:'Resources',mywork:'My Work',leads:'Leads',pipeline:'Pipeline',contacts:'Contacts',accounts:'Accounts',tasks:'Action Hub',qcinbox:'Activity Inbox','search-view':'Search',export:'Export',settings:'Settings'};
   document.getElementById('page-title').textContent=titles[view]||view;
   if(['leads','pipeline','contacts','accounts'].includes(view)){
     setLastViewed(view);
@@ -2209,6 +2274,15 @@ function renderTable(type){
 function buildToolbar(type){
   const el=document.getElementById(`tb-${type}`);
   if(!el)return;
+  // renderTable() calls this on every render, and the filter input's own
+  // oninput triggers a render -- so each keystroke replaced the <input>
+  // being typed in, dropping focus and the typed text after one letter.
+  // While that input has focus, keep the toolbar as-is (nothing in it
+  // changes mid-keystroke); it's rebuilt on the next render after blur.
+  if(document.activeElement&&document.activeElement.id===`fs-search-${type}`&&el.contains(document.activeElement)){
+    updateBulkActionBar(type);
+    return;
+  }
   const branches=[...new Set((S.ref.branches||[]).map(r=>r[1]).filter(Boolean))];
   const allSubBranches=Object.values(SUB_BRANCHES).flat();
   const statuses=getStatuses(type);
@@ -2968,6 +3042,10 @@ async function submitClosedWon(archive){
   if(notes)lines.push(`Notes: ${notes}`);
 
   statusEl.textContent=archive?'Logging & archiving…':'Logging…';
+  // Footer buttons stayed live during the request -- a second tap posted
+  // a second Closed/Won comment (and repeated the field writes).
+  const cwBtns=[...document.querySelectorAll('#closedwon-modal .modal-footer button')];
+  cwBtns.forEach(b=>b.disabled=true);
   try{
     // Comment stays exactly as before -- the additional record the user
     // specifically asked to keep, alongside the now-real field values.
@@ -2989,6 +3067,8 @@ async function submitClosedWon(archive){
     openProfile(task.id,S.currentEntry.type);
   }catch(e){
     statusEl.textContent='Failed: '+e.message;
+  }finally{
+    cwBtns.forEach(b=>b.disabled=false);
   }
 }
 
@@ -3008,6 +3088,8 @@ async function submitClosedLost(archive){
   if(reason)lines.push(`Reason: ${reason}`);
 
   statusEl.textContent=archive?'Logging & archiving…':'Logging…';
+  const clBtns=[...document.querySelectorAll('#closedlost-modal .modal-footer button')];
+  clBtns.forEach(b=>b.disabled=true); // same double-tap guard as Closed/Won
   try{
     await cuFetch(`/task/${task.id}/comment`,'POST',{comment_text:lines.join('\n'),notify_all:false});
     if(archive)await cuFetch(`/task/${task.id}`,'PUT',{status:'Archived'});
@@ -3016,6 +3098,8 @@ async function submitClosedLost(archive){
     openProfile(task.id,S.currentEntry.type);
   }catch(e){
     statusEl.textContent='Failed: '+e.message;
+  }finally{
+    clBtns.forEach(b=>b.disabled=false);
   }
 }
 
@@ -3028,6 +3112,7 @@ function openEditProfileModal(){
   document.getElementById('ep-branch').textContent=S.user?.branch||'';
   document.getElementById('ep-mkcid').textContent=S.user?.mkcId||'';
   document.getElementById('edit-profile-modal').style.display='flex';
+  S._ownProfileLoaded=false;
   loadOwnProfileFields();
 }
 
@@ -3041,7 +3126,11 @@ async function loadOwnProfileFields(){
     document.getElementById('ep-persemail').value=cf['personal email']||'';
     document.getElementById('ep-persphone').value=cf['personal phone']||'';
     document.getElementById('ep-address').value=cf['mailing address']||'';
-  }catch(e){console.warn('loadOwnProfileFields failed:',e.message);}
+    S._ownProfileLoaded=true;
+  }catch(e){
+    console.warn('loadOwnProfileFields failed:',e.message);
+    document.getElementById('edit-profile-status').textContent="Couldn't load your current details -- close and reopen Edit Profile to try again.";
+  }
 }
 
 // Finds this admin's own row number in the (already-loaded) Team
@@ -3068,6 +3157,11 @@ async function submitEditProfile(){
   const address=document.getElementById('ep-address').value.trim();
   const statusEl=document.getElementById('edit-profile-status');
 
+  // Every field below is written on save, blank or not. If the current
+  // values haven't loaded yet (slow connection) or failed to load, the
+  // form is still empty and saving would erase the person's public
+  // email/phone and personal details in ClickUp and the Sheet.
+  if(!S._ownProfileLoaded){statusEl.textContent="Your current details haven't loaded yet -- wait a moment (or reopen Edit Profile), then save.";return;}
   if(!currentPass){statusEl.textContent='Enter your current passcode to save any changes.';return;}
   if(newPass&&newPass!==confirmPass){statusEl.textContent="New passcode and confirmation don't match.";return;}
   // Same email validation as Lead/Contact entries -- this form was missed
@@ -3918,7 +4012,7 @@ function renderTasks(){
       <div class="task-meta" style="flex-shrink:0;display:flex;align-items:center;gap:6px">
         ${makeSB(task.status?.status||'')}
         ${eff?`<span style="font-size:11.5px;color:${urgency==='overdue'?'var(--danger)':urgency==='today'?'var(--warning)':'var(--text-muted)'}">${fmtDateShort(eff)}</span>`:''}
-        <select class="filter-select" style="height:26px;font-size:11px;padding:0 6px" onclick="event.stopPropagation()" onchange="quickUpdateTaskStatus('${task.id}','${esc(task.name)}',this.value)">
+        <select class="filter-select" style="height:26px;font-size:11px;padding:0 6px" onclick="event.stopPropagation()" onchange="quickUpdateTaskStatus('${task.id}','${escJsAttr(task.name)}',this.value)">
           <option value="">Status…</option>
           <option value="TO DO"${curStatus==='TO DO'?' selected':''}>To Do</option>
           <option value="IN PROGRESS"${curStatus==='IN PROGRESS'?' selected':''}>In Progress</option>
@@ -3953,12 +4047,15 @@ function renderTasksKanban(){
     const dueMs=t.due_date?parseInt(t.due_date):null;
     const asgn=(t.assignees?.map(a=>a.username||a.email).join(', ')||'').toLowerCase();
     if(aFilter&&!asgn.includes(aFilter))return;
-    const relLead=cf['related lead/contact id']||cf['related lead']||'';
-    const relDeal=cf['related deal id']||cf['related deal']||'';
-    const relAcct=cf['related account id']||cf['related account']||'';
-    if(relLeadFilter&&relLead!==relLeadFilter)return;
-    if(relDealFilter&&relDeal!==relDealFilter)return;
-    if(relAcctFilter&&relAcct!==relAcctFilter)return;
+    // Match by RESOLVED type + id, exactly like renderTasks() (see its
+    // comment) -- the dropdowns are populated that way. Comparing raw
+    // field values here meant e.g. a Deal linked through the "Related
+    // Lead/Contact ID" field showed in List view but vanished from Kanban
+    // (the default Action Hub view on phones).
+    const{type:linkedType,id:linkedId}=resolveLinkedEntry(cf,lookup);
+    if(relLeadFilter&&!(linkedType==='Lead/Contact'&&linkedId===relLeadFilter))return;
+    if(relDealFilter&&!(linkedType==='Pipeline'&&linkedId===relDealFilter))return;
+    if(relAcctFilter&&!(linkedType==='Account'&&linkedId===relAcctFilter))return;
     if(uFilter){
       let urgency='none';
       if(dueMs){
@@ -4306,6 +4403,13 @@ async function submitNewTask(){
 // PROFILE PANEL
 // ═══════════════════════════════════════════
 async function openProfile(taskId,type){
+  // Several callers pass display labels instead of list keys -- Activity
+  // Inbox "Open Record"/"Create Follow-Up Message" and Smart Triage
+  // "Open"/"Follow Up" pass 'Lead'/'Deal'/'Contact'/'Account', and
+  // Related > "Referenced By" passes 'deals'. Those opened a Lead with
+  // the Account field layout and Contact statuses, and the Follow-Up
+  // action could never be found for Leads/Contacts.
+  type={Lead:'leads',Deal:'pipeline',Contact:'contacts',Account:'accounts',deals:'pipeline'}[type]||type;
   document.getElementById('pf-name').textContent='Loading…';
   document.getElementById('pf-mkcid').textContent='';
   document.getElementById('pf-badges').innerHTML='';
@@ -4368,8 +4472,8 @@ function renderPfHeader(task,type){
     <span class="badge" style="background:transparent;border:1px solid ${stale.color};color:${stale.color}">Last touched: ${stale.label}</span>
   `;
   document.getElementById('pf-contacts-row').innerHTML=`
-    ${email?`<div class="contact-chip" onclick="copyVal('${esc(email)}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${esc(email)}</div>`:''}
-    ${phone?`<div class="contact-chip" onclick="copyVal('${esc(phone)}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.94a16 16 0 006.15 6.15l1.3-1.3a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>${esc(phone)}</div>`:''}
+    ${email?`<div class="contact-chip" onclick="copyVal('${escJsAttr(email)}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>${esc(email)}</div>`:''}
+    ${phone?`<div class="contact-chip" onclick="copyVal('${escJsAttr(phone)}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.94a16 16 0 006.15 6.15l1.3-1.3a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>${esc(phone)}</div>`:''}
   `;
   S._notebookLink=notebookLink;
   S._clickupLink=`https://app.clickup.com/t/${task.id}`;
@@ -4545,7 +4649,7 @@ function renderPfDetails(task,type,cf,body){
       // be re-escaped. Every other field keeps the existing esc()
       // behavior unchanged -- this is purely additive.
       const displayVal=raw?(empty?'—':v):esc(empty?'—':v);
-      return `<div class="field-item"><label>${l}</label><div class="field-val${empty?' empty':''}${isLink?' link':''}"${isLink?` onclick="window.open('${esc(v)}','_blank')"`:''}>${displayVal}</div></div>`;
+      return `<div class="field-item"><label>${l}</label><div class="field-val${empty?' empty':''}${isLink?' link':''}"${isLink?` onclick="window.open('${escJsAttr(v)}','_blank')"`:''}>${displayVal}</div></div>`;
     }).join('')}</div>
   </div>${descHtml}${subHtml}`;
 }
@@ -5165,6 +5269,7 @@ function selectAction(el,actionId){
 // "generate both" actually mean both, not "generate two, keep one."
 async function sendCustomBothVersion(channel){
   if(!S.customDraftOptions||!S.currentEntry)return;
+  if(S._sendInFlight)return showToast('Still sending the previous message…','info'); // see sendViaChannel
   const{task}=S.currentEntry;
   const cf=getCF(task);
   const identity=resolveSenderIdentity();
@@ -5189,6 +5294,7 @@ async function sendCustomBothVersion(channel){
   }
   if(!confirm(confirmMsg))return;
 
+  S._sendInFlight=true;
   try{
     const res=await aiFetch('send-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const data=await res.json().catch(()=>({}));
@@ -5211,6 +5317,8 @@ async function sendCustomBothVersion(channel){
     if(sec&&action)sec.innerHTML=renderMessagePreview(action,buildMsgVars(task,S.currentEntry.type,cf));
   }catch(e){
     showToast('Send failed: '+e.message,'error');
+  }finally{
+    S._sendInFlight=false;
   }
 }
 
@@ -5811,6 +5919,11 @@ function fileToBase64(file){
 
 async function sendViaChannel(channel){
   if(!S.currentEntry||!S.selectedAction)return;
+  // The Send buttons stay enabled while a send is in flight, and the only
+  // feedback is small "Sending…" text -- a second tap raised a second
+  // confirm and sent the client a duplicate text/email. Shared with
+  // sendCustomBothVersion.
+  if(S._sendInFlight)return showToast('Still sending the previous message…','info');
   const{task,type}=S.currentEntry;
   const cf=getCF(task);
   const groups=(type==='leads'||type==='contacts')?CRM_ACTIONS.lead:CRM_ACTIONS.pipeline;
@@ -5857,6 +5970,7 @@ async function sendViaChannel(channel){
 
   const statusEl=document.getElementById('action-status');
   if(statusEl)statusEl.textContent='Sending…';
+  S._sendInFlight=true;
   try{
     const res=await aiFetch('send-message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const data=await res.json().catch(()=>({}));
@@ -5870,6 +5984,8 @@ async function sendViaChannel(channel){
   }catch(e){
     showToast('Send failed: '+e.message,'error');
     if(statusEl)statusEl.textContent='';
+  }finally{
+    S._sendInFlight=false;
   }
 }
 
@@ -6235,7 +6351,7 @@ function renderPfTasks(task,body,showCompleted){
       ${makeSB(t.status?.status||'')}
       <div style="flex:1;font-size:13px;font-weight:500">${esc(t.name)}</div>
       ${due?`<span style="font-size:11.5px;color:var(--text-muted)">${fmtDateShort(due)}</span>`:''}
-      <select class="filter-select" style="height:26px;font-size:11px;padding:0 6px" onclick="event.stopPropagation()" onchange="quickUpdateTaskStatus('${t.id}','${esc(t.name)}',this.value);setTimeout(()=>renderPfTasks(S.currentEntry.task,document.getElementById('pf-body'),S._pfTasksShowCompleted),400)">
+      <select class="filter-select" style="height:26px;font-size:11px;padding:0 6px" onclick="event.stopPropagation()" onchange="quickUpdateTaskStatus('${t.id}','${escJsAttr(t.name)}',this.value);setTimeout(()=>renderPfTasks(S.currentEntry.task,document.getElementById('pf-body'),S._pfTasksShowCompleted),400)">
         <option value="">Status…</option>
         <option value="TO DO"${curStatus==='TO DO'?' selected':''}>To Do</option>
         <option value="IN PROGRESS"${curStatus==='IN PROGRESS'?' selected':''}>In Progress</option>
@@ -6255,7 +6371,7 @@ function renderPfTasks(task,body,showCompleted){
         </div>
       </div>
       ${rows}
-      <button class="btn btn-success btn-sm" style="margin-top:8px" onclick="openNewTaskModal('${taskId}','${esc(task.name||'')}')">+ Add Task for this Entry</button>
+      <button class="btn btn-success btn-sm" style="margin-top:8px" onclick="openNewTaskModal('${taskId}','${escJsAttr(task.name||'')}')">+ Add Task for this Entry</button>
     </div>
     <div class="pf-section">
       <h4 style="margin:0 0 8px">Upcoming Messages</h4>
@@ -6368,7 +6484,7 @@ function renderPfRelated(task,body){
     <div class="pf-section">
       <h4>Linked Tasks</h4>
       ${tasksHtml}
-      <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="openNewTaskModal('${taskId}','${esc(task.name||'')}')">+ Add Task for this Entry</button>
+      <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="openNewTaskModal('${taskId}','${escJsAttr(task.name||'')}')">+ Add Task for this Entry</button>
     </div>
     <div class="pf-section">
       <h4>ClickUp Relationships</h4>
@@ -6385,7 +6501,7 @@ function closeProfile(){
 }
 function openNotebook(){if(S._notebookLink)window.open(S._notebookLink,'_blank');}
 function openInClickUp(){if(S._clickupLink)window.open(S._clickupLink,'_blank');}
-function copyVal(v){navigator.clipboard.writeText(v).then(()=>showToast('Copied: '+v,'success'));}
+function copyVal(v){navigator.clipboard.writeText(v).then(()=>showToast('Copied: '+v,'success')).catch(()=>showToast('Could not copy -- select and copy it manually.','error'));}
 
 // ═══════════════════════════════════════════
 // UPDATE PROFILE MODAL
@@ -7856,6 +7972,14 @@ function qcRelTime(iso){
   if(day<7)return`${day}d ago`;
   return fmtDateShort(d.getTime());
 }
+// occurred_at arrives as SQL "YYYY-MM-DD HH:MM:SS" in UTC (qcRelTime above
+// already handles this). A bare new Date() on that string reads it as
+// LOCAL time in Chrome (thread timestamps showed ~5h off for Eastern) and
+// may reject it in Safari. Same normalization, returned as ms.
+function qcTime(iso){
+  if(!iso)return NaN;
+  return new Date(/[TZ]/.test(iso)?iso:String(iso).replace(' ','T')+'Z').getTime();
+}
 
 /**
  * Refreshes just the sidebar's Activity Inbox badge count. No longer
@@ -8005,7 +8129,7 @@ function renderQcInbox(){
     // matches since those are genuinely final, human-driven states.
     // Blank (All) passes everything already fetched.
     (!statusFilter||(statusFilter==='pending'?qcNeedsReview(it):it.status===statusFilter))&&
-    (!ageFilter||(Date.now()-new Date(it.occurred_at).getTime())<=Number(ageFilter)*24*60*60*1000)
+    (!ageFilter||(Date.now()-qcTime(it.occurred_at))<=Number(ageFilter)*24*60*60*1000)
   );
   qcPopulateOwnerFilter();
   qcPopulateContactFilter();
@@ -8273,7 +8397,7 @@ function renderTriageTier3(items){
         <div style="font-size:13px;font-weight:600">${esc(heading)}${!r.contactName&&r.suggestedName?' <span style="font-weight:400;color:var(--text-muted);font-size:11px">(suggested)</span>':''}</div>
         <div style="font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.summary)}</div>
       </div>
-      <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="reviewTriageItem('${esc(r.key)}')">Review</button>
+      <button class="btn btn-secondary btn-sm" style="flex-shrink:0" onclick="reviewTriageItem('${escJsAttr(r.key)}')">Review</button>
     </div>`;}).join('')}
   </div>`;
 }
@@ -8281,6 +8405,10 @@ function renderTriageTier3(items){
 async function confirmTriageTier1(){
   const checked=[...document.querySelectorAll('.triage-t1-check:checked')].map(el=>el.dataset.key);
   if(!checked.length)return showToast('Nothing checked.','info');
+  // Sequential requests with no visible progress -- disable so a second
+  // tap can't start a second pass over the same items.
+  const btn=document.querySelector('#triage-body button[onclick^="confirmTriageTier1"]');
+  if(btn){btn.disabled=true;btn.textContent='Archiving…';}
   let done=0,failed=0;
   for(const key of checked){
     const result=(S._triageResults||[]).find(r=>r.key===key);
@@ -8291,6 +8419,7 @@ async function confirmTriageTier1(){
     }catch(e){failed++;}
   }
   showToast(`Archived ${done}${failed?`, ${failed} failed`:''}.`,failed?'error':'success');
+  if(btn){btn.disabled=false;btn.textContent='Archive Checked';}
   await loadQcInbox();
   closeModal('triage-modal');
 }
@@ -8298,6 +8427,9 @@ async function confirmTriageTier1(){
 async function confirmTriageTier2(){
   const checked=[...document.querySelectorAll('.triage-t2-check:checked')].map(el=>el.dataset.key);
   if(!checked.length)return showToast('Nothing checked.','info');
+  // A second tap here posted a second log comment to every checked entry.
+  const btn=document.querySelector('#triage-tier2-section button[onclick^="confirmTriageTier2"]');
+  if(btn){btn.disabled=true;btn.textContent='Logging…';}
   let done=0,failed=0;
   const succeeded=[];
   for(const key of checked){
@@ -8314,6 +8446,7 @@ async function confirmTriageTier2(){
     }catch(e){failed++;}
   }
   showToast(`Logged ${done}${failed?`, ${failed} failed`:''}.`,failed?'error':'success');
+  if(btn){btn.disabled=false;btn.textContent='Confirm & Log Checked';}
   await loadQcInbox();
   // Quick-open summary instead of just closing -- lets you jump
   // straight to any just-assigned entry to create a follow-up task or
@@ -8344,6 +8477,15 @@ function openEntryFromTriage(taskId,taskType){
   openProfile(taskId,taskType);
 }
 
+// Same discard guard as closeClosedWonModal/closeAddTeamMemberModal: a
+// dictated note is exactly the kind of long, hard-to-recreate text a
+// stray tap on X/Cancel shouldn't erase (openQuickCapture clears it).
+function closeQuickCapture(){
+  const hasText=document.getElementById('qcap-text')?.value?.trim();
+  if(hasText&&!confirm('Discard this note? It hasn\'t been captured yet.'))return;
+  closeModal('quick-capture-modal');
+}
+
 function openQuickCapture(){
   document.getElementById('qcap-text').value='';
   document.getElementById('qcap-status').textContent='';
@@ -8370,15 +8512,19 @@ async function submitQuickCapture(){
   }
 }
 
+// Returns true only if the item was actually archived, so the thread
+// modal's Archive button can stay open when the person taps Cancel on
+// the confirm (it used to close the thread either way).
 async function qcArchive(id){
-  if(!confirm('Archive this item? It will be removed from the inbox.'))return;
+  if(!confirm('Archive this item? It will be removed from the inbox.'))return false;
   try{
     await authFetch(`/api/staging/${id}/archive`,'POST',{});
     showToast('Archived.','success');
     S.qc.items=(S.qc.items||[]).filter(it=>it.id!==id);
     renderQcInbox();
     refreshQcBadge();
-  }catch(e){showToast('Failed: '+e.message,'error');}
+    return true;
+  }catch(e){showToast('Failed: '+e.message,'error');return false;}
 }
 
 /**
@@ -8418,7 +8564,7 @@ function qcDownloadTranscript(messageId){
   const transcriptSection=qcParseMessageBody(msg.body).sections.find(s=>s.label==='Transcript');
   if(!transcriptSection)return;
   const who=msg.contact_name||msg.contact_identifier||'Unknown contact';
-  const when=fmtDate(new Date(msg.occurred_at).getTime());
+  const when=fmtDate(qcTime(msg.occurred_at));
   const md=`# Call Transcript — ${who}\n\n${when}\n\n${transcriptSection.text}`;
   const blob=new Blob([md],{type:'text/markdown'});
   const url=URL.createObjectURL(blob);
@@ -8462,7 +8608,7 @@ async function qcOpenThread(id){
         <div style="max-width:78%;background:${out?'var(--accent)':'var(--bg-main)'};color:${out?'#fff':'var(--text-primary)'};border-radius:12px;padding:8px 13px;font-size:13px;line-height:1.5;overflow-wrap:break-word;word-break:break-word">
           ${m.event_type==='email'&&m.subject?`<div style="font-weight:700;margin-bottom:3px">${esc(m.subject)}</div>`:''}${esc(parsed.main||'(no content)')}${sectionsHtml}${transcriptHtml}
         </div>
-        <div style="font-size:10.5px;color:var(--text-muted);margin-top:3px">${qcSourceLabel(m.source_type)} · ${esc(m.direction||'')} · ${fmtDate(new Date(m.occurred_at).getTime())}</div>
+        <div style="font-size:10.5px;color:var(--text-muted);margin-top:3px">${qcSourceLabel(m.source_type)} · ${esc(m.direction||'')} · ${fmtDate(qcTime(m.occurred_at))}</div>
       </div>`;
     }).join('');
     // Same "needs review" definition as the feed list -- see
@@ -8783,7 +8929,7 @@ async function qcDoConfirmAssign(){
     successBox.innerHTML=`
       <p style="font-size:13.5px;margin-bottom:14px">Logged to <strong>${esc(name)}</strong> as a comment${count>1?` covering ${esc(windowLabel)} (${count} messages)`:''}.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-primary btn-sm" onclick="closeModal('qc-assign-modal');closeModal('qc-thread-modal');openNewTaskModal('${taskId}','${esc(name)}')">Create Related Task</button>
+        <button class="btn btn-primary btn-sm" onclick="closeModal('qc-assign-modal');closeModal('qc-thread-modal');openNewTaskModal('${taskId}','${escJsAttr(name)}')">Create Related Task</button>
         <button class="btn btn-secondary btn-sm" onclick="openFollowUpFromAssign('${taskId}','${taskType}',['qc-assign-modal','qc-thread-modal'])">✉️ Create Follow-Up Message</button>
         <button class="btn btn-secondary btn-sm" onclick="closeModal('qc-assign-modal');closeModal('qc-thread-modal');openProfile('${taskId}','${taskType}')">Open Record</button>
         <button class="btn btn-ghost btn-sm" onclick="closeModal('qc-assign-modal')">Done</button>
@@ -8952,6 +9098,11 @@ function parseLocalDate(dateStr){
   return new Date(parts[0],parts[1]-1,parts[2]).getTime();
 }
 function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// For text placed inside a single-quoted JS string in an inline handler,
+// e.g. onclick="fn('${escJsAttr(name)}')". esc() alone doesn't escape ',
+// so a name like "Dana's Bakery" produced a SyntaxError and the button
+// silently did nothing. JS-escape first, then HTML-escape for the attribute.
+function escJsAttr(s){if(s==null)return'';return esc(String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r?\n/g,'\\n'));}
 
 function makeSB(status){
   const key=(status||'').toLowerCase();
