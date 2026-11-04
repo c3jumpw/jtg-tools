@@ -1,0 +1,8 @@
+{
+  "name": "frontrow-manager",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20.0.0" },
+  "scripts": { "test": "node --test test/*.test.js" }
+}
