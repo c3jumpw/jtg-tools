@@ -20,7 +20,13 @@ export default route(async (request) => {
     return new Response(appShell({ org: null, siteUrl: site }), { headers: { ...HTML, 'Cache-Control': 'public, max-age=0, s-maxage=300' } });
   }
 
-  const org = slug ? await orgBySlug(slug) : await orgByHost(request.headers.get('x-forwarded-host') || request.headers.get('host'));
+  // The landing page must never depend on the database: if the lookup for
+  // an organization's own domain fails, show the landing page.
+  let org = null;
+  if (slug) org = await orgBySlug(slug);
+  else {
+    try { org = await orgByHost(request.headers.get('x-forwarded-host') || request.headers.get('host')); } catch (e) { console.error('orgByHost failed', e.message); }
+  }
   if (org) {
     const shell = appShell({ org: publicOrg(org, await branchesFor(org.id)), siteUrl: site });
     return new Response(shell, { headers: { ...HTML, 'Cache-Control': 'public, max-age=0, s-maxage=60' } });
