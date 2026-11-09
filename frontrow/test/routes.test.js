@@ -114,6 +114,23 @@ test('pages: landing, an organization’s sign-in, its own domain, and unknown l
   assert.ok(!hostile.includes('<script>alert(1)'));
 });
 
+test('pages: with the database down, the landing page still works and portals say so in plain words', async () => {
+  const { b } = await world();
+  const r = await load();
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => (String(url).startsWith('https://fake.supabase.test') ? new Response('{"message":"down"}', { status: 503 }) : realFetch(url, init));
+  try {
+    assert.equal((await call(r.page, '/api/page')).status, 200);
+    const res = await call(r.page, '/api/page?org=jtg');
+    assert.equal(res.status, 503);
+    assert.match(res.headers.get('content-type'), /text\/html/);
+    assert.match(await res.text(), /back shortly/);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+  assert.ok(b);
+});
+
 test('manifest: each organization installs under its own name and icon', async () => {
   await world();
   const r = await load();

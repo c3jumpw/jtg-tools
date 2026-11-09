@@ -85,6 +85,16 @@ export function notFoundPage() {
 <p><a class="btn btn-ink" href="/signin">Sign in</a></p></main></body></html>`;
 }
 
+/** Shown when an organization's page can't be read (database down or not
+ *  configured), instead of a bare JSON error in the client's browser. */
+export function unavailablePage() {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Back shortly · Frontrow</title><meta name="robots" content="noindex"><link rel="icon" href="/assets/brand/favicon-32.png"><link rel="stylesheet" href="/css/landing.css"></head>
+<body class="nf"><main class="nf-card"><a href="/" class="fr-logo">${MARK}<span>frontrow</span></a>
+<h1>Your portal will be back shortly</h1><p>We couldn’t load this page just now. Please try again in a few minutes.</p>
+<p><a class="btn btn-ink" href="">Try again</a></p></main></body></html>`;
+}
+
 export function landingPage() {
   return `<!doctype html>
 <html lang="en">

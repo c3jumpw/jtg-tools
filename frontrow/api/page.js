@@ -1,6 +1,6 @@
 import { route } from '../lib/core.js';
 import { orgBySlug, orgByHost, branchesFor, publicOrg } from '../lib/directory.js';
-import { landingPage, appShell, notFoundPage } from '../lib/pages.js';
+import { landingPage, appShell, notFoundPage, unavailablePage } from '../lib/pages.js';
 
 /* Serves every HTML page (vercel.json rewrites them here):
  *   /            landing page — or, on an organization's own domain, its portal
@@ -23,13 +23,22 @@ export default route(async (request) => {
   // The landing page must never depend on the database: if the lookup for
   // an organization's own domain fails, show the landing page.
   let org = null;
-  if (slug) org = await orgBySlug(slug);
-  else {
-    try { org = await orgByHost(request.headers.get('x-forwarded-host') || request.headers.get('host')); } catch (e) { console.error('orgByHost failed', e.message); }
+  if (slug) {
+    try {
+      org = await orgBySlug(slug);
+      if (org) org = publicOrg(org, await branchesFor(org.id));
+    } catch (e) {
+      console.error('organization page failed', slug, e.message);
+      return new Response(unavailablePage(), { status: 503, headers: { ...HTML, 'Cache-Control': 'no-store', 'Retry-After': '120' } });
+    }
+  } else {
+    try {
+      org = await orgByHost(request.headers.get('x-forwarded-host') || request.headers.get('host'));
+      if (org) org = publicOrg(org, await branchesFor(org.id));
+    } catch (e) { console.error('orgByHost failed', e.message); org = null; }
   }
   if (org) {
-    const shell = appShell({ org: publicOrg(org, await branchesFor(org.id)), siteUrl: site });
-    return new Response(shell, { headers: { ...HTML, 'Cache-Control': 'public, max-age=0, s-maxage=60' } });
+    return new Response(appShell({ org, siteUrl: site }), { headers: { ...HTML, 'Cache-Control': 'public, max-age=0, s-maxage=60' } });
   }
   if (slug) return new Response(notFoundPage(), { status: 404, headers: { ...HTML, 'Cache-Control': 'no-store' } });
   return new Response(landingPage(), { headers: { ...HTML, 'Cache-Control': 'public, max-age=0, s-maxage=600' } });
