@@ -39,6 +39,10 @@
 // bitten by Vercel's own 404 body, which nests {error:{code,message}}
 // and renders as "[object Object]". Never nest an object under "error".
 
+import { ACTIONS, BRANDS, describe, tagName } from './_lib/activities';
+import { applyActivityFields } from './_lib/clickup';
+import { runSysteme } from './_lib/systeme';
+
 export const config = { runtime: 'edge' };
 
 const CORS_HEADERS = {
@@ -348,11 +352,14 @@ export default async function handler(req: Request) {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS_HEADERS });
   if (req.method !== 'POST') return errorResponse('Only POST is supported.', 405);
 
-  const formSecret = process.env.FORM_SECRET;
+  // FORM_SECRET is the original caller's secret; INTAKE_SECRET is the one
+  // the other JTG sites use (see api/lead-activity.ts). Either is accepted.
+  const secrets = [process.env.FORM_SECRET, process.env.INTAKE_SECRET].filter(Boolean) as string[];
   const token = process.env.CLICKUP_TOKEN;
-  if (!formSecret) return errorResponse('FORM_SECRET is not set on the server.', 500);
+  if (!secrets.length) return errorResponse('FORM_SECRET is not set on the server.', 500);
   if (!token) return errorResponse('CLICKUP_TOKEN is not set on the server.', 500);
-  if (!safeEqual(req.headers.get('x-form-secret') || '', formSecret)) {
+  const given = req.headers.get('x-form-secret') || '';
+  if (!secrets.some((s) => safeEqual(given, s.trim()))) {
     return errorResponse('Unauthorized.', 401);
   }
 
@@ -472,6 +479,34 @@ export default async function handler(req: Request) {
     // retried -- accepted on purpose, because a duplicate task is worse
     // clutter than a missing one, and the warning below says so.
     const warnings: string[] = [];
+
+    // Brand-aware extras, shared with api/lead-activity.ts: fill the CRM's
+    // custom fields (branch, sub-branch, lead type, source, recent opt-in,
+    // next action date) and tag the attendee in Systeme.io. Callers that
+    // send no brand are the original Fortune 5 page. Best effort: the
+    // booking is already logged above.
+    const brand = BRANDS[String(body?.brand || 'F5').toUpperCase().replace(/[^A-Z0-9]/g, '')] || BRANDS.F5;
+    const booked = ACTIONS.booked_call;
+    const tag = tagName(brand, booked);
+    const now = new Date();
+    const dateText = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/New_York' });
+    const person = { email, phone, firstName, lastName, company };
+    let fieldReport: Awaited<ReturnType<typeof applyActivityFields>> | null = null;
+    const [fieldsDone, systeme] = await Promise.all([
+      applyActivityFields(token, entry, {
+        person, brand, action: booked, tag, when: now,
+        notes: `${brand.name} · ${booked.label} on ${dateText} (${topic} with ${repName})`,
+      }).catch((e: any) => ({ set: [], skipped: [], failed: [`custom fields (${e?.message || 'error'})`] })),
+      runSysteme({
+        person: { email, firstName, lastName, phone, company },
+        tag,
+        lastAction: `${tag} (${dateText}): ${describe(brand, booked)} ${topic} on ${when}.`,
+      }),
+    ]);
+    fieldReport = fieldsDone;
+    if (fieldReport.failed.length) warnings.push(`these CRM fields could not be set: ${fieldReport.failed.join(', ')}`);
+    if (!systeme.ok) warnings.push(`Systeme.io was not updated (${systeme.error})`);
+
     if (unsetFields.length) {
       warnings.push(`these fields could not be set: ${unsetFields.join(', ')}`);
     }
@@ -499,6 +534,9 @@ export default async function handler(req: Request) {
       entryName: entry.name,
     };
     if (repTaskId) payload.taskId = repTaskId;
+    payload.tag = tag;
+    payload.fields = fieldReport;
+    payload.systeme = systeme;
     // Surfaced rather than swallowed -- silent field-write failures were
     // a real bug class in this CRM. Absent when everything wrote.
     if (warnings.length) payload.warning = `Entry ${action}, but ${warnings.join('; ')}.`;
