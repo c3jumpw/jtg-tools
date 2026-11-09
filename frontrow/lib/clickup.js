@@ -107,11 +107,19 @@ export function labelNames(f) {
   }).filter(Boolean);
 }
 
-/** Ids of tasks referenced by the task's relationship fields. */
-export function relatedIds(task) {
+const RELATIONSHIP_TYPES = ['list_relationship', 'relationship', 'tasks'];
+/** The list a relationship field points at, when ClickUp says ('' if not). */
+const targetList = (f) => String((f && f.type_config && f.type_config.subcategory_id) || '');
+
+/** Ids of tasks referenced by the task's relationship fields. With a list
+ *  id, only fields that point at that list (or don't say where they point)
+ *  count: an MKC account also links deals, tasks and masterlist rows, which
+ *  would otherwise crowd out its contacts. */
+export function relatedIds(task, listId = '') {
   const ids = new Set();
   for (const f of task.custom_fields || []) {
-    if (!['list_relationship', 'relationship', 'tasks'].includes(f.type) || !Array.isArray(f.value)) continue;
+    if (!RELATIONSHIP_TYPES.includes(f.type) || !Array.isArray(f.value)) continue;
+    if (listId && targetList(f) && targetList(f) !== String(listId)) continue;
     for (const v of f.value) if (v && v.id) ids.add(String(v.id));
   }
   return [...ids];
@@ -129,7 +137,7 @@ export function readAccount(task, cfg = clickupConfig()) {
     active: cfg.activeStatuses.includes(status),
     orgLabels: labelNames(field(task, cfg.fields.branch)),
     subBranch: sub,
-    contactIds: relatedIds(task)
+    contactIds: relatedIds(task, cfg.lists.contacts)
   };
 }
 
@@ -144,7 +152,7 @@ export function readContact(task, cfg = clickupConfig()) {
     // break PostgREST in.(…) filters.
     email: /^[^\s@,()"]+@[^\s@,()"]+\.[^\s@,()"]{2,}$/.test(email) ? email : '',
     orgLabels: labelNames(field(task, cfg.fields.branch)),
-    accountIds: relatedIds(task),
+    accountIds: relatedIds(task, cfg.lists.accounts),
     listId: task.list && task.list.id ? String(task.list.id) : ''
   };
 }
@@ -163,14 +171,29 @@ export async function comment(taskId, text, opts = {}) {
   }
 }
 
-/** Creates a contact entry in the ClickUp Contacts list. Returns its id. */
+/** Ids of the custom fields a list has, or null if ClickUp won't say. */
+async function listFieldIds(listId, opts) {
+  try {
+    const res = await cu(`/list/${encodeURIComponent(listId)}/field`, opts);
+    return new Set(((res && res.fields) || []).map((f) => String(f.id)));
+  } catch {
+    return null;
+  }
+}
+
+/** Creates a contact entry in the ClickUp Contacts list. Returns its id.
+ *  Only fields the list has are sent: ClickUp refuses the whole entry over
+ *  one it doesn't know (the MKC Contacts list has no Branch field; the
+ *  organization comes from the account). */
 export async function createContact({ name, email, orgLabel }, opts = {}) {
   const cfg = clickupConfig(opts.env);
   const [first, ...rest] = String(name || '').trim().split(/\s+/);
-  const custom = [{ id: cfg.fields.primaryEmail, value: email }];
-  if (first) custom.push({ id: cfg.fields.firstName, value: first });
-  if (rest.length) custom.push({ id: cfg.fields.lastName, value: rest.join(' ') });
-  if (orgLabel && cfg.branchLabelIds[orgLabel]) custom.push({ id: cfg.fields.branch, value: [cfg.branchLabelIds[orgLabel]] });
+  const wanted = [{ id: cfg.fields.primaryEmail, value: email }];
+  if (first) wanted.push({ id: cfg.fields.firstName, value: first });
+  if (rest.length) wanted.push({ id: cfg.fields.lastName, value: rest.join(' ') });
+  if (orgLabel && cfg.branchLabelIds[orgLabel]) wanted.push({ id: cfg.fields.branch, value: [cfg.branchLabelIds[orgLabel]] });
+  const known = await listFieldIds(cfg.lists.contacts, opts);
+  const custom = known ? wanted.filter((f) => known.has(f.id)) : wanted;
   const task = await cu(`/list/${cfg.lists.contacts}/task`, {
     ...opts, method: 'POST',
     body: { name: String(name || email).slice(0, 200), custom_fields: custom }
@@ -178,16 +201,29 @@ export async function createContact({ name, email, orgLabel }, opts = {}) {
   return String(task.id);
 }
 
-/** Links a contact task to an account task through the contact's first
- *  relationship field that points at accounts. Best effort: returns false
- *  when there is no such field or ClickUp refuses. */
+/** Links a contact to an account through the relationship field that joins
+ *  the two lists: the account's field pointing at Contacts (MKC's "Main
+ *  Contact"), else the contact's field pointing at Accounts. A field is
+ *  chosen by the list it points at, never by position: a contact's first
+ *  relationship field is "Deals". Best effort: returns false when there is
+ *  no such field or ClickUp refuses. */
 export async function relateContactToAccount(contactTaskId, accountTaskId, opts = {}) {
+  const cfg = clickupConfig(opts.env);
+  const pointsAt = (f, listId) => RELATIONSHIP_TYPES.includes(f.type) && targetList(f) === String(listId);
+  const byName = (f) => RELATIONSHIP_TYPES.includes(f.type) && !targetList(f) && /account|compan/i.test(f.name || '');
   try {
-    const task = await getTask(contactTaskId, opts);
-    const rel = (task.custom_fields || []).find((f) => f.type === 'list_relationship' && /account|compan/i.test(f.name || ''))
-      || (task.custom_fields || []).find((f) => f.type === 'list_relationship');
+    let onTask = accountTaskId;
+    let other = contactTaskId;
+    let rel = ((await getTask(accountTaskId, opts)).custom_fields || []).find((f) => pointsAt(f, cfg.lists.contacts));
+    if (!rel) {
+      const fields = (await getTask(contactTaskId, opts)).custom_fields || [];
+      rel = fields.find((f) => pointsAt(f, cfg.lists.accounts)) || fields.find(byName);
+      onTask = contactTaskId;
+      other = accountTaskId;
+    }
     if (!rel) return false;
-    await cu(`/task/${encodeURIComponent(contactTaskId)}/field/${rel.id}`, { ...opts, method: 'POST', body: { value: { add: [accountTaskId], rem: [] } } });
+    if (Array.isArray(rel.value) && rel.value.some((v) => v && String(v.id) === String(other))) return true;
+    await cu(`/task/${encodeURIComponent(onTask)}/field/${rel.id}`, { ...opts, method: 'POST', body: { value: { add: [other], rem: [] } } });
     return true;
   } catch (e) {
     console.error('clickup relate failed', contactTaskId, accountTaskId, e.message);

@@ -139,7 +139,7 @@ function testOr(row, expr) {
 }
 
 /** A small fake ClickUp: tasks by id, list membership, comments, created tasks. */
-export function fakeClickUp({ tasks = [], fields = {} } = {}) {
+export function fakeClickUp({ tasks = [], fields = {}, listFields = null } = {}) {
   const store = new Map(tasks.map((t) => [String(t.id), { ...t }]));
   const comments = [];
   const created = [];
@@ -160,6 +160,10 @@ export function fakeClickUp({ tasks = [], fields = {} } = {}) {
       const all = [...store.values()].filter((t) => t.list && String(t.list.id) === m[1]);
       const slice = all.slice(page * 100, page * 100 + 100);
       return send(200, { tasks: slice, last_page: (page + 1) * 100 >= all.length });
+    }
+    if (method === 'GET' && (m = path.match(/^\/list\/([^/]+)\/field$/))) {
+      const ids = (listFields || CU.listFields)[m[1]];
+      return ids ? send(200, { fields: ids.map((id) => ({ id, name: id, type: fields[id] || 'short_text' })) }) : send(404, { err: 'List not found' });
     }
     if (method === 'POST' && (m = path.match(/^\/task\/([^/]+)\/comment$/))) {
       comments.push({ taskId: decodeURIComponent(m[1]), text: JSON.parse(init.body).comment_text });
@@ -394,9 +398,16 @@ export function call(handler, path, { method = 'GET', body, cookie, origin, host
 
 /* ---------- ClickUp task builders for tests ---------- */
 
+// Shaped like the MKC workspace as read on 2026-11-09: an account links its
+// contacts through "Main Contact" (pointing at the Contacts list) and also
+// links deals and tasks; on a contact the same relationship shows up after
+// "Deals"; the Contacts list has no Branch field.
 export const CU = {
   contactsList: '901710477009',
   accountsList: '901710481777',
+  pipelineList: '901710326878',
+  tasksList: '901714539764',
+  mainContact: 'de19f67e-main-contact',
   f: {
     email: '7e3e1cac-80c3-4424-988c-e66c89b44fe5', first: 'e9a9e94c-88c0-423b-a6db-05669ff5f967', last: '55530338-993f-4187-b1fe-e66254971d14',
     branch: '6623fa17-7220-4e17-8011-ee6a4a8fe2c7', subJtg: '20b50b13-180c-4d35-9b6d-e54d055d1393', status: 'c5315bbe-aada-489b-8efd-d48f75cda9d5'
@@ -409,7 +420,9 @@ export const CU = {
         { id: CU.f.status, type: 'drop_down', value: statuses.indexOf(status), type_config: { options: statuses.map((n, i) => ({ id: `st-${i}`, name: n, orderindex: i })) } },
         { id: CU.f.branch, type: 'labels', value: [`br-${branch}`], type_config: { options: ['JTG', 'UNY', 'MCO', 'MKC SA'].map((l) => ({ id: `br-${l}`, label: l })) } },
         ...(sub ? [{ id: CU.f.subJtg, type: 'drop_down', value: 0, type_config: { options: [{ id: 'sb-0', name: sub, orderindex: 0 }] } }] : []),
-        { id: 'rel-acc-contacts', name: 'Contacts', type: 'list_relationship', value: contacts.map((c) => ({ id: c })) }
+        { id: 'rel-acc-deals', name: 'Deals', type: 'list_relationship', type_config: { subcategory_id: CU.pipelineList }, value: [{ id: `deal-${id}` }] },
+        { id: CU.mainContact, name: 'Main Contact', type: 'list_relationship', type_config: { subcategory_id: CU.contactsList }, value: contacts.map((c) => ({ id: c })) },
+        { id: 'rel-acc-tasks', name: 'Master CRM Tasks', type: 'list_relationship', type_config: { subcategory_id: CU.tasksList }, value: [{ id: `task-${id}` }] }
       ]
     };
   },
@@ -421,10 +434,15 @@ export const CU = {
         { id: CU.f.email, type: 'email', value: email },
         { id: CU.f.first, type: 'short_text', value: first },
         { id: CU.f.last, type: 'short_text', value: rest.join(' ') },
-        { id: 'rel-con-accounts', name: 'Related Accounts', type: 'list_relationship', value: accounts.map((a) => ({ id: a })) }
+        { id: 'rel-con-deals', name: 'Deals', type: 'list_relationship', type_config: { subcategory_id: CU.pipelineList }, value: [] },
+        { id: CU.mainContact, name: 'Main Contact', type: 'list_relationship', type_config: { subcategory_id: CU.accountsList }, value: accounts.map((a) => ({ id: a })) }
       ]
     };
   }
+};
+CU.listFields = {
+  [CU.contactsList]: [CU.f.email, '23f99b05-2a6d-4fa6-b40d-d3be89b892ce', CU.f.first, CU.f.last, 'rel-con-deals'],
+  [CU.accountsList]: [CU.f.status, CU.f.branch, CU.f.subJtg, CU.mainContact, 'rel-acc-deals', 'rel-acc-tasks']
 };
 
 /* ---------- organizations and branches as the migration seeds them ---------- */
