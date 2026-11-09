@@ -52,7 +52,7 @@ export type Action = {
 export const ACTIONS: Record<string, Action> = {
   booked_call: {
     label: 'Booked call',
-    description: 'Booked a call with the {brand} team on the booking page ({site}).',
+    description: 'Booked a call with {brand} on its booking page.',
     leadSource: 'inquiry', contactType: 'potential client',
   },
   requested_time: {
@@ -62,22 +62,22 @@ export const ACTIONS: Record<string, Action> = {
   },
   discovery_form: {
     label: 'Discovery form',
-    description: 'Submitted the {brand} brand discovery form, the business intake that starts a project.',
+    description: 'Submitted the brand discovery form for {brand}, the business intake that starts a project.',
     leadSource: 'inquiry', contactType: 'potential client',
   },
   start_form: {
     label: 'Start form',
-    description: 'Submitted the {brand} "Start your build" intake form.',
+    description: 'Submitted the "Start your build" intake form for {brand}.',
     leadSource: 'inquiry', contactType: 'potential client',
   },
   brand_brief_started: {
     label: 'Brand brief started',
-    description: 'Saved at least one session of the {brand} Personal Brand Kickoff brief; may not have finished all three.',
+    description: 'Saved at least one session of the Personal Brand Kickoff brief ({brand}); may not have finished all three.',
     leadSource: 'inquiry', contactType: 'potential client',
   },
   brand_brief_complete: {
     label: 'Brand brief complete',
-    description: 'Finished all three sessions of the {brand} Personal Brand Kickoff brief.',
+    description: 'Finished all three sessions of the Personal Brand Kickoff brief ({brand}).',
     leadSource: 'inquiry', contactType: 'potential client',
   },
   contact_form: {
