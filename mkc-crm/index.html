@@ -520,6 +520,111 @@ button,input,select,textarea{font-family:inherit}
   .table-wrap tbody tr td[colspan]{flex:1 1 100%}
   .table-wrap .pagination{background:var(--bg-card);border:1px solid var(--border);border-radius:12px}
 }
+/* ── DEALS, ASSISTANT, AUDIT FIXES (Nov 2026) ─────────────────────── */
+.muted{color:var(--text-muted)}
+.late{color:#B42318}
+/* Filters: show which ones are on */
+select.filter-select.is-set{border-color:#9CC4EE;background:var(--accent-light);color:var(--accent)}
+.list-toolbar:not(.has-filters)>.btn-clear{visibility:hidden}
+/* Amount / invoice */
+td.cell-amt{white-space:nowrap;font-size:12.5px}
+td.cell-amt .amt{font-weight:600;font-variant-numeric:tabular-nums;margin-right:4px}
+.badge.amt-badge{background:#EEF2F7;color:var(--text-primary);font-variant-numeric:tabular-nums}
+.inv-card .card-body{padding:14px 18px}
+.inv-sum{cursor:pointer}
+.inv-sum:hover .inv-total{color:var(--accent)}
+.inv-total{font-size:26px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.inv-meta{font-size:12.5px;color:var(--text-secondary);margin-top:2px}
+.inv-setup p{font-size:12.5px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px}
+.pf-facts{grid-template-columns:repeat(auto-fit,minmax(118px,1fr))}
+.fact-select{font:600 13px/1.2 var(--font);border:1px solid var(--border);border-radius:7px;padding:4px 6px;background:#fff;max-width:100%;cursor:pointer}
+.fact-select.inv-paid{background:#E7F6EC;color:#166534;border-color:#BFE3CB}
+.fact-select.inv-overdue{background:#FDECEC;color:#B42318;border-color:#F4C7C3}
+.fact-select.inv-pending{background:#FEF3E2;color:#9A5B00;border-color:#F5D9A8}
+.fact-select.inv-sent{background:#E8F2FD;color:#0859A6;border-color:#BFDAF5}
+.pf-actions a.btn{text-decoration:none}
+/* Log job modal */
+.job-intro{font-size:12.5px;color:var(--text-secondary);margin:-4px 0 14px;line-height:1.5}
+.job-warn{font-size:12px;background:#FEF3E2;color:#7A4A00;border:1px solid #F5D9A8;border-radius:8px;padding:9px 11px;margin-bottom:12px;line-height:1.45}
+.opt{font-weight:400;color:var(--text-muted);font-size:11px}
+.job-check{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--text-secondary);cursor:pointer;margin-top:4px}
+.job-status{font-size:12.5px;color:var(--text-secondary);margin-top:10px;min-height:1em}
+/* Assistant */
+.btn-asst svg{flex-shrink:0}
+.asst{position:fixed;top:0;right:0;bottom:0;width:440px;max-width:100vw;z-index:260;background:var(--bg-card);box-shadow:-8px 0 40px rgba(22,27,38,.18);display:flex;flex-direction:column}
+.asst[hidden]{display:none}
+.asst-head{display:flex;align-items:flex-start;gap:8px;padding:16px 18px 12px;border-bottom:1px solid var(--border)}
+.asst-head-text{flex:1;min-width:0}
+.asst-title{font-size:17px;font-weight:800;display:flex;align-items:center;gap:8px}
+.asst-title::before{content:'';width:9px;height:9px;border-radius:50%;background:var(--accent-bright);box-shadow:0 0 0 4px rgba(34,151,249,.18)}
+.asst-subtitle{font-size:12px;color:var(--text-muted);margin-top:2px}
+#asst-voice[aria-pressed="false"]{opacity:.45}
+.asst-log{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:10px;background:#F8FAFC}
+.asst-msg{max-width:88%;padding:9px 12px;border-radius:14px;font-size:13.5px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+.asst-msg.assistant{background:#fff;border:1px solid var(--border);border-top-left-radius:4px;align-self:flex-start}
+.asst-msg.assistant.intro{color:var(--text-secondary)}
+.asst-msg.user{background:var(--accent);color:#fff;border-top-right-radius:4px;align-self:flex-end}
+.asst-voice-tag{margin-right:5px;font-size:11px;opacity:.85}
+.asst-msg.typing{display:flex;gap:4px;padding:12px 14px}
+.asst-msg.typing span{width:6px;height:6px;border-radius:50%;background:var(--text-muted);animation:asstDot 1s infinite}
+.asst-msg.typing span:nth-child(2){animation-delay:.15s}.asst-msg.typing span:nth-child(3){animation-delay:.3s}
+@keyframes asstDot{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.asst-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip-btn{font:600 12px/1.2 var(--font);border:1px solid #BFDAF5;background:var(--accent-light);color:var(--accent);border-radius:999px;padding:6px 10px;cursor:pointer;text-align:left}
+.chip-btn:hover{background:#D6E9FC}
+.asst-results{align-self:stretch;background:#fff;border:1px solid var(--border);border-radius:12px;padding:8px 12px}
+.asst-res{font-size:12.5px;padding:5px 0;border-bottom:1px dashed var(--border)}
+.asst-res:last-child{border-bottom:0}
+.asst-res.ok{color:#166534}.asst-res.bad{color:#B42318}
+.asst-warn{color:#9A5B00;font-size:11.5px;margin-top:2px}
+.link-btn{background:none;border:0;color:var(--accent);font:600 12px var(--font);cursor:pointer;text-decoration:underline;padding:0 0 0 4px}
+.asst-draft{border-top:1px solid var(--border);padding:12px 18px;max-height:42vh;overflow-y:auto;background:#fff}
+.asst-draft-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:13px;margin-bottom:8px}
+.asst-draft-head span{font-size:11.5px;color:var(--text-muted)}
+.asst-op{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:1px solid var(--border);border-radius:10px;margin-bottom:7px}
+.asst-op-tag{flex-shrink:0;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:#EEF2F7;color:var(--text-secondary);border-radius:5px;padding:3px 6px;margin-top:1px}
+.asst-op-main{flex:1;min-width:0}
+.asst-op-sum{font-size:13px;font-weight:600}
+.asst-op-line{font-size:12px;color:var(--text-secondary);margin-top:2px;overflow-wrap:anywhere}
+.asst-op-x{flex-shrink:0;border:0;background:none;color:var(--text-muted);font-size:18px;line-height:1;cursor:pointer;width:28px;height:28px;border-radius:6px}
+.asst-op-x:hover{background:var(--bg-main);color:var(--text-primary)}
+.asst-missing{font-size:12px;color:#9A5B00;margin:2px 0 8px}
+.asst-draft-actions{display:flex;gap:8px;margin-top:4px}
+.asst-input{display:flex;align-items:flex-end;gap:8px;padding:12px 14px 6px;border-top:1px solid var(--border);background:#fff}
+.asst-input textarea{flex:1;resize:none;min-height:42px;max-height:140px;border:1px solid var(--border);border-radius:12px;padding:10px 12px;font:14px/1.4 var(--font);outline:none}
+.asst-input textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(10,109,201,.12)}
+.asst-input .btn{height:42px}
+.asst-mic{width:42px;height:42px;flex-shrink:0;border-radius:50%;border:1px solid var(--border);background:#fff;color:var(--accent);display:grid;place-items:center;cursor:pointer;position:relative}
+.asst-mic:hover{background:var(--accent-light)}
+.asst-mic.on{background:#DC2626;border-color:#DC2626;color:#fff}
+.asst-mic.on::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:2px solid rgba(220,38,38,.45);animation:asstPulse 1.2s infinite}
+.asst-mic.unavailable{opacity:.4}
+@keyframes asstPulse{0%{transform:scale(.9);opacity:1}100%{transform:scale(1.25);opacity:0}}
+.asst-hint{font-size:11.5px;color:var(--text-muted);padding:0 16px 12px 66px;background:#fff}
+/* Phone "+" sheet */
+.create-sheet{position:fixed;inset:0;z-index:280;background:rgba(22,27,38,.45);display:flex;align-items:flex-end;justify-content:center}
+.create-sheet[hidden]{display:none}
+.cs-box{width:100%;max-width:520px;background:#fff;border-radius:18px 18px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px}
+.cs-item{display:flex;align-items:center;gap:12px;text-align:left;border:1px solid var(--border);background:#fff;border-radius:12px;padding:12px 14px;cursor:pointer;font-family:var(--font);color:var(--text-primary)}
+.cs-item b{display:block;font-size:14px}
+.cs-item small{display:block;font-size:12px;color:var(--text-muted);margin-top:1px}
+.cs-item svg,.cs-ico{width:34px;height:34px;flex-shrink:0;border-radius:10px;background:var(--accent-light);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:16px;padding:7px}
+.cs-asst{border-color:#BFDAF5;background:#F4F9FF}
+.cs-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cs-chip{border:1px solid var(--border);background:#F8FAFC;border-radius:10px;padding:10px 0;font:600 12.5px var(--font);cursor:pointer}
+.cs-cancel{margin-top:2px}
+/* Toasts sit beside the assistant, not on top of its input */
+body.asst-open #toast-container{right:464px}
+@media(max-width:768px){
+  #quick-capture-fab{display:none!important} /* the + in the bottom bar has Quick capture */
+  .asst{width:100vw;z-index:290}
+  body.asst-open #toast-container{right:12px;left:12px;top:12px;bottom:auto}
+  .asst-btn-label{display:none}
+  /* Action Hub rows: the status select ran past the card edge */
+  .task-item .task-meta{min-width:0;max-width:100%}
+  .task-item .task-meta select{min-width:0;max-width:100%;flex:1 1 auto}
+  .table-wrap tbody td.cell-amt{order:3}
+}
 </style>
 </head>
 <body>
@@ -637,6 +742,7 @@ button,input,select,textarea{font-family:inherit}
       <button class="btn btn-ghost btn-sm" onclick="refreshAll()" title="Refresh" aria-label="Refresh">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
       </button>
+      <button class="btn btn-secondary btn-sm btn-asst" id="asst-btn" onclick="openAssistant()" title="Assistant — say or type what happened" aria-label="Assistant"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 17v4"/></svg><span class="asst-btn-label">Assistant</span></button>
       <button class="btn btn-primary btn-sm" onclick="openNewEntryModal()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Entry
       </button>
@@ -654,6 +760,8 @@ button,input,select,textarea{font-family:inherit}
           <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Contact')">+ New Contact</button>
           <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Deal')">+ New Deal</button>
           <button class="btn btn-secondary btn-sm" onclick="openNewEntryModal('Account')">+ New Account</button>
+          <button class="btn btn-secondary btn-sm" onclick="openJobModal()">+ Log job</button>
+          <button class="btn btn-secondary btn-sm btn-asst" onclick="openAssistant()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 17v4"/></svg>Assistant</button>
         </div>
       </div>
       <div class="summary-grid">
@@ -674,6 +782,7 @@ button,input,select,textarea{font-family:inherit}
           </div>
         </div>
         <div>
+          <div class="card inv-card" id="dash-invoices" style="margin-bottom:14px"></div>
           <div class="card" style="margin-bottom:14px">
             <div class="card-header"><h3>Team follow-up</h3><span style="font-size:11.5px;color:var(--text-muted)">everyone’s, stalest first</span></div>
             <div id="dash-followup"></div>
@@ -995,6 +1104,8 @@ button,input,select,textarea{font-family:inherit}
       <button class="btn btn-secondary btn-sm" id="pf-addtask-btn" onclick="openNewTaskModal(S.currentEntry?.task?.id||'',S.currentEntry?.task?.name||'')">+ Task</button>
       <button class="btn btn-secondary btn-sm" id="pf-message-btn" onclick="pfGoTab('actions')" title="Write an email or text from CRM Actions">Message</button>
       <a class="btn btn-secondary btn-sm" id="pf-call-btn" href="#" style="display:none">Call</a>
+      <button class="btn btn-secondary btn-sm" id="pf-logjob-btn" onclick="pfLogJob()" style="display:none" title="Log work done for this client as a closed/won deal">+ Log job</button>
+      <button class="btn btn-secondary btn-sm" id="pf-paid-btn" onclick="setInvoiceStatus(S.currentEntry.task.id,'Paid')" style="display:none">Mark paid</button>
       <button class="btn btn-sm btn-frontrow" id="pf-frontrow-btn" onclick="addToFrontrow()" style="display:none" title="Give this contact a client portal login, or check whether they have one">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><rect x="3" y="4" width="18" height="4" rx="1.5" fill="currentColor"/><rect x="3" y="12" width="5" height="8" rx="1.5" fill="currentColor" opacity=".55"/><rect x="9.5" y="12" width="5" height="8" rx="1.5" fill="#FF5A36"/><rect x="16" y="12" width="5" height="8" rx="1.5" fill="currentColor" opacity=".55"/></svg>
       Add to Frontrow
@@ -1430,6 +1541,67 @@ button,input,select,textarea{font-family:inherit}
      z-index 150 (was 250): sits below the record panel (#profile-panel,
      200) so it no longer covers that panel's footer buttons ("View in
      ClickUp" on desktop) -- the panel has its own Log New Activity. -->
+<!-- LOG COMPLETED JOB: one closed/won deal per job, with amount, date of service and invoice status -->
+<div id="job-modal" style="display:none" class="modal-overlay">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header"><h3>Log completed job</h3><button class="pf-close" aria-label="Close" onclick="closeModal('job-modal')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <p class="job-intro">Each finished job is its own closed/won deal, so nothing done for a client gets forgotten and unpaid invoices are easy to see.</p>
+      <div id="job-field-warn" class="job-warn" hidden>The Pipeline list in ClickUp has no <b>Invoice Status</b> dropdown yet, so the status will only be written in the deal’s description. Add the field (Pending, Sent, Paid, Overdue) to track it properly.</div>
+      <div class="form-group"><label for="job-account">Account (client company) *</label><input type="text" id="job-account" list="job-accounts" autocomplete="off" placeholder="Start typing a client…" oninput="jobAccountChanged()"><datalist id="job-accounts"></datalist></div>
+      <div class="form-group" id="job-new-account-row" hidden><label style="display:flex;align-items:center;gap:8px;font-weight:500;cursor:pointer"><input type="checkbox" id="job-new-account"> <span id="job-new-account-label">Create a new account</span></label></div>
+      <div class="form-group"><label for="job-contact">Contact <span class="opt">(optional)</span></label><input type="text" id="job-contact" list="job-people" autocomplete="off" placeholder="Who it was for"><datalist id="job-people"></datalist></div>
+      <div class="form-group"><label for="job-service">What was done *</label><input type="text" id="job-service" placeholder="e.g. Monthly SEO — October"></div>
+      <div class="form-row">
+        <div class="form-group"><label for="job-amount">Amount *</label><input type="text" id="job-amount" inputmode="decimal" placeholder="$"></div>
+        <div class="form-group"><label for="job-date">Date of service *</label><input type="date" id="job-date"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label for="job-invoice">Invoice</label><select id="job-invoice" class="form-select"><option>Pending</option><option>Sent</option><option>Paid</option><option>Overdue</option></select></div>
+        <div class="form-group"><label for="job-invnum">Invoice # <span class="opt">(optional)</span></label><input type="text" id="job-invnum"></div>
+      </div>
+      <div class="form-group"><label for="job-notes">Notes <span class="opt">(optional)</span></label><textarea id="job-notes" class="form-textarea" rows="2"></textarea></div>
+      <label class="job-check"><input type="checkbox" id="job-remind" checked> If the invoice isn’t sent yet, add a task to send it tomorrow</label>
+      <div id="job-status" class="job-status" role="status"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('job-modal')">Cancel</button>
+      <button class="btn btn-secondary" onclick="submitJob(true)">Save &amp; add another</button>
+      <button class="btn btn-primary" onclick="submitJob(false)">Save job</button>
+    </div>
+  </div>
+</div>
+<!-- ASSISTANT: voice or typing → draft → read-back → confirm -->
+<aside id="assistant-panel" class="asst" hidden aria-label="Assistant">
+  <div class="asst-head">
+    <div class="asst-head-text"><div class="asst-title">Assistant</div><div class="asst-subtitle">Say or type what happened. Nothing is saved until you confirm.</div></div>
+    <button class="btn btn-ghost btn-sm" id="asst-voice" aria-pressed="true" onclick="asstToggleVoiceReplies()" title="Replies are read aloud after you speak — click to turn off"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 010 7M19 5a10 10 0 010 14"/></svg></button>
+    <button class="pf-close" aria-label="Close assistant" onclick="closeAssistant()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  </div>
+  <div class="asst-log" id="asst-log" aria-live="polite"></div>
+  <div class="asst-draft" id="asst-draft" hidden></div>
+  <div class="asst-input">
+    <button class="asst-mic" id="asst-mic" onclick="asstMic()" aria-label="Speak"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 17v4M8 21h8"/></svg></button>
+    <textarea id="asst-text" rows="1" placeholder="Say or type what happened…" aria-label="Message to the assistant"></textarea>
+    <button class="btn btn-primary" id="asst-send" onclick="AS.lastVoice=false;asstSend()">Send</button>
+  </div>
+  <div class="asst-hint" id="asst-hint"></div>
+</aside>
+<!-- PHONE: what the "+" in the bottom bar offers -->
+<div id="create-sheet" class="create-sheet" hidden onclick="if(event.target===this)closeCreateSheet()" onkeydown="if(event.key==='Escape')closeCreateSheet()">
+  <div class="cs-box" role="menu" aria-label="Add">
+    <button class="cs-item cs-asst" role="menuitem" onclick="createSheetGo(()=>{openAssistant();setTimeout(asstMic,250);})"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 17v4M8 21h8"/></svg><span><b>Speak to the assistant</b><small>Say what happened; it fills in the CRM</small></span></button>
+    <button class="cs-item" role="menuitem" onclick="createSheetGo(()=>openJobModal())"><span class="cs-ico">$</span><span><b>Log completed job</b><small>Closed/won deal with invoice status</small></span></button>
+    <button class="cs-item" role="menuitem" onclick="createSheetGo(()=>openQuickCapture())"><span class="cs-ico">✎</span><span><b>Quick capture</b><small>Jot a note; file it later</small></span></button>
+    <div class="cs-row">
+      <button class="cs-chip" onclick="createSheetGo(()=>openNewEntryModal('Lead'))">Lead</button>
+      <button class="cs-chip" onclick="createSheetGo(()=>openNewEntryModal('Contact'))">Contact</button>
+      <button class="cs-chip" onclick="createSheetGo(()=>openNewEntryModal('Deal'))">Deal</button>
+      <button class="cs-chip" onclick="createSheetGo(()=>openNewEntryModal('Account'))">Account</button>
+    </div>
+    <button class="btn btn-ghost cs-cancel" onclick="closeCreateSheet()">Cancel</button>
+  </div>
+</div>
 <div id="cmdk" class="cmdk" hidden role="dialog" aria-modal="true" aria-label="Search and commands">
   <div class="cmdk-box">
     <div class="cmdk-input">
@@ -1444,7 +1616,7 @@ button,input,select,textarea{font-family:inherit}
 <nav id="bottom-nav" aria-label="Main">
   <button type="button" data-view="dashboard" onclick="switchView('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Today</button>
   <button type="button" data-view="leads" onclick="switchView('leads')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Leads</button>
-  <button type="button" class="bn-new" onclick="openNewEntryModal()" aria-label="New entry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+  <button type="button" class="bn-new" onclick="openCreateSheet()" aria-label="Add: new entry, log job, quick capture or assistant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
   <button type="button" data-view="pipeline" onclick="switchView('pipeline')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Pipeline</button>
   <button type="button" onclick="toggleMobileMenu()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>More</button>
 </nav>
@@ -2341,7 +2513,7 @@ async function loadAllEntries(){
       // already powering "My Work", so the matching logic (ID-first, name/
       // email fallback) stays in exactly one place.
       S.entries[type]=isStaffOnly()?tasks.filter(isAssignedToMe):tasks;
-      S.filtered[type]=S.entries[type].filter(t=>!t.parent&&!(type==='pipeline'&&(t.status?.status||'').toLowerCase()==='archived'));
+      S.filtered[type]=listFiltered(type);
       renderTable(type);
       const mode=S.viewMode[type];
       if(mode==='kanban')renderKanban(type);
@@ -2426,7 +2598,7 @@ function renderTable(type){
   const slice=items.slice((page-1)*ps,page*ps);
   const tbody=document.getElementById(`tb-${type}-body`);
   if(!tbody)return;
-  buildToolbar(type);
+  buildToolbar(type);restoreToolbarState(type);
 
   if(!items.length){
     tbody.innerHTML=`<tr><td colspan="10"><div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>No entries found</p><small>Adjust filters or create a new entry</small></div></td></tr>`;
@@ -2466,6 +2638,7 @@ function renderTable(type){
         <td class="cell-ck" onclick="event.stopPropagation()"><input type="checkbox" onchange="toggleRowSelection('${type}','${task.id}',this.checked)" ${isRowSelected(type,task.id)?'checked':''}></td>
         <td class="cell-name"><div class="nm">${esc(name)}</div><div class="sub">${esc(id)}</div></td>
         <td class="cell-line${acct==='—'?' is-empty':''}" style="font-size:12.5px;color:var(--text-secondary)">${esc(acct)}</td>
+        <td class="cell-amt">${dealAmountCell(task)}</td>
         <td class="cell-badge">${sb}</td><td class="cell-badge">${bb}</td>
         <td class="cell-line cell-2nd" style="font-size:12.5px;color:var(--text-secondary)">${esc(asgn)}</td>
         <td class="cell-date" title="Last touched: ${esc(stale.label)}"><span class="fresh-dot" style="background:${stale.color}"></span>${upd}</td>
@@ -2489,7 +2662,7 @@ function renderTable(type){
   if(thead){
     const cols={
       leads:['Name','Email','Phone','Status','Branch','Type','Last Updated'],
-      pipeline:['Deal Name','Account','Status','Branch','Assignee','Last Updated'],
+      pipeline:['Deal Name','Account','Amount','Status','Branch','Assignee','Last Updated'],
       contacts:['Name','Email','Phone','Status','Branch','Type','Last Updated'],
       accounts:['Account Name','Acct Status','Task Status','Branch','Primary Contact','Last Updated']
     };
@@ -2544,6 +2717,9 @@ function buildToolbar(type){
       <option value="getting_stale">Getting Stale (4-7 days)</option>
       <option value="fresh">Fresh (0-3 days)</option>
     </select>
+    ${type==='pipeline'?`<select class="filter-select" id="fs-invoice-${type}" onchange="filterByField('${type}','invoice',this.value)">
+      <option value="">Any invoice</option><option value="unpaid">Unpaid</option><option value="pending">Not sent</option><option value="sent">Sent</option><option value="overdue">Overdue</option><option value="paid">Paid</option>
+    </select>`:''}
     <select class="filter-select" id="fs-sort-${type}" onchange="sortTable('${type}',this.value)">
       <option value="">Sort: default</option>
       <option value="date_updated_desc">Last Updated ↓</option>
@@ -2591,56 +2767,8 @@ function toggleSubs(type,show){
   if(S.viewMode[type]==='kanban')renderKanban(type);
 }
 
-function filterTable(type,q){
-  const ql=q.toLowerCase();
-  const base=S.entries[type].filter(t=>!t.parent);
-  S.filtered[type]=!ql?base:base.filter(t=>{
-    const cf=getCF(t);
-    return[t.name,t.id,cf['primary contact email'],cf.email,cf.phone].some(v=>(v||'').toLowerCase().includes(ql));
-  });
-  S.pages[type]=1;renderTable(type);
-  if(S.viewMode[type]==='kanban')renderKanban(type);
-}
 
-function filterByField(type,field,value){
-  const base=S.entries[type].filter(t=>!t.parent);
-  S.filtered[type]=!value?base:base.filter(t=>{
-    const cf=getCF(t);
-    if(field==='status')return(t.status?.status||'').toLowerCase().includes(value.toLowerCase());
-    if(field==='branch')return(cf.branch||'').toLowerCase().includes(value.toLowerCase());
-    if(field==='subbranch'){
-      const sb=cf['sub-branch']||cf['sub-branch (jtg)']||cf['sub-branch (mco)']||'';
-      return sb.toLowerCase().includes(value.toLowerCase());
-    }
-    if(field==='assignee')return(t.assignees?.map(a=>a.username||a.email).join(', ')||'').toLowerCase().includes(value.toLowerCase());
-    if(field==='type')return(cf['lead/contact type']||'').toLowerCase().includes(value.toLowerCase());
-    if(field==='staleness'){
-      const days=staleDaysInfo(t.date_updated).days;
-      if(days==null)return false;
-      if(value==='stale')return days>=8;
-      if(value==='getting_stale')return days>=4&&days<=7;
-      if(value==='fresh')return days<=3;
-      return true;
-    }
-    return true;
-  });
-  S.pages[type]=1;renderTable(type);
-  if(S.viewMode[type]==='kanban')renderKanban(type);
-}
 
-function clearFilters(type){
-  const ids=[`fs-status-${type}`,`fs-branch-${type}`,`fs-subbranch-${type}`,`fs-assignee-${type}`,`fs-staleness-${type}`,`fs-sort-${type}`,`fs-search-${type}`];
-  ids.forEach(id=>{
-    const el=document.getElementById(id);
-    if(!el)return;
-    if(el.tagName==='SELECT')el.selectedIndex=0;
-    else el.value='';
-  });
-  S.filtered[type]=S.entries[type].filter(t=>!t.parent&&!(type==='pipeline'&&(t.status?.status||'').toLowerCase()==='archived'));
-  S.pages[type]=1;
-  renderTable(type);
-  if(S.viewMode[type]==='kanban')renderKanban(type);
-}
 
 // ── Bulk selection & actions ────────────────────────────────────────
 // Selection state lives outside S.filtered/S.entries entirely -- it's
@@ -2744,16 +2872,6 @@ async function bulkArchive(type){
   renderTable(type);
 }
 
-function sortTable(type,mode){
-  if(!mode)return;
-  const arr=[...S.filtered[type]];
-  if(mode==='date_updated_desc')arr.sort((a,b)=>(b.date_updated||0)-(a.date_updated||0));
-  else if(mode==='date_updated_asc')arr.sort((a,b)=>(a.date_updated||0)-(b.date_updated||0));
-  else if(mode==='date_created_desc')arr.sort((a,b)=>(b.date_created||0)-(a.date_created||0));
-  else if(mode==='date_created_asc')arr.sort((a,b)=>(a.date_created||0)-(b.date_created||0));
-  S.filtered[type]=arr;
-  S.pages[type]=1;renderTable(type);
-}
 
 // ═══════════════════════════════════════════
 // KANBAN
@@ -2785,7 +2903,7 @@ function renderKanban(type){
       const asgn=task.assignees?.[0]?.username||'';
       return `<div class="kanban-card" onclick="openProfile('${task.id}','${lk}')">
         <div class="kc-name">${esc(task.name)}</div>
-        <div class="kc-meta">${bb}${tb}</div>
+        <div class="kc-meta">${bb}${tb}${type==='pipeline'?dealKanbanChips(task):''}</div>
         <div class="kc-footer">${nad?`<span>${nad}</span>`:''}${asgn?`<span>👤 ${esc(asgn)}</span>`:''}</div>
         <div class="kc-actions">
           <div class="kc-btn" onclick="event.stopPropagation();quickAction('${task.id}','${lk}')">⚡ Action</div>
@@ -4840,7 +4958,8 @@ function renderPfDetails(task,type,cf,body){
       ['Close Date',fmtDate(cf['close date'])],
       ['Next Action',cf['next action']],['Next Action Link',cf['next action link']],['Next Action Date',fmtDate(cf['next action date'])],
       ['Last Action',cf['last action']],['Deal Status Label',cf['deal status label']],['Deal Action',cf['deal action']],
-      ['Opportunity',cf.opportunity],['Deposit Amount',cf['deposit amount']],['Remaining Balance',cf['remaining balance']],['Plan',cf.plan],
+      ['Opportunity',cf.opportunity?fmtMoney(cf.opportunity):''],['Deposit Amount',cf['deposit amount']?fmtMoney(cf['deposit amount']):''],['Remaining Balance',cf['remaining balance']?fmtMoney(cf['remaining balance']):''],['Plan',cf.plan],
+      ...(cfByName(task,INVOICE_RE)?[['Invoice Status',cfText(cfByName(task,INVOICE_RE))]]:[]),...(cfByName(task,SERVICE_DATE_RE)?[['Date of Service',fmtDate(cfByName(task,SERVICE_DATE_RE).value)]]:[]),
       ['Main Contact',cf._byId[CU_FIELDS.MAIN_CONTACT]],['Primary Contact Email',cf['primary contact email']],['Primary Contact Phone',cf['primary contact phone']],
       ['Instagram',cf._byId[CU_FIELDS.INSTAGRAM]],['Facebook',cf._byId[CU_FIELDS.FACEBOOK]],['TikTok',cf._byId[CU_FIELDS.TIKTOK]],['Other Social',cf._byId[CU_FIELDS.OTHER_SOCIAL]],
       ['Assignee(s)',asgn],['Notebook Link',cf['notebook link']],['Last Updated',fmtDate(task.date_updated)]];
@@ -7843,6 +7962,7 @@ function renderDashboard(){
     return `<div class="stage-row"><div class="stage-dot" style="background:${bg}"></div><div style="flex:1;color:var(--text-secondary)">${esc(s)}</div><div style="font-weight:600">${c}</div></div>`;
   }).join('')||'<div class="empty-state" style="padding:20px"><p>No pipeline data</p></div>';
   renderToday();
+  renderInvoiceSummary();
 }
 
 function updateBadge(type,count){
@@ -9718,6 +9838,7 @@ async function renderToday(){
     side:`<div class="today-side"><button class="btn btn-primary btn-sm" onclick="event.stopPropagation();todayMsg('confirm','${esc(String(it.id))}')">Send now</button><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();todayMsg('cancel','${esc(String(it.id))}')">Cancel</button></div>`})));
   dueToday.forEach(t=>rows.push(row({tone:'amber',tag:'Today',title:t.name,sub:`Task · due ${new Date(+t.due_date).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})}`,onclick:`openTaskProfile('${t.id}')`})));
   followUps.forEach(t=>{const d=Number(getCF(t)['next action date']);rows.push(row({tone:d<dayBounds()[0]?'red':'blue',tag:'Follow up',title:t.name,sub:`${t._t} · next action ${fmtDateShort(d)} · ${esc(stageLabel(t.status?.status||'—'))}`,onclick:`openProfile('${t.id}','${t._k}')`}));});
+  invoiceTodayItems().forEach(x=>rows.push(row({tone:x.tone,tag:'Invoice',title:x.t.name,sub:`Deal · ${dealAmountOf(x.t)?fmtMoney(dealAmountOf(x.t))+' · ':''}${x.why}`,onclick:`openProfile('${x.t.id}','pipeline')`})));
   stale.slice(0,6).forEach(t=>rows.push(row({tone:t._s.days>=8?'red':'amber',tag:'Going stale',title:t.name,sub:`${t._t} · ${esc(stageLabel(t.status?.status||'—'))} · ${t._s.label}`,onclick:`openProfile('${t.id}','${t._k}')`})));
 
   const MAX=12;
@@ -9759,6 +9880,9 @@ const CMDK_COMMANDS=[
   {group:'Go to',label:'Action Hub',kw:'tasks',run:()=>switchView('tasks')},
   {group:'Go to',label:'Export',kw:'csv download',run:()=>switchView('export')},
   {group:'Go to',label:'Resources',kw:'help how to guide',run:()=>switchView('resources')},
+  {group:'Create',label:'Log completed job',kw:'job invoice closed won work done repeat',run:()=>openJobModal()},
+  {group:'Do',label:'Ask the assistant',kw:'voice speak talk dictate ai gemini',run:()=>openAssistant()},
+  {group:'Go to',label:'Unpaid invoices',kw:'invoice owed pending overdue money',run:()=>showUnpaidDeals()},
   {group:'Do',label:'Refresh data',kw:'sync reload',run:()=>refreshAll()}
 ];
 const CMDK={open:false,items:[],sel:0,lastFocus:null};
@@ -9778,8 +9902,9 @@ function cmdkResults(q){
   const score=c=>{const l=c.label.toLowerCase();return words.every(w=>l.includes(w))?(l.startsWith(words[0])?3:2):1;};
   const cmds=CMDK_COMMANDS.filter(c=>words.every(w=>(c.label+' '+c.kw+' '+c.group).toLowerCase().includes(w)))
     .map(c=>({...c,_s:score(c)})).sort((a,b)=>b._s-a._s).map(c=>({...c,group:'Commands',sub:c.group}));
+  const askAi=q.trim().length>=12?[{group:'Assistant',label:`Ask the assistant: “${q.trim().slice(0,80)}”`,run:()=>openAssistant(q.trim(),true)}]:[];
   const recs=(q.trim().length>=2?searchAll(q.trim().toLowerCase()):[]).slice(0,12).map(r=>({group:r.type+'s',label:r.name,sub:r.email||(r.id||'').toUpperCase(),badge:r.status||'',run:()=>openProfile(r.id,r.key)}));
-  return[...recs,...cmds];
+  return[...recs,...cmds,...askAi];
 }
 function cmdkRender(){
   const list=document.getElementById('cmdk-list');
@@ -9859,10 +9984,31 @@ function renderPfFacts(task,type){
     const d=Number(cf['next action date']);const[start]=dayBounds();
     facts.push(['Next action',`<span${d<start?' class="late"':''}>${esc(fmtDateShort(d))}</span>${cf['next action']?`<span class="fact-note">${esc(cf['next action'])}</span>`:''}`]);
   }
-  if(type==='accounts'&&cf['account status'])facts.push(['Account status',esc(cf['account status'])]);
+  if(type==='pipeline'){
+    facts.length=0;
+    const amt=dealAmountOf(task);
+    facts.push(['Amount',amt?fmtMoney(amt):'<span class="muted">Not set</span>']);
+    const invField=cfByName(task,INVOICE_RE);
+    if(invField){
+      const cur=invoiceStatusOf(task);
+      const opts=(invField.type_config?.options||[]).map(o=>o.name);
+      facts.push(['Invoice',`<select class="fact-select inv-${esc(cur||'none')}" aria-label="Invoice status" onchange="setInvoiceStatus('${escJsAttr(task.id)}',this.value)">${cur?'':'<option value="">Not set</option>'}${opts.map(n=>`<option value="${esc(n)}"${n.toLowerCase()===cur?' selected':''}>${esc(n)}</option>`).join('')}</select>`]);
+    }
+    const sd=serviceDateOf(task);
+    facts.push([cfByName(task,SERVICE_DATE_RE)?'Date of service':'Close date',sd?esc(fmtDateShort(sd)):'<span class="muted">Not set</span>']);
+    facts.push(['Owner',owners.length?esc(owners.join(', ')):'<span class="muted">Unassigned</span>']);
+    facts.push(['Last touched',`<span class="fresh-dot" style="background:${st.color}"></span>${esc(st.label)}`]);
+  }
+  else if(type==='accounts'&&cf['account status'])facts.push(['Account status',esc(cf['account status'])]);
   else if(task.date_created)facts.push(['Created',esc(fmtDateShort(task.date_created))]);
+  if(type==='accounts'){
+    const nm=(task.name||'').trim().toLowerCase();
+    const jobs=(S.entries.pipeline||[]).filter(d=>!d.parent&&((getCF(d)['company/account name']||'').trim().toLowerCase()===nm));
+    const owed=jobs.filter(d=>{const i=invoiceStatusOf(d);return i&&i!=='paid';});
+    if(owed.length)facts.push(['Unpaid',`<span class="late">${esc(fmtMoney(owed.reduce((s2,d)=>s2+dealAmountOf(d),0)))}</span><span class="fact-note">${owed.length} job${owed.length===1?'':'s'}</span>`]);
+  }
   const el=document.getElementById('pf-facts');
-  if(el)el.innerHTML=facts.slice(0,4).map(([k,v])=>`<div class="fact"><div class="fact-k">${k}</div><div class="fact-v">${v}</div></div>`).join('');
+  if(el)el.innerHTML=facts.slice(0,5).map(([k,v])=>`<div class="fact"><div class="fact-k">${k}</div><div class="fact-v">${v}</div></div>`).join('');
   const typeLabel={leads:'Lead',pipeline:'Deal',contacts:'Contact',accounts:'Account',master:'Task'}[type]||type;
   const kick=document.getElementById('pf-kicker');
   if(kick)kick.textContent=`${typeLabel} · ${(task.id||'').toUpperCase()}`;
@@ -9871,6 +10017,16 @@ function renderPfFacts(task,type){
   if(call){const digits=phone.replace(/[^\d+]/g,'');call.style.display=digits.length>=7?'inline-flex':'none';call.href=digits?`tel:${digits}`:'#';}
   const msg=document.getElementById('pf-message-btn');
   if(msg)msg.style.display=type==='master'?'none':'inline-flex';
+  const job=document.getElementById('pf-logjob-btn');
+  if(job)job.style.display=['accounts','contacts','leads'].includes(type)?'inline-flex':'none';
+  const paid=document.getElementById('pf-paid-btn');
+  if(paid){const inv=type==='pipeline'?invoiceStatusOf(task):'';paid.style.display=inv&&inv!=='paid'?'inline-flex':'none';}
+}
+function pfLogJob(){
+  const e=S.currentEntry;if(!e)return;
+  const cf=getCF(e.task);
+  if(e.type==='accounts')openJobModal({account:e.task.name});
+  else openJobModal({contact:e.task.name,account:(exactEntry('accounts',cf.company||cf['company/account name'])||{}).name||''});
 }
 
 // ---------- Phone: bottom navigation ----------
@@ -9878,6 +10034,763 @@ function syncBottomNav(view){
   document.querySelectorAll('#bottom-nav [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
 }
 document.addEventListener('DOMContentLoaded',()=>{setupCmdk();syncBottomNav('dashboard');});
+
+// ═══════════════════════════════════════════
+// LIST FILTERS (Nov 2026)
+// The list filters used to replace each other (choosing a branch threw
+// away the status filter) and the dropdowns snapped back to "All" on every
+// re-render while the filter stayed applied. One saved state per list
+// now feeds every filter, the search box and the sort, and survives the
+// 5-minute refresh.
+// ═══════════════════════════════════════════
+const LIST_FILTER_DEFAULT={q:'',status:'',branch:'',subbranch:'',assignee:'',type:'',staleness:'',invoice:'',sort:''};
+function lf(type){S.listFilters=S.listFilters||{};return S.listFilters[type]||(S.listFilters[type]={...LIST_FILTER_DEFAULT});}
+function listFiltered(type){
+  const f=lf(type);
+  const ql=(f.q||'').toLowerCase();
+  const has=(v,q)=>(v||'').toLowerCase().includes(q.toLowerCase());
+  const arr=(S.entries[type]||[]).filter(t=>{
+    if(t.parent)return false;
+    const st=(t.status?.status||'').toLowerCase();
+    if(type==='pipeline'&&st==='archived'&&f.status.toLowerCase()!=='archived'&&!f.invoice)return false;
+    const cf=getCF(t);
+    if(ql&&![t.name,t.id,cf['primary contact email'],cf.email,cf.phone].some(v=>(v||'').toLowerCase().includes(ql)))return false;
+    if(f.status&&!st.includes(f.status.toLowerCase()))return false;
+    if(f.branch&&!has(cf.branch,f.branch))return false;
+    if(f.subbranch&&!has(cf['sub-branch']||cf['sub-branch (jtg)']||cf['sub-branch (mco)']||'',f.subbranch))return false;
+    if(f.assignee&&!has(t.assignees?.map(a=>a.username||a.email).join(', '),f.assignee))return false;
+    if(f.type&&!has(cf['lead/contact type'],f.type))return false;
+    if(f.staleness){
+      const days=staleDaysInfo(t.date_updated).days;
+      if(days==null)return false;
+      if(f.staleness==='stale'&&days<8)return false;
+      if(f.staleness==='getting_stale'&&(days<4||days>7))return false;
+      if(f.staleness==='fresh'&&days>3)return false;
+    }
+    if(f.invoice){
+      const inv=invoiceStatusOf(t);
+      if(f.invoice==='unpaid'?(!inv||inv==='paid'):inv!==f.invoice)return false;
+    }
+    return true;
+  });
+  const by={date_updated_desc:(a,b)=>(b.date_updated||0)-(a.date_updated||0),date_updated_asc:(a,b)=>(a.date_updated||0)-(b.date_updated||0),
+    date_created_desc:(a,b)=>(b.date_created||0)-(a.date_created||0),date_created_asc:(a,b)=>(a.date_created||0)-(b.date_created||0)}[f.sort];
+  return by?arr.sort(by):arr;
+}
+function applyListFilters(type){
+  S.filtered[type]=listFiltered(type);
+  S.pages[type]=1;renderTable(type);
+  if(S.viewMode[type]==='kanban')renderKanban(type);
+}
+function filterTable(type,q){lf(type).q=q||'';applyListFilters(type);}
+function filterByField(type,field,value){lf(type)[field]=value||'';applyListFilters(type);}
+function sortTable(type,mode){lf(type).sort=mode||'';applyListFilters(type);}
+function clearFilters(type){S.listFilters[type]={...LIST_FILTER_DEFAULT};applyListFilters(type);}
+function listFiltersActive(type){const f=lf(type);return Object.keys(LIST_FILTER_DEFAULT).some(k=>f[k]);}
+// buildToolbar rebuilds the controls on every render; put the saved
+// choices back so what's shown matches what's applied.
+function restoreToolbarState(type){
+  const f=lf(type);
+  const map={status:`fs-status-${type}`,branch:`fs-branch-${type}`,subbranch:`fs-subbranch-${type}`,assignee:`fs-assignee-${type}`,staleness:`fs-staleness-${type}`,sort:`fs-sort-${type}`,invoice:`fs-invoice-${type}`};
+  for(const[k,id]of Object.entries(map)){
+    const el=document.getElementById(id);if(!el)continue;
+    if([...el.options].some(o=>o.value===f[k]))el.value=f[k];
+    el.classList.toggle('is-set',!!f[k]);
+  }
+  const q=document.getElementById(`fs-search-${type}`);
+  if(q&&document.activeElement!==q)q.value=f.q||'';
+  const tb=document.getElementById(`tb-${type}`);
+  if(tb)tb.classList.toggle('has-filters',listFiltersActive(type));
+}
+
+// ═══════════════════════════════════════════
+// DEALS: completed jobs and invoices (Nov 2026)
+// A deal is any revenue opportunity, including repeat work for an
+// existing client: one deal per completed job, closed/won, with an
+// amount, a date of service and an Invoice Status. Invoice Status and
+// Service Date are custom fields the Pipeline list needs in ClickUp
+// (the API can't create fields); everything below finds them by name and
+// says how to add them when they're missing.
+// ═══════════════════════════════════════════
+const INVOICE_STATES=['Pending','Sent','Paid','Overdue'];
+const INVOICE_COLORS={pending:['#FEF3E2','#9A5B00'],sent:['#E8F2FD','#0859A6'],paid:['#E7F6EC','#166534'],overdue:['#FDECEC','#B42318']};
+const normFieldName=s=>String(s||'').toLowerCase().replace(/[^a-z0-9#]+/g,' ').trim();
+function cfByName(t,re){return(t&&t.custom_fields||[]).find(f=>re.test(normFieldName(f.name)))||null;}
+function cfText(f){
+  if(!f||f.value==null||f.value==='')return'';
+  if(f.type==='drop_down'){const o=(f.type_config?.options||[]).find(o=>String(o.orderindex)===String(f.value)||o.id===f.value);return o?o.name:'';}
+  return String(f.value);
+}
+const INVOICE_RE=/\binvoice status\b/;
+const SERVICE_DATE_RE=/\b(service date|date of service)\b/;
+function invoiceStatusOf(t){return cfText(cfByName(t,INVOICE_RE)).toLowerCase();}
+function dealAmountOf(t){const v=Number(getCF(t).opportunity);return isFinite(v)&&v>0?v:0;}
+function serviceDateOf(t){const f=cfByName(t,SERVICE_DATE_RE);return Number(f&&f.value)||Number(getCF(t)['close date'])||0;}
+function fmtMoney(v){const n=Number(v);if(!isFinite(n)||v===''||v==null)return'—';return n.toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:n%1?2:0});}
+function invoiceBadge(inv){
+  if(!inv)return'';
+  const[bg,fg]=INVOICE_COLORS[inv]||['#EEF0F4','#4F586B'];
+  return`<span class="badge inv-badge" style="background:${bg};color:${fg}">${esc(inv[0].toUpperCase()+inv.slice(1))}</span>`;
+}
+// Is the Invoice Status field on the Pipeline list? ClickUp returns every
+// list field on every task (empty ones without a value), so any loaded
+// deal answers it without an extra request.
+function invoiceTracking(){return(S.entries.pipeline||[]).some(t=>cfByName(t,INVOICE_RE));}
+function dealAmountCell(t){
+  const amt=dealAmountOf(t);const inv=invoiceStatusOf(t);
+  if(!amt&&!inv)return'<span class="muted">—</span>';
+  return`${amt?`<span class="amt">${fmtMoney(amt)}</span>`:''}${inv?` ${invoiceBadge(inv)}`:''}`;
+}
+function dealKanbanChips(t){
+  const amt=dealAmountOf(t);const inv=invoiceStatusOf(t);
+  return`${amt?`<span class="badge amt-badge">${fmtMoney(amt)}</span>`:''}${invoiceBadge(inv)}`;
+}
+
+// Pipeline fields, read from ClickUp once per session.
+const DEAL_FIELDS={at:0,list:[]};
+async function loadDealFields(force){
+  if(!force&&DEAL_FIELDS.at&&Date.now()-DEAL_FIELDS.at<10*60000)return DEAL_FIELDS;
+  const fields=S.creds.listPipeline?await getListFields(S.creds.listPipeline):[];
+  const find=(re,types)=>fields.find(f=>re.test(normFieldName(f.name))&&(!types||types.includes(f.type)))||null;
+  Object.assign(DEAL_FIELDS,{
+    at:Date.now(),list:fields,
+    invoice:find(INVOICE_RE,['drop_down']),
+    serviceDate:find(SERVICE_DATE_RE,['date']),
+    invoiceNumber:find(/\binvoice (number|no|#)\b|\binvoice#/,['short_text','text','number']),
+    relAccount:fields.find(f=>/related account/.test(normFieldName(f.name))&&!/relationship/.test(f.type))||null,
+    relContact:fields.find(f=>/related (lead|contact)/.test(normFieldName(f.name))&&!/relationship/.test(f.type))||null,
+    relationships:fields.filter(f=>f.type==='list_relationship')
+  });
+  return DEAL_FIELDS;
+}
+function invoiceOptionIndex(field,name){
+  const o=(field?.type_config?.options||[]).find(o=>String(o.name).toLowerCase()===String(name).toLowerCase());
+  return o?o.orderindex:null;
+}
+function ymd(ms){const d=new Date(ms);return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function nextWorkingDay(){const d=new Date();d.setHours(0,0,0,0);do{d.setDate(d.getDate()+1);}while(d.getDay()===0||d.getDay()===6);return d.getTime();}
+
+/**
+ * Creates one deal. Used by "Log completed job" and by the assistant.
+ * {name, account:{id,name}|null, accountName, contact:{id,name,type}|null,
+ *  amount, serviceDate (ms), invoiceStatus ('Pending'…), stage
+ *  ('closed_won'|'open'|'closed_lost'), invoiceNumber, notes, via}
+ * Returns {task, warnings[]}.
+ */
+async function createDealRecord(d){
+  if(!S.creds.listPipeline)throw new Error('Pipeline list isn’t configured.');
+  const name=(d.name||'').trim();
+  if(!name)throw new Error('The deal needs a name.');
+  const status=d.stage==='closed_won'?'CLOSED / WON':d.stage==='closed_lost'?'CLOSED / LOST':'OPPURTUNITY';
+  const lines=[];
+  if(d.serviceDate)lines.push(`Date of service: ${fmtDateShort(d.serviceDate)}`);
+  if(d.amount)lines.push(`Amount: ${fmtMoney(d.amount)}`);
+  if(d.invoiceStatus)lines.push(`Invoice: ${d.invoiceStatus}${d.invoiceNumber?` (#${d.invoiceNumber})`:''}`);
+  if(d.contact)lines.push(`Contact: ${d.contact.name}`);
+  if(d.notes)lines.push('',d.notes);
+  const task=await cuFetch(`/list/${S.creds.listPipeline}/task`,'POST',{name,status,description:lines.join('\n')});
+  const F=CU_FIELDS,warnings=[];
+  const set=async(id,val,type,label)=>{if(!(await setFieldById(task.id,id,val,type)))warnings.push(label);};
+  const fields=await loadDealFields();
+  const accountName=d.account?d.account.name:(d.accountName||'');
+  if(accountName)await set(F.COMPANY_NAME,accountName,'short_text','account name');
+  if(d.amount)await set(F.OPPORTUNITY,Number(d.amount),'currency','amount');
+  if(d.serviceDate&&d.stage==='closed_won')await set(F.CLOSE_DATE,d.serviceDate,'date','close date');
+  if(d.serviceDate&&fields.serviceDate)await set(fields.serviceDate.id,d.serviceDate,'date','service date');
+  if(d.invoiceStatus){
+    const idx=fields.invoice?invoiceOptionIndex(fields.invoice,d.invoiceStatus):null;
+    if(idx!=null)await set(fields.invoice.id,idx,'drop_down','invoice status');
+    else warnings.push('invoice status (no Invoice Status field on the Pipeline list yet — it’s in the description)');
+  }
+  if(d.invoiceNumber&&fields.invoiceNumber)await set(fields.invoiceNumber.id,d.invoiceNumber,fields.invoiceNumber.type==='number'?'number':'short_text','invoice number');
+  if(d.account&&fields.relAccount)await set(fields.relAccount.id,d.account.id,'short_text','related account');
+  if(d.contact&&fields.relContact)await set(fields.relContact.id,d.contact.id,'short_text','related contact');
+  // Native ClickUp relationship fields, when the list has them.
+  for(const rf of fields.relationships||[]){
+    const n=normFieldName(rf.name);
+    const target=/account|compan/.test(n)?d.account:/contact|lead|people|person/.test(n)?d.contact:null;
+    if(target){try{await cuFetch(`/task/${task.id}/field/${rf.id}`,'POST',{value:{add:[target.id],rem:[]}});}catch(e){console.warn('relationship field',rf.name,e.message);}}
+  }
+  const who=`${S.user?.name||'Admin'} | ${getTS()}`;
+  await cuFetch(`/task/${task.id}/comment`,'POST',{comment_text:`[LOG] ${d.stage==='closed_won'?'Completed job logged':'Deal created'}${d.via?` (${d.via})`:''} — ${[d.amount?fmtMoney(d.amount):'',d.invoiceStatus?`invoice ${d.invoiceStatus}`:''].filter(Boolean).join(', ')} — ${who}`,notify_all:false});
+  if(d.account)await cuFetch(`/task/${d.account.id}/comment`,'POST',{comment_text:`[LOG] ${d.stage==='closed_won'?'Job logged':'Deal created'}: ${name}${d.amount?` — ${fmtMoney(d.amount)}`:''}${d.invoiceStatus?`, invoice ${d.invoiceStatus}`:''} — ${who}`,notify_all:false}).catch(()=>{});
+  try{await syncToSheets(task,'pipeline');}catch(e){}
+  return{task,warnings};
+}
+
+async function setInvoiceStatus(taskId,value){
+  const t=(S.entries.pipeline||[]).find(x=>x.id===taskId)||(S.currentEntry?.task?.id===taskId?S.currentEntry.task:null);
+  const field=cfByName(t,INVOICE_RE)||(await loadDealFields()).invoice;
+  if(!field)return showToast('Add an “Invoice Status” dropdown to the Pipeline list in ClickUp first.','error');
+  const idx=invoiceOptionIndex(field,value);
+  if(idx==null)return showToast(`“${value}” isn’t an option of the Invoice Status field in ClickUp.`,'error');
+  if(!(await setFieldById(taskId,field.id,idx,'drop_down')))return showToast('Couldn’t save the invoice status.','error');
+  await cuFetch(`/task/${taskId}/comment`,'POST',{comment_text:`[LOG] Invoice status → ${value} — ${S.user?.name||'Admin'} | ${getTS()}`,notify_all:false}).catch(()=>{});
+  for(const x of [t,S.currentEntry?.task].filter(Boolean)){
+    const cf=(x.custom_fields||[]).find(f=>f.id===field.id);
+    if(cf)cf.value=idx;else x.custom_fields=[...(x.custom_fields||[]),{...field,value:idx}];
+  }
+  showToast(`Invoice marked ${value}.`,'success');
+  if(S.currentEntry?.task?.id===taskId)renderPfHeader(S.currentEntry.task,S.currentEntry.type);
+  renderDashboard();
+  if(S.filtered.pipeline)renderTable('pipeline');
+}
+
+// Dashboard card: what's still owed.
+function renderInvoiceSummary(){
+  const el=document.getElementById('dash-invoices');
+  if(!el)return;
+  const deals=(S.entries.pipeline||[]).filter(t=>!t.parent);
+  if(!invoiceTracking()){
+    el.innerHTML=`<div class="card-header"><h3>Invoices</h3></div>
+      <div class="card-body inv-setup"><p>To track what’s been invoiced and paid, add an <b>Invoice Status</b> dropdown (Pending, Sent, Paid, Overdue) and a <b>Service Date</b> date field to the Pipeline list in ClickUp.</p>
+      <button class="btn btn-secondary btn-sm" onclick="openJobModal()">+ Log completed job</button></div>`;
+    return;
+  }
+  const unpaid=deals.filter(t=>{const i=invoiceStatusOf(t);return i&&i!=='paid';});
+  const total=unpaid.reduce((s,t)=>s+dealAmountOf(t),0);
+  const overdue=unpaid.filter(t=>invoiceStatusOf(t)==='overdue').length;
+  const notSent=unpaid.filter(t=>invoiceStatusOf(t)==='pending').length;
+  el.innerHTML=`<div class="card-header"><h3>Unpaid invoices</h3><button class="btn btn-ghost btn-sm" onclick="openJobModal()">+ Log job</button></div>
+    <div class="card-body inv-sum" role="button" tabindex="0" onclick="showUnpaidDeals()" onkeydown="if(event.key==='Enter')showUnpaidDeals()">
+      <div class="inv-total">${fmtMoney(total)}</div>
+      <div class="inv-meta">${unpaid.length} job${unpaid.length===1?'':'s'}${notSent?` · <b>${notSent} not sent</b>`:''}${overdue?` · <span class="late">${overdue} overdue</span>`:''}${unpaid.length?' →':''}</div>
+    </div>`;
+}
+function showUnpaidDeals(){
+  switchView('pipeline');
+  S.listFilters=S.listFilters||{};S.listFilters.pipeline={...LIST_FILTER_DEFAULT,invoice:'unpaid'};
+  const listBtn=document.querySelector('#vt-pipeline .vt-btn');
+  if(S.viewMode.pipeline!=='list'&&typeof setViewMode==='function')setViewMode('pipeline','list',listBtn);
+  applyListFilters('pipeline');
+}
+// "Needs you today" rows for invoices: overdue, or not sent a week after
+// the work was done. Deals assigned to me, or to nobody.
+function invoiceTodayItems(){
+  const out=[];const now=Date.now();
+  (S.entries.pipeline||[]).filter(t=>!t.parent&&(!(t.assignees||[]).length||isAssignedToMe(t))).forEach(t=>{
+    const inv=invoiceStatusOf(t);
+    if(inv==='overdue')out.push({t,tone:'red',why:'invoice overdue'});
+    else if(inv==='pending'){const d=serviceDateOf(t);if(d&&now-d>7*864e5)out.push({t,tone:'amber',why:`invoice not sent · work done ${fmtDateShort(d)}`});}
+  });
+  return out.slice(0,6);
+}
+
+// ── Log completed job ───────────────────────────────────
+function fillDatalist(id,items){
+  const dl=document.getElementById(id);if(!dl)return;
+  dl.innerHTML=items.slice(0,800).map(n=>`<option value="${esc(n)}"></option>`).join('');
+}
+function openJobModal(prefill={}){
+  const accounts=(S.entries.accounts||[]).filter(t=>!t.parent).map(t=>t.name).sort((a,b)=>a.localeCompare(b));
+  const people=[...(S.entries.contacts||[]),...(S.entries.leads||[])].filter(t=>!t.parent).map(t=>t.name).sort((a,b)=>a.localeCompare(b));
+  fillDatalist('job-accounts',accounts);fillDatalist('job-people',[...new Set(people)]);
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v??'';};
+  set('job-account',prefill.account||'');set('job-contact',prefill.contact||'');set('job-service',prefill.service||'');
+  set('job-amount',prefill.amount||'');set('job-date',prefill.date||ymd(Date.now()));set('job-invoice',prefill.invoice||'Pending');
+  set('job-invnum','');set('job-notes','');
+  document.getElementById('job-remind').checked=true;
+  document.getElementById('job-status').textContent='';
+  document.getElementById('job-new-account-row').hidden=true;
+  document.getElementById('job-modal').style.display='flex';
+  loadDealFields().then(f=>{
+    const warn=document.getElementById('job-field-warn');
+    if(warn)warn.hidden=!!(f.invoice||!f.list.length);
+  }).catch(()=>{});
+  setTimeout(()=>document.getElementById(prefill.account?'job-service':'job-account')?.focus(),50);
+}
+function exactEntry(type,name){
+  const n=String(name||'').trim().toLowerCase();if(!n)return null;
+  return(S.entries[type]||[]).find(t=>!t.parent&&(t.name||'').trim().toLowerCase()===n)||null;
+}
+function jobAccountChanged(){
+  const v=document.getElementById('job-account').value.trim();
+  const row=document.getElementById('job-new-account-row');
+  row.hidden=!v||!!exactEntry('accounts',v);
+  if(!row.hidden)document.getElementById('job-new-account-label').textContent=`Create a new account “${v}”`;
+}
+async function submitJob(another){
+  const val=id=>document.getElementById(id).value.trim();
+  const statusEl=document.getElementById('job-status');
+  const accountName=val('job-account'),service=val('job-service'),amountRaw=val('job-amount'),date=val('job-date');
+  if(!accountName)return statusEl.textContent='Choose the account (client company).';
+  if(!service)return statusEl.textContent='Say what was done, e.g. “Monthly SEO — October”.';
+  const amount=parseCurrencyInput(amountRaw);
+  if(amount==null)return statusEl.textContent='Enter the amount.';
+  if(!date)return statusEl.textContent='Enter the date of service.';
+  let account=exactEntry('accounts',accountName);
+  if(!account&&!document.getElementById('job-new-account').checked)return statusEl.textContent=`There’s no account called “${accountName}”. Pick one from the list, or tick “Create a new account”.`;
+  const contactName=val('job-contact');
+  const contactTask=contactName?(exactEntry('contacts',contactName)||exactEntry('leads',contactName)):null;
+  const btns=[...document.querySelectorAll('#job-modal .modal-footer button')];btns.forEach(b=>b.disabled=true);
+  statusEl.textContent='Saving…';
+  try{
+    if(!account){
+      if(!S.creds.listAccounts)throw new Error('Accounts list isn’t configured.');
+      const t=await cuFetch(`/list/${S.creds.listAccounts}/task`,'POST',{name:accountName});
+      account={id:t.id,name:t.name||accountName};
+    }
+    const serviceDate=parseLocalDate(date);
+    const invoiceStatus=val('job-invoice');
+    const{task,warnings}=await createDealRecord({
+      name:`${account.name} — ${service}`,account:{id:account.id,name:account.name},
+      contact:contactTask?{id:contactTask.id,name:contactTask.name,type:(S.entries.contacts||[]).includes(contactTask)?'contacts':'leads'}:null,
+      amount,serviceDate,invoiceStatus,stage:'closed_won',invoiceNumber:val('job-invnum'),notes:val('job-notes'),via:'Log job'
+    });
+    if(document.getElementById('job-remind').checked&&invoiceStatus==='Pending'){
+      await bulkExecTask({taskName:`Send invoice — ${task.name||account.name}`,taskDueDate:ymd(nextWorkingDay()),_chosenEntryId:task.id,_chosenEntryType:'pipeline'}).catch(e=>warnings.push('invoice reminder task'));
+    }
+    showToast(`Job logged for ${account.name}${warnings.length?` — check: ${warnings.join(', ')}`:''}.`,warnings.length?'error':'success');
+    loadAllEntries().then(()=>{renderDashboard();});
+    if(another){
+      ['job-service','job-amount','job-invnum','job-notes'].forEach(id=>document.getElementById(id).value='');
+      statusEl.textContent=`✓ Saved “${task.name}”. Add the next one.`;
+      document.getElementById('job-service').focus();
+    }else{
+      closeModal('job-modal');
+    }
+  }catch(e){
+    statusEl.textContent='Failed: '+e.message;
+  }finally{btns.forEach(b=>b.disabled=false);}
+}
+
+// ═══════════════════════════════════════════
+// ASSISTANT (voice or typing) — Nov 2026
+// Speech is turned into text in the browser (Web Speech API); the text
+// and the running draft go to api/assistant (Gemini) through the
+// Worker's AI bridge. Names are matched against the CRM here, never by
+// the model. Nothing is written until the person confirms; every write
+// is noted on the record it touches.
+// ═══════════════════════════════════════════
+const AS={turns:[],draft:[],ready:false,missing:[],busy:false,listening:false,rec:null,voiceReplies:true,lastVoice:false,log:[]};
+const SpeechRec=window.SpeechRecognition||window.webkitSpeechRecognition||null;
+const ASST_TYPE_KEYS={lead:['leads'],contact:['contacts','leads'],account:['accounts'],deal:['pipeline'],any:['accounts','contacts','leads','pipeline']};
+const ASST_TYPE_LABEL={leads:'Lead',contacts:'Contact',accounts:'Account',pipeline:'Deal'};
+const ASST_OP_LABEL={create_lead:'New lead',create_contact:'New contact',create_account:'New account',create_deal:'Deal',update_record:'Update',add_note:'Note',add_task:'Task'};
+
+function openAssistant(prefill,send){
+  const p=document.getElementById('assistant-panel');if(!p||!S.user)return;
+  p.hidden=false;document.body.classList.add('asst-open');
+  if(!AS.log.length)asstSay('Tell me what happened — for example “Finished another SEO month for Henderson, $450, invoice not sent yet”, “Mark the Peachtree invoice paid”, or “Remind me to attach the signed agreement to the Henderson deal”. I’ll ask for anything missing and read it back before saving.',{speak:false,intro:true});
+  asstRender();
+  const ta=document.getElementById('asst-text');
+  if(prefill){ta.value=prefill;asstAutosize();}
+  setTimeout(()=>ta.focus(),30);
+  if(prefill&&send){AS.lastVoice=false;asstSend();}
+}
+function closeAssistant(){
+  const p=document.getElementById('assistant-panel');if(p)p.hidden=true;
+  document.body.classList.remove('asst-open');
+  asstStopListening();try{speechSynthesis.cancel();}catch(e){}
+}
+function asstSay(text,{speak=true,intro=false,chips=null}={}){
+  AS.log.push({who:'assistant',text,chips,intro});
+  if(!intro)AS.turns.push({role:'assistant',text});
+  if(speak&&AS.lastVoice&&AS.voiceReplies)asstSpeak(text);
+}
+function asstSpeak(text){
+  if(!('speechSynthesis' in window))return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text.replace(/[—–]/g,', '));
+    u.rate=1.05;
+    // Keep the conversation hands-free: listen again after a question.
+    u.onend=()=>{if(AS.lastVoice&&!document.getElementById('assistant-panel').hidden&&(AS.draft.length||/\?\s*$/.test(text)))asstListen();};
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function asstToggleVoiceReplies(){
+  AS.voiceReplies=!AS.voiceReplies;
+  const b=document.getElementById('asst-voice');
+  if(b){b.setAttribute('aria-pressed',String(AS.voiceReplies));b.title=AS.voiceReplies?'Replies are read aloud after you speak — click to turn off':'Replies are not read aloud — click to turn on';}
+  if(!AS.voiceReplies)try{speechSynthesis.cancel();}catch(e){}
+}
+
+// ── Voice in ──
+function asstMic(){
+  if(!SpeechRec){showToast('Voice isn’t available in this browser. Type instead — or use Chrome, Edge or Safari.','error');return;}
+  if(AS.listening){asstStopListening(true);return;}
+  asstListen();
+}
+function asstListen(){
+  if(!SpeechRec||AS.listening||AS.busy)return;
+  try{speechSynthesis.cancel();}catch(e){}
+  const rec=new SpeechRec();
+  rec.lang=navigator.language||'en-US';rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;
+  const ta=document.getElementById('asst-text');
+  const base=ta.value?ta.value.replace(/\s+$/,'')+' ':'';
+  let finalText='';
+  rec.onresult=e=>{
+    let interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const r=e.results[i];
+      if(r.isFinal)finalText+=r[0].transcript;else interim+=r[0].transcript;
+    }
+    ta.value=(base+finalText+interim).trimStart();asstAutosize();
+  };
+  rec.onerror=e=>{
+    AS.listening=false;asstMicState();
+    if(e.error==='not-allowed'||e.error==='service-not-allowed')showToast('Microphone access is blocked for this site. Allow it in the browser’s site settings, or type instead.','error');
+  };
+  rec.onend=()=>{
+    const wasListening=AS.listening;AS.listening=false;AS.rec=null;asstMicState();
+    if(wasListening&&ta.value.trim()){AS.lastVoice=true;asstSend();}
+  };
+  AS.rec=rec;AS.listening=true;asstMicState();
+  try{rec.start();}catch(e){AS.listening=false;asstMicState();}
+}
+function asstStopListening(sendNow){
+  if(!AS.rec){AS.listening=false;asstMicState();return;}
+  if(!sendNow)AS.listening=false; // stopping without sending
+  try{AS.rec.stop();}catch(e){}
+}
+function asstMicState(){
+  const b=document.getElementById('asst-mic');if(!b)return;
+  b.classList.toggle('on',AS.listening);
+  b.setAttribute('aria-label',AS.listening?'Stop listening and send':'Speak');
+  b.title=SpeechRec?(AS.listening?'Listening… click to stop':'Speak (your words appear as text first)'):'Voice isn’t available in this browser';
+  const hint=document.getElementById('asst-hint');
+  if(hint)hint.textContent=AS.listening?'Listening… pause when you’re done.':(SpeechRec?'Tap the mic and talk, or type. Enter sends.':'Type what happened. Enter sends.');
+}
+function asstAutosize(){const ta=document.getElementById('asst-text');if(!ta)return;ta.style.height='auto';ta.style.height=Math.min(140,ta.scrollHeight)+'px';}
+
+// ── Talking to the model ──
+const ASST_YES=/^(yes|yeah|yep|yup|confirm(ed)?|correct|do it|go ahead|save( it| them| that)?|sounds good|ok(ay)?|that'?s right)\b[.!]?\s*$/i;
+const ASST_CANCEL=/^(cancel|start over|forget (it|that)|never ?mind|discard( it| that)?|scrap (it|that))\b/i;
+async function asstSend(){
+  const ta=document.getElementById('asst-text');
+  const text=(ta.value||'').trim();
+  if(!text||AS.busy)return;
+  ta.value='';asstAutosize();
+  const viaVoice=AS.lastVoice;
+  AS.log.push({who:'user',text,voice:viaVoice});
+  if(AS.draft.length&&AS.ready&&ASST_YES.test(text)){asstRender();return asstConfirm();}
+  if(ASST_CANCEL.test(text)){AS.draft=[];AS.ready=false;AS.turns=[];asstSay('OK, I’ve cleared that. What would you like to do?');asstRender();return;}
+  AS.turns.push({role:'user',text});
+  AS.busy=true;asstRender();
+  try{
+    const res=await aiFetch('assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      messages:AS.turns.slice(-30),draft:{operations:AS.draft.map(asstStrip)},referenceDate:ymd(Date.now()),userName:S.user?.name||''
+    })});
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok){
+      AS.turns.pop();
+      const msg=res.status===404||/unknown|not allowed|endpoint/i.test(data.error||'')
+        ?'The assistant isn’t switched on yet: the CRM’s Worker needs “assistant” added to its AI endpoints.'
+        :(data.error||`The assistant couldn’t answer (${res.status}).`);
+      asstSay(msg,{speak:false});
+      return;
+    }
+    const ops=Array.isArray(data.operations)?data.operations:[];
+    AS.draft=asstCarry(AS.draft,ops);
+    AS.ready=!!data.ready;AS.missing=Array.isArray(data.missing)?data.missing:[];
+    const question=asstResolve();
+    if(question){AS.ready=false;asstSay(question.text,{chips:question.chips});}
+    else asstSay(data.reply||(AS.ready?asstReadback()+' Confirm?':'Go on.'));
+  }catch(e){
+    AS.turns.pop();
+    asstSay(`Something went wrong: ${e.message}`,{speak:false});
+  }finally{
+    AS.busy=false;asstRender();
+    if(viaVoice)AS.lastVoice=true;
+  }
+}
+// What goes back to the model: its own fields only.
+function asstStrip(o){const c={};for(const[k,v]of Object.entries(o))if(!k.startsWith('_'))c[k]=v;return c;}
+const asstKey=o=>`${o.op}|${(o.recordHint||o.accountName||'').toLowerCase()}|${(o.contactHint||'').toLowerCase()}|${(o.firstName||'')+(o.lastName||'')}`.toLowerCase();
+// Keep the person's earlier choices ("the Henderson Roofing account")
+// when the model sends the draft back.
+function asstCarry(oldOps,newOps){
+  return newOps.map(n=>{
+    const o=oldOps.find(x=>asstKey(x)===asstKey(n));
+    if(!o)return{...n};
+    const keep={};for(const k of ['_target','_account','_contact','_createAccount','_dupOk','_linkTo'])if(o[k]!==undefined)keep[k]=o[k];
+    return{...n,...keep};
+  });
+}
+const asstClean=h=>String(h||'').replace(/\b(the|a|an|deal|account|company|contact|lead|job|record|client|from|at)\b/gi,' ').replace(/['’]s\b/g,'').replace(/\s+/g,' ').trim();
+function asstMatches(hint,kinds){
+  const h=asstClean(hint);if(h.length<2)return[];
+  const seen=new Set();
+  return findEntriesByNameHint(h).filter(m=>kinds.includes(m.type)&&!seen.has(m.id)&&seen.add(m.id)).slice(0,6);
+}
+function asstCreatedName(o){
+  if(o.op==='create_account')return o.accountName;
+  if(o.op==='create_deal')return o.dealName||o.accountName;
+  if(o.op==='create_lead'||o.op==='create_contact')return[o.firstName,o.lastName].filter(Boolean).join(' ');
+  return'';
+}
+// Matches every name in the draft to a CRM record. Returns the first
+// question to ask, or null when everything is settled.
+function asstResolve(){
+  for(let i=0;i<AS.draft.length;i++){
+    const o=AS.draft[i];
+    const needsTarget=o.op==='update_record'||o.op==='add_note'||(o.op==='add_task'&&o.recordHint);
+    if(needsTarget&&!o._target&&o._linkTo==null){
+      // About something being created in this same draft?
+      const h=asstClean(o.recordHint).toLowerCase();
+      const j=AS.draft.findIndex((x,k)=>k!==i&&x.op.startsWith('create_')&&h&&asstCreatedName(x).toLowerCase().includes(h));
+      if(j>=0){o._linkTo=j;continue;}
+      const m=asstMatches(o.recordHint,ASST_TYPE_KEYS[o.recordType]||ASST_TYPE_KEYS.any);
+      if(m.length===1){o._target=m[0];continue;}
+      if(m.length>1)return{text:`Which ${asstClean(o.recordHint)} do you mean?`,chips:m.map(x=>({label:`${x.name} · ${ASST_TYPE_LABEL[x.type]}`,act:()=>{o._target=x;asstAfterChoice();}}))};
+      if(o.op==='add_task'){o._target=null;o._noLink=true;continue;}
+      return{text:`I can’t find “${o.recordHint}” in the CRM. Say the name as it’s saved, or open the record and try again.`,chips:[{label:'Remove this step',act:()=>{AS.draft.splice(i,1);asstAfterChoice();}}]};
+    }
+    if(o.op==='create_deal'){
+      if(!o._account&&!o._createAccount&&o.accountName){
+        const m=asstMatches(o.accountName,['accounts']);
+        if(m.length===1)o._account=m[0];
+        else if(m.length>1)return{text:`Which account is this for?`,chips:m.map(x=>({label:x.name,act:()=>{o._account=x;asstAfterChoice();}}))};
+        else return{text:`There’s no account called “${o.accountName}”. Create it?`,chips:[{label:`Create account “${o.accountName}”`,act:()=>{o._createAccount=true;asstAfterChoice();}},{label:'No — I’ll say the right name',act:()=>{asstSay('OK — which account is it?');asstRender();}}]};
+      }
+      if(o.contactHint&&o._contact===undefined){
+        const m=asstMatches(o.contactHint,['contacts','leads']);
+        if(m.length===1)o._contact=m[0];
+        else if(m.length>1)return{text:`Which ${asstClean(o.contactHint)}?`,chips:[...m.map(x=>({label:`${x.name} · ${ASST_TYPE_LABEL[x.type]}`,act:()=>{o._contact=x;asstAfterChoice();}})),{label:'Skip the contact',act:()=>{o._contact=null;asstAfterChoice();}}]};
+        else o._contact=null;
+      }
+    }
+    if((o.op==='create_lead'||o.op==='create_contact'||o.op==='create_account')&&!o._dupOk){
+      const name=asstCreatedName(o);
+      const kinds=o.op==='create_account'?['accounts']:['leads','contacts'];
+      const dup=name&&(S.entries[kinds[0]]||[]).concat(kinds[1]?S.entries[kinds[1]]||[]:[]).find(t=>!t.parent&&(t.name||'').trim().toLowerCase()===name.trim().toLowerCase());
+      if(dup)return{text:`“${dup.name}” is already in the CRM. Create another one anyway?`,chips:[{label:'Yes, create a new one',act:()=>{o._dupOk=true;asstAfterChoice();}},{label:'No, remove this step',act:()=>{AS.draft.splice(i,1);asstAfterChoice();}}]};
+      o._dupOk=true;
+    }
+  }
+  return null;
+}
+function asstAfterChoice(){
+  const q=asstResolve();
+  if(q)asstSay(q.text,{chips:q.chips});
+  else if(AS.ready||!AS.missing.length){AS.ready=AS.draft.length>0;asstSay(AS.draft.length?asstReadback()+' Confirm?':'Nothing left to save.');}
+  else asstSay(`Got it. I still need ${AS.missing.join(', ')}.`);
+  asstRender();
+}
+// Current values, for "from → to" on edits.
+function asstCurrentValue(t,type,field){
+  if(!t)return'';
+  const cf=getCF(t);
+  switch(field){
+    case'status':return stageLabel(t.status?.status||'');
+    case'amount':return dealAmountOf(t)?fmtMoney(dealAmountOf(t)):'';
+    case'invoiceStatus':{const i=invoiceStatusOf(t);return i?i[0].toUpperCase()+i.slice(1):'';}
+    case'serviceDate':return serviceDateOf(t)?fmtDateShort(serviceDateOf(t)):'';
+    case'nextActionDate':return cf['next action date']?fmtDateShort(cf['next action date']):'';
+    case'email':return cf['primary contact email']||cf.email||'';
+    case'phone':return cf.phone||'';
+    case'title':return cf.title||'';
+    case'name':return t.name||'';
+  }
+  return'';
+}
+const ASST_FIELD_LABEL={status:'Stage',amount:'Amount',invoiceStatus:'Invoice',serviceDate:'Date of service',nextActionDate:'Next action date',email:'Email',phone:'Phone',title:'Title',name:'Name'};
+function asstTask(ref){return ref?(S.entries[ref.type]||[]).find(t=>t.id===ref.id):null;}
+function asstFmtValue(field,v){
+  if(field==='amount')return fmtMoney(parseCurrencyInput(String(v)));
+  if(/date/i.test(field)&&/^\d{4}-\d{2}-\d{2}$/.test(v))return fmtDateShort(parseLocalDate(v));
+  return v;
+}
+function asstOpLines(o){
+  const lines=[];
+  const target=o._target?`${o._target.name} (${ASST_TYPE_LABEL[o._target.type]})`:o._linkTo!=null?`the new ${ASST_OP_LABEL[AS.draft[o._linkTo]?.op]?.replace('New ','')||'record'}`:'';
+  if(o.op==='update_record'){
+    const t=asstTask(o._target);
+    (o.changes||[]).forEach(c=>{const from=asstCurrentValue(t,o._target?.type,c.field);lines.push(`${ASST_FIELD_LABEL[c.field]||c.field}: ${from?`${esc(from)} → `:''}<b>${esc(asstFmtValue(c.field,c.value))}</b>`);});
+  }
+  if(o.op==='create_deal'){
+    lines.push(`Account: ${o._account?esc(o._account.name):o._createAccount?`<b>new</b> “${esc(o.accountName)}”`:esc(o.accountName||'—')}`);
+    if(o._contact)lines.push(`Contact: ${esc(o._contact.name)}`);
+    const bits=[o.stage==='closed_won'?'Closed / won':o.stage==='closed_lost'?'Closed / lost':'Open',o.amount?fmtMoney(o.amount):'',o.serviceDate?`service ${fmtDateShort(parseLocalDate(o.serviceDate))}`:'',o.invoiceStatus?`invoice ${o.invoiceStatus}`:''].filter(Boolean);
+    lines.push(esc(bits.join(' · ')));
+  }
+  if((o.op==='add_note'||o.op==='add_task'||o.op==='update_record')&&target)lines.unshift(`On: ${esc(target)}`);
+  if(o.op==='add_note'&&o.noteText)lines.push(`“${esc(o.noteText)}”`);
+  if(o.op==='add_task')lines.push(`${esc(o.taskTitle||'Task')}${o.taskDueDate?` · due ${fmtDateShort(parseLocalDate(o.taskDueDate))}`:' · <span class="late">no due date</span>'}${o._noLink?' · not linked to a record':''}`);
+  if(o.op==='create_lead'||o.op==='create_contact')lines.push(esc([[o.firstName,o.lastName].filter(Boolean).join(' '),o.title,o.company,o.email,o.phone].filter(Boolean).join(' · ')));
+  if(o.op==='create_account')lines.push(esc(o.accountName||''));
+  if(o.incomplete)lines.push('<span class="late">More details to come — a “finish details” task will be added.</span>');
+  return lines;
+}
+function asstReadback(){return AS.draft.map(o=>o.summary||ASST_OP_LABEL[o.op]).join('. ').replace(/\.\./g,'.')+'.';}
+
+// ── Saving ──
+async function asstConfirm(){
+  if(!AS.draft.length||AS.busy)return;
+  const q=asstResolve();
+  if(q){asstSay(q.text,{chips:q.chips});asstRender();return;}
+  AS.busy=true;asstRender();
+  const created=[],results=[];
+  const who=()=>`${S.user?.name||'Admin'} | ${getTS()}`;
+  const note=(id,text)=>cuFetch(`/task/${id}/comment`,'POST',{comment_text:`[ASSISTANT] ${text} — ${who()}`,notify_all:false}).catch(()=>{});
+  // New records first, so tasks and notes about them can link to them.
+  const order=[...AS.draft.keys()].sort((a,b)=>(AS.draft[a].op.startsWith('create_')?0:1)-(AS.draft[b].op.startsWith('create_')?0:1)||a-b);
+  for(const i of order){
+    const o=AS.draft[i];
+    const ref=o._target||(o._linkTo!=null?created[o._linkTo]:null);
+    try{
+      let made=null;
+      if(o.op==='create_lead'||o.op==='create_contact'){
+        const listId=o.op==='create_lead'?S.creds.listLeads:S.creds.listContacts;
+        const name=[o.firstName,o.lastName].filter(Boolean).join(' ').trim();
+        if(!name)throw new Error('needs a name');
+        if(o.email&&!isValidEmailFormat(o.email))throw new Error(`email “${o.email}” looks wrong`);
+        const t=await cuFetch(`/list/${listId}/task`,'POST',{name,description:[o.company?`Company: ${o.company}`:'',o.noteText||''].filter(Boolean).join('\n\n')||undefined});
+        const F=CU_FIELDS;
+        if(o.firstName)await setFieldById(t.id,F.FIRST_NAME,o.firstName,'short_text');
+        if(o.lastName)await setFieldById(t.id,F.LAST_NAME,o.lastName,'short_text');
+        if(o.email)await setFieldById(t.id,F.PRIMARY_EMAIL,o.email,'email');
+        if(o.phone)await setFieldById(t.id,F.PHONE,normalizePhoneForClickUp(o.phone),'phone');
+        if(o.title)await setFieldById(t.id,F.TITLE,o.title,'short_text');
+        await note(t.id,`Created with the assistant`);
+        made={id:t.id,name,type:o.op==='create_lead'?'leads':'contacts'};
+      }else if(o.op==='create_account'){
+        if(!o.accountName)throw new Error('needs a name');
+        const t=await cuFetch(`/list/${S.creds.listAccounts}/task`,'POST',{name:o.accountName});
+        await note(t.id,'Created with the assistant');
+        made={id:t.id,name:o.accountName,type:'accounts'};
+      }else if(o.op==='create_deal'){
+        let account=o._account?{id:o._account.id,name:o._account.name}:null;
+        if(!account&&o._createAccount&&o.accountName){
+          const t=await cuFetch(`/list/${S.creds.listAccounts}/task`,'POST',{name:o.accountName});
+          await note(t.id,'Created with the assistant');
+          account={id:t.id,name:o.accountName};
+        }
+        const name=o.dealName||`${account?.name||o.accountName||'Deal'}${o.service?` — ${o.service}`:''}`;
+        const{task,warnings}=await createDealRecord({name,account,accountName:o.accountName,contact:o._contact||null,amount:o.amount||0,
+          serviceDate:o.serviceDate?parseLocalDate(o.serviceDate):(o.stage==='closed_won'?Date.now():0),
+          invoiceStatus:o.invoiceStatus||(o.stage==='closed_won'?'Pending':''),stage:o.stage||'open',via:'assistant'});
+        made={id:task.id,name,type:'pipeline',warnings};
+      }else if(o.op==='update_record'){
+        if(!ref)throw new Error('no record chosen');
+        await asstApplyChanges(ref,o.changes||[]);
+        made={...ref};
+      }else if(o.op==='add_note'){
+        if(!ref)throw new Error('no record chosen');
+        await cuFetch(`/task/${ref.id}/comment`,'POST',{comment_text:`[NOTE] ${o.noteText||o.summary} — ${who()}`,notify_all:false});
+        made={...ref};
+      }else if(o.op==='add_task'){
+        const due=o.taskDueDate||(o.taskKind==='finish_details'?ymd(nextWorkingDay()):'');
+        await bulkExecTask({taskName:o.taskTitle||o.summary||'Follow up',taskDueDate:due,_chosenEntryId:ref?.id||'',_chosenEntryType:ref?.type||''});
+        if(ref)await note(ref.id,`Task added: ${o.taskTitle||o.summary}${due?` (due ${fmtDateShort(parseLocalDate(due))})`:''}`);
+        made=ref?{...ref}:null;
+      }
+      // "More details later": make sure a finish-details task exists.
+      if(o.incomplete&&made&&o.op.startsWith('create_')&&!AS.draft.some((x,k)=>k!==i&&x.op==='add_task'&&x.taskKind==='finish_details'&&(x._linkTo===i))){
+        await bulkExecTask({taskName:`Finish details: ${made.name}`,taskDueDate:ymd(nextWorkingDay()),_chosenEntryId:made.id,_chosenEntryType:made.type});
+      }
+      created[i]=made;
+      results.push({ok:true,o,made});
+    }catch(e){
+      created[i]=null;
+      results.push({ok:false,o,err:e.message});
+    }
+  }
+  const ok=results.filter(r=>r.ok).length,failed=results.length-ok;
+  AS.log.push({who:'result',results});
+  AS.draft=[];AS.ready=false;AS.missing=[];AS.turns=[];
+  AS.busy=false;
+  asstSay(failed?`Saved ${ok} of ${results.length}. ${failed} didn’t save — see the red line${failed===1?'':'s'}.`:`Done — saved ${ok} change${ok===1?'':'s'}. Anything else?`);
+  asstRender();
+  loadAllEntries().then(()=>{renderDashboard();if(S.currentEntry)openProfile(S.currentEntry.task.id,S.currentEntry.type);});
+}
+async function asstApplyChanges(ref,changes){
+  const t=asstTask(ref)||await cuFetch(`/task/${ref.id}`);
+  const F=CU_FIELDS;const done=[];
+  for(const c of changes){
+    const from=asstCurrentValue(t,ref.type,c.field);
+    let ok=true;
+    switch(c.field){
+      case'status':{
+        const want=String(c.value).toLowerCase().replace(/[^a-z]/g,'');
+        const st=getStatuses(ref.type).find(s=>s.toLowerCase().replace(/[^a-z]/g,'')===want)||getStatuses(ref.type).find(s=>{const k=s.toLowerCase().replace(/[^a-z]/g,'');return k.includes(want)||want.includes(k)||stageLabel(s).toLowerCase().replace(/[^a-z]/g,'')===want;});
+        if(!st)throw new Error(`“${c.value}” isn’t a ${ASST_TYPE_LABEL[ref.type]?.toLowerCase()||'record'} stage`);
+        await cuFetch(`/task/${ref.id}`,'PUT',{status:st});break;
+      }
+      case'amount':ok=await setFieldById(ref.id,F.OPPORTUNITY,parseCurrencyInput(String(c.value)),'currency');break;
+      case'invoiceStatus':{
+        const field=cfByName(t,INVOICE_RE)||(await loadDealFields()).invoice;
+        const name=INVOICE_STATES.find(s=>s.toLowerCase()===String(c.value).toLowerCase());
+        const idx=field&&name?invoiceOptionIndex(field,name):null;
+        if(idx==null)throw new Error('the Pipeline list has no Invoice Status field with that option');
+        ok=await setFieldById(ref.id,field.id,idx,'drop_down');break;
+      }
+      case'serviceDate':{
+        const ms=parseLocalDate(c.value);if(!ms)throw new Error('date of service not understood');
+        const f=(await loadDealFields()).serviceDate;
+        if(f)ok=await setFieldById(ref.id,f.id,ms,'date');
+        ok=(await setFieldById(ref.id,F.CLOSE_DATE,ms,'date'))&&ok;break;
+      }
+      case'nextActionDate':{const ms=parseLocalDate(c.value);if(!ms)throw new Error('date not understood');ok=await setFieldById(ref.id,F.NEXT_ACTION_DATE,ms,'date');break;}
+      case'email':if(!isValidEmailFormat(c.value))throw new Error(`email “${c.value}” looks wrong`);ok=await setFieldById(ref.id,F.PRIMARY_EMAIL,c.value,'email');break;
+      case'phone':ok=await setFieldById(ref.id,F.PHONE,normalizePhoneForClickUp(c.value),'phone');break;
+      case'title':ok=await setFieldById(ref.id,F.TITLE,c.value,'short_text');break;
+      case'name':await cuFetch(`/task/${ref.id}`,'PUT',{name:String(c.value).slice(0,200)});break;
+      default:throw new Error(`can’t change ${c.field}`);
+    }
+    if(!ok)throw new Error(`${ASST_FIELD_LABEL[c.field]} didn’t save`);
+    done.push(`${ASST_FIELD_LABEL[c.field]}: ${from||'—'} → ${asstFmtValue(c.field,c.value)}`);
+  }
+  if(done.length)await cuFetch(`/task/${ref.id}/comment`,'POST',{comment_text:`[ASSISTANT] Updated — ${done.join('; ')} — ${S.user?.name||'Admin'} | ${getTS()}`,notify_all:false}).catch(()=>{});
+}
+function asstDiscard(){AS.draft=[];AS.ready=false;AS.missing=[];AS.turns=[];asstSay('Cleared. What would you like to do?',{speak:false});asstRender();}
+function asstRemoveOp(i){AS.draft.splice(i,1);if(!AS.draft.length)AS.ready=false;asstRender();}
+
+// ── Rendering ──
+function asstRender(){
+  const log=document.getElementById('asst-log');if(!log)return;
+  log.innerHTML=AS.log.map((m,mi)=>{
+    if(m.who==='result')return`<div class="asst-results">${m.results.map(r=>`<div class="asst-res ${r.ok?'ok':'bad'}">${r.ok?'✓':'✕'} ${esc(r.o.summary||ASST_OP_LABEL[r.o.op])}${!r.ok?` — ${esc(r.err)}`:''}${r.ok&&r.made&&r.made.type?` <button class="link-btn" onclick="openProfile('${escJsAttr(r.made.id)}','${r.made.type}')">Open</button>`:''}${r.ok&&r.made&&r.made.warnings&&r.made.warnings.length?`<div class="asst-warn">Check: ${esc(r.made.warnings.join(', '))}</div>`:''}</div>`).join('')}</div>`;
+    const chips=m.chips&&mi===AS.log.length-1?`<div class="asst-chips">${m.chips.map((c,ci)=>`<button class="chip-btn" onclick="asstChip(${mi},${ci})">${esc(c.label)}</button>`).join('')}</div>`:'';
+    return`<div class="asst-msg ${m.who}${m.intro?' intro':''}">${m.who==='user'&&m.voice?'<span class="asst-voice-tag" aria-label="spoken">🎙</span>':''}${esc(m.text)}${chips}</div>`;
+  }).join('')+(AS.busy?'<div class="asst-msg assistant typing"><span></span><span></span><span></span></div>':'');
+  log.scrollTop=log.scrollHeight;
+  const dr=document.getElementById('asst-draft');
+  if(dr){
+    if(!AS.draft.length){dr.hidden=true;dr.innerHTML='';}
+    else{
+      dr.hidden=false;
+      const pending=!!asstPendingQuestion();
+      dr.innerHTML=`<div class="asst-draft-head"><b>${AS.ready&&!pending?'Ready to save':'Draft'}</b><span>${AS.draft.length} step${AS.draft.length===1?'':'s'} · nothing saved yet</span></div>
+        ${AS.draft.map((o,i)=>`<div class="asst-op"><span class="asst-op-tag">${esc(ASST_OP_LABEL[o.op]||o.op)}</span><div class="asst-op-main"><div class="asst-op-sum">${esc(o.summary||'')}</div>${asstOpLines(o).map(l=>`<div class="asst-op-line">${l}</div>`).join('')}</div><button class="asst-op-x" aria-label="Remove this step" title="Remove this step" onclick="asstRemoveOp(${i})">×</button></div>`).join('')}
+        ${AS.missing.length&&!AS.ready?`<div class="asst-missing">Still needed: ${esc(AS.missing.join(', '))}</div>`:''}
+        <div class="asst-draft-actions"><button class="btn btn-primary btn-sm" onclick="asstConfirm()" ${AS.busy||!AS.ready||pending?'disabled':''}>Confirm &amp; save</button><button class="btn btn-ghost btn-sm" onclick="asstDiscard()" ${AS.busy?'disabled':''}>Discard</button></div>`;
+    }
+  }
+  const send=document.getElementById('asst-send');if(send)send.disabled=AS.busy;
+  asstMicState();
+}
+function asstPendingQuestion(){const last=AS.log[AS.log.length-1];return last&&last.chips&&last.chips.length?last:null;}
+function asstChip(mi,ci){
+  const m=AS.log[mi];if(!m||!m.chips||!m.chips[ci])return;
+  const c=m.chips[ci];m.chips=null;
+  AS.log.push({who:'user',text:c.label});
+  c.act();
+  asstRender();
+}
+function setupAssistant(){
+  const ta=document.getElementById('asst-text');if(!ta)return;
+  ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();AS.lastVoice=false;asstSend();}else if(e.key==='Escape'){closeAssistant();}});
+  ta.addEventListener('input',()=>{asstAutosize();});
+  if(!SpeechRec)document.getElementById('asst-mic')?.classList.add('unavailable');
+  asstMicState();
+}
+
+// ── Phone: one "+" for everything you can add ──
+function openCreateSheet(){document.getElementById('create-sheet').hidden=false;document.querySelector('#create-sheet .cs-item')?.focus();}
+function closeCreateSheet(){document.getElementById('create-sheet').hidden=true;}
+function createSheetGo(fn){closeCreateSheet();fn();}
+
+// Icon-only buttons that only have a title get it as their accessible
+// name too (screen readers don't reliably read title).
+function labelIconButtons(root){
+  (root||document).querySelectorAll('button[title]:not([aria-label])').forEach(b=>{if(!b.textContent.trim())b.setAttribute('aria-label',b.title);});
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  setupAssistant();labelIconButtons();
+  try{new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1)labelIconButtons(n);}).observe(document.body,{childList:true,subtree:true});}catch(e){}
+});
 </script>
 </body>
 </html>
