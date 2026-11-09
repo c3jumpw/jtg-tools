@@ -147,6 +147,8 @@ export default async function handler(req: Request) {
       const lines = [
         `[ACTIVITY: ${tag}]`,
         description,
+        // Leads have no Company field, so the company rides in the comment.
+        person.company && !details.some(([k]) => /company|business/i.test(k)) ? `Company: ${person.company}` : '',
         ...details.map(([k, v]) => `${k}: ${v}`),
         page ? `Page: ${page}` : '',
         `Systeme.io tag: ${tag}`,

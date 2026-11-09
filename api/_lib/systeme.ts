@@ -16,7 +16,7 @@ const LAST_ACTION = { slug: 'last_action', name: 'Last action' };
 
 type Person = { email: string; firstName?: string; lastName?: string; phone?: string; company?: string; website?: string };
 
-export type SystemeResult = { ok: boolean; contactId?: number | string; created?: boolean; tag?: string; error?: string };
+export type SystemeResult = { ok: boolean; contactId?: number | string; created?: boolean; tag?: string; lastAction?: string; error?: string };
 
 class SystemeError extends Error {
   status: number;
@@ -65,14 +65,16 @@ export async function ensureTag(key: string, name: string): Promise<{ id: number
 
 // "Last action" is a custom contact field, created on first use, so every
 // tagged contact carries a sentence explaining what they did.
-async function ensureLastActionField(key: string): Promise<boolean> {
+// Returns null when the field is ready, or why it isn't. The contact and
+// tag matter more than this field, so a failure here is reported, not thrown.
+async function ensureLastActionField(key: string): Promise<string | null> {
   try {
     const fields = await listAll(key, '/contact_fields', 3);
-    if (fields.some((f) => f.slug === LAST_ACTION.slug)) return true;
+    if (fields.some((f) => f.slug === LAST_ACTION.slug)) return null;
     await call(key, 'POST', '/contact_fields', { fieldName: LAST_ACTION.name, slug: LAST_ACTION.slug });
-    return true;
-  } catch {
-    return false; // the contact and tag matter more than this field
+    return null;
+  } catch (e: any) {
+    return e?.message || 'could not create the field';
   }
 }
 
@@ -104,8 +106,8 @@ export async function runSysteme(input: { person: Person; tag: string; lastActio
   if (!email) return { ok: false, error: 'No email address, so nothing to add to Systeme.io.' };
 
   try {
-    const [tag, fieldReady] = await Promise.all([ensureTag(key, input.tag), ensureLastActionField(key)]);
-    const lastAction = fieldReady ? input.lastAction : null;
+    const [tag, fieldError] = await Promise.all([ensureTag(key, input.tag), ensureLastActionField(key)]);
+    const lastAction = fieldError ? null : input.lastAction;
 
     let contact = await findContact(key, email);
     let created = false;
@@ -133,7 +135,7 @@ export async function runSysteme(input: { person: Person; tag: string; lastActio
         if (e?.status !== 422) throw e; // 422 = already tagged
       }
     }
-    return { ok: true, contactId: contact.id, created, tag: tag.name };
+    return { ok: true, contactId: contact.id, created, tag: tag.name, lastAction: fieldError ? `not written: ${fieldError}` : 'written' };
   } catch (e: any) {
     const status = e?.status;
     const hint = status === 401 || status === 403 ? ' Check SYSTEME_API_KEY is a Jump Tech Group sub-account key.' : '';
