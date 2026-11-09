@@ -1650,7 +1650,7 @@ body.asst-open #toast-container{right:464px}
 // places, which had already drifted out of sync (missing 'archived',
 // confirmed as the actual final/completed Pipeline status) -- one
 // shared list now, so it can't happen again.
-const CLOSED_STATUSES=['closed / won','closed / lost','churned/disqualified','completed','disqualified','burnt','archived'];
+const CLOSED_STATUSES=['closed / won','closed / lost','churned/disqualified','completed','complete','disqualified','burnt','archived'];
 // SHEETS_ID/GS_BASE removed -- were only used by the now-dead
 // getGSToken()/direct-Google-Sheets path, itself removed just below.
 // The Worker already knows the Sheets ID (see its own wrangler.toml
@@ -1679,8 +1679,8 @@ const APP_CONFIG={
 // ═══════════════════════════════════════════
 // STATUS / BRANCH / TYPE COLOR MAPS
 // ═══════════════════════════════════════════
-// How a ClickUp status is shown. ClickUp's pipeline status is spelled
-// "Oppurtunity"; it's matched as-is everywhere and only displayed fixed.
+// How a ClickUp status is shown. ClickUp's pipeline status used to be
+// spelled "Oppurtunity"; older entries may still say so.
 const STATUS_LABELS={'oppurtunity':'Opportunity'};
 function stageLabel(s){const k=String(s||'').toLowerCase();return STATUS_LABELS[k]||s;}
 const STATUS_COLORS={
@@ -1692,6 +1692,7 @@ const STATUS_COLORS={
   'attention needed':['#f59e0b','#ffffff'],
   'churned/disqualified':['#ef4444','#ffffff'],
   'ready for pipeline':['#22c55e','#ffffff'],
+  'ready for export':['#0ea5e9','#ffffff'],
   // ── Pipeline ───────────────────────────────────
   'oppurtunity':['#8b5cf6','#ffffff'],
   'opportunity':['#8b5cf6','#ffffff'],
@@ -1710,6 +1711,8 @@ const STATUS_COLORS={
   'in review':['#f59e0b','#ffffff'],
   'burnt':['#ef4444','#ffffff'],
   'completed':['#22c55e','#ffffff'],
+  'complete':['#22c55e','#ffffff'],
+  'archived':['#9ca3af','#ffffff'],
   // ── Account status labels ──────────────────────
   'active':['#22c55e','#ffffff'],
   'inactive':['#ef4444','#ffffff'],
@@ -2496,6 +2499,9 @@ async function loadAllEntries(){
   const lists={leads:S.creds.listLeads,pipeline:S.creds.listPipeline,contacts:S.creds.listContacts,accounts:S.creds.listAccounts};
   const typeKeys=Object.keys(lists);
   let failed=0;
+  // Fetched alongside the tasks; each list waits for it before rendering
+  // so its status menus and board columns match ClickUp.
+  const statusesReady=loadLiveStatuses();
   // The four lists are independent -- each writes only its own S.entries
   // key and renders only its own table -- so they load in parallel. This
   // is the slowest step of every login, and it was strictly sequential.
@@ -2507,6 +2513,7 @@ async function loadAllEntries(){
     if(!lists[type])return;
     try{
       const tasks=await fetchAllTasks(lists[type]);
+      await statusesReady;
       // Staff tier sees only what's assigned to them -- filtered right
       // here, at the source, rather than in every individual view. Admin
       // and Super Admin are unaffected. Reuses the same isAssignedToMe
@@ -2750,11 +2757,33 @@ function buildToolbar(type){
   updateBulkActionBar(type);
 }
 
+// The statuses each list really has, read from ClickUp at sign-in. Copies
+// kept in this file drift (Pipeline's "Oppurtunity" became "opportunity";
+// Contacts and Accounts dropped To do / In progress / In review and say
+// "complete", not "completed"), and a status ClickUp doesn't have makes
+// the save fail. The copies below (as of Nov 2026) are only the fallback
+// for when ClickUp can't be reached.
+const LIVE_STATUSES={};
+let liveStatusesAt=0,liveStatusesLoading=null;
+function loadLiveStatuses(force){
+  if(!force&&liveStatusesAt&&Date.now()-liveStatusesAt<30*60000)return Promise.resolve(LIVE_STATUSES);
+  if(liveStatusesLoading)return liveStatusesLoading;
+  const lists={leads:S.creds.listLeads,pipeline:S.creds.listPipeline,contacts:S.creds.listContacts,accounts:S.creds.listAccounts,master:S.creds.listTasks};
+  liveStatusesLoading=Promise.all(Object.entries(lists).filter(([,id])=>id).map(async([type,id])=>{
+    try{
+      const list=await cuFetch(`/list/${id}`);
+      const names=(list.statuses||[]).slice().sort((a,b)=>(a.orderindex??0)-(b.orderindex??0)).map(s=>String(s.status||'').toUpperCase()).filter(Boolean);
+      if(names.length)LIVE_STATUSES[type]=names;
+    }catch(e){console.warn('statuses',type,e.message);}
+  })).then(()=>{liveStatusesAt=Date.now();return LIVE_STATUSES;}).finally(()=>{liveStatusesLoading=null;});
+  return liveStatusesLoading;
+}
 function getStatuses(type){
-  if(type==='leads')return['PRE-ENGAGEMENT','MANUAL OUTREACH CUE','INITIAL CONTACT MADE','NURTURING','ATTENTION NEEDED','CHURNED/DISQUALIFIED','READY FOR PIPELINE'];
-  if(type==='pipeline')return['OPPURTUNITY','SCHEDULED DS / INTRO','QUALIFIED LEAD/PROSPECT','DEMO PRESENTED','PROPOSAL PENDING','OFFER PRSNTD / NEGOTIATION','DISQUALIFIED','CLOSED / WON','CLOSED / LOST','ARCHIVED'];
-  if(type==='contacts')return['LISTED','TO DO','IN PROGRESS','IN REVIEW','BURNT','COMPLETED'];
-  if(type==='accounts')return['LISTED','IN REVIEW','BURNT','COMPLETED'];
+  if(LIVE_STATUSES[type])return LIVE_STATUSES[type].slice();
+  if(type==='leads')return['PRE-ENGAGEMENT','MANUAL OUTREACH CUE','INITIAL CONTACT MADE','NURTURING','ATTENTION NEEDED','CHURNED/DISQUALIFIED','READY FOR PIPELINE','READY FOR EXPORT'];
+  if(type==='pipeline')return['OPPORTUNITY','SCHEDULED DS / INTRO','QUALIFIED LEAD/PROSPECT','DEMO PRESENTED','PROPOSAL PENDING','OFFER PRSNTD / NEGOTIATION','DISQUALIFIED','CLOSED / WON','CLOSED / LOST','ARCHIVED'];
+  if(type==='contacts')return['LISTED','BURNT','ARCHIVED'];
+  if(type==='accounts')return['LISTED','BURNT','COMPLETE'];
   if(type==='master')return['TO DO','IN PROGRESS','FOR REVIEW','COMPLETED/APPROVED'];
   return['LISTED','IN REVIEW','BURNT','COMPLETED'];
 }
@@ -10005,7 +10034,7 @@ function renderPfFacts(task,type){
     const nm=(task.name||'').trim().toLowerCase();
     const jobs=(S.entries.pipeline||[]).filter(d=>!d.parent&&((getCF(d)['company/account name']||'').trim().toLowerCase()===nm));
     const owed=jobs.filter(d=>{const i=invoiceStatusOf(d);return i&&i!=='paid';});
-    if(owed.length)facts.push(['Unpaid',`<span class="late">${esc(fmtMoney(owed.reduce((s2,d)=>s2+dealAmountOf(d),0)))}</span><span class="fact-note">${owed.length} job${owed.length===1?'':'s'}</span>`]);
+    if(owed.length)facts.push(['Unpaid',`<span class="late">${esc(fmtMoney(owed.reduce((s2,d)=>s2+owedOf(d),0)))}</span><span class="fact-note">${owed.length} job${owed.length===1?'':'s'}</span>`]);
   }
   const el=document.getElementById('pf-facts');
   if(el)el.innerHTML=facts.slice(0,5).map(([k,v])=>`<div class="fact"><div class="fact-k">${k}</div><div class="fact-v">${v}</div></div>`).join('');
@@ -10125,6 +10154,9 @@ const INVOICE_RE=/\binvoice status\b/;
 const SERVICE_DATE_RE=/\b(service date|date of service)\b/;
 function invoiceStatusOf(t){return cfText(cfByName(t,INVOICE_RE)).toLowerCase();}
 function dealAmountOf(t){const v=Number(getCF(t).opportunity);return isFinite(v)&&v>0?v:0;}
+// What's still owed on an unpaid job: the Remaining Balance when Closed/Won
+// recorded one (a deposit was taken), otherwise the whole amount.
+function owedOf(t){const r=getCF(t)['remaining balance'];const v=Number(r);return r!==''&&r!=null&&isFinite(v)&&v>=0?v:dealAmountOf(t);}
 function serviceDateOf(t){const f=cfByName(t,SERVICE_DATE_RE);return Number(f&&f.value)||Number(getCF(t)['close date'])||0;}
 function fmtMoney(v){const n=Number(v);if(!isFinite(n)||v===''||v==null)return'—';return n.toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:n%1?2:0});}
 function invoiceBadge(inv){
@@ -10181,7 +10213,12 @@ async function createDealRecord(d){
   if(!S.creds.listPipeline)throw new Error('Pipeline list isn’t configured.');
   const name=(d.name||'').trim();
   if(!name)throw new Error('The deal needs a name.');
-  const status=d.stage==='closed_won'?'CLOSED / WON':d.stage==='closed_lost'?'CLOSED / LOST':'OPPURTUNITY';
+  await loadLiveStatuses();
+  const stages=getStatuses('pipeline');
+  const stageLike=(re,fallback)=>stages.find(s=>re.test(s.toLowerCase()))||fallback;
+  const status=d.stage==='closed_won'?stageLike(/^closed\s*\/?\s*won$/,'CLOSED / WON')
+    :d.stage==='closed_lost'?stageLike(/^closed\s*\/?\s*lost$/,'CLOSED / LOST')
+    :(stages[0]||'OPPORTUNITY');
   const lines=[];
   if(d.serviceDate)lines.push(`Date of service: ${fmtDateShort(d.serviceDate)}`);
   if(d.amount)lines.push(`Amount: ${fmtMoney(d.amount)}`);
@@ -10206,9 +10243,17 @@ async function createDealRecord(d){
   if(d.account&&fields.relAccount)await set(fields.relAccount.id,d.account.id,'short_text','related account');
   if(d.contact&&fields.relContact)await set(fields.relContact.id,d.contact.id,'short_text','related contact');
   // Native ClickUp relationship fields, when the list has them.
+  // A relationship field names the list it points at; going by that
+  // rather than the field's name keeps a lead out of a Contacts-only field.
+  const listOf={accounts:S.creds.listAccounts,contacts:S.creds.listContacts,leads:S.creds.listLeads};
   for(const rf of fields.relationships||[]){
     const n=normFieldName(rf.name);
-    const target=/account|compan/.test(n)?d.account:/contact|lead|people|person/.test(n)?d.contact:null;
+    const sub=String(rf.type_config?.subcategory_id||'');
+    let target=null;
+    if(sub){
+      if(d.account&&sub===String(listOf.accounts))target=d.account;
+      else if(d.contact&&sub===String(listOf[d.contact.type||'contacts']||''))target=d.contact;
+    }else target=/account|compan/.test(n)?d.account:/contact|lead|people|person/.test(n)?d.contact:null;
     if(target){try{await cuFetch(`/task/${task.id}/field/${rf.id}`,'POST',{value:{add:[target.id],rem:[]}});}catch(e){console.warn('relationship field',rf.name,e.message);}}
   }
   const who=`${S.user?.name||'Admin'} | ${getTS()}`;
@@ -10248,7 +10293,7 @@ function renderInvoiceSummary(){
     return;
   }
   const unpaid=deals.filter(t=>{const i=invoiceStatusOf(t);return i&&i!=='paid';});
-  const total=unpaid.reduce((s,t)=>s+dealAmountOf(t),0);
+  const total=unpaid.reduce((s,t)=>s+owedOf(t),0);
   const overdue=unpaid.filter(t=>invoiceStatusOf(t)==='overdue').length;
   const notSent=unpaid.filter(t=>invoiceStatusOf(t)==='pending').length;
   el.innerHTML=`<div class="card-header"><h3>Unpaid invoices</h3><button class="btn btn-ghost btn-sm" onclick="openJobModal()">+ Log job</button></div>
