@@ -138,7 +138,7 @@ function cleanTurns(raw: unknown): Turn[] | null {
     // back-to-back turns from the same side.
     if (!turns.length && role === 'assistant') continue;
     const last = turns[turns.length - 1];
-    if (last && last.role === role) last.text = `${last.text}\n${text}`.slice(0, MAX_TURN_CHARS * 2);
+    if (last && last.role === role) last.text = `${last.text}\n${text}`.slice(-MAX_TURN_CHARS * 2); // keep the newest
     else turns.push({ role, text });
   }
   if (!turns.length || turns[turns.length - 1].role !== 'user') return null;

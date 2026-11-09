@@ -2880,7 +2880,7 @@ function renderKanban(type){
   const el=document.getElementById(`${type}-kanban-wrap`);
   if(!el)return;
   const statuses=getStatuses(type);
-  const items=S.entries[type].filter(t=>!t.parent);
+  const items=(listFiltersActive(type,true)?listFiltered(type):S.entries[type]).filter(t=>!t.parent);
   const grouped={};
   statuses.forEach(s=>grouped[s.toLowerCase()]=[]);
   grouped['other']=[];  // catch-all for statuses being migrated
@@ -10052,7 +10052,7 @@ function listFiltered(type){
   const arr=(S.entries[type]||[]).filter(t=>{
     if(t.parent)return false;
     const st=(t.status?.status||'').toLowerCase();
-    if(type==='pipeline'&&st==='archived'&&f.status.toLowerCase()!=='archived'&&!f.invoice)return false;
+    if(type==='pipeline'&&st==='archived'&&!listFiltersActive(type,true))return false;
     const cf=getCF(t);
     if(ql&&![t.name,t.id,cf['primary contact email'],cf.email,cf.phone].some(v=>(v||'').toLowerCase().includes(ql)))return false;
     if(f.status&&!st.includes(f.status.toLowerCase()))return false;
@@ -10086,7 +10086,7 @@ function filterTable(type,q){lf(type).q=q||'';applyListFilters(type);}
 function filterByField(type,field,value){lf(type)[field]=value||'';applyListFilters(type);}
 function sortTable(type,mode){lf(type).sort=mode||'';applyListFilters(type);}
 function clearFilters(type){S.listFilters[type]={...LIST_FILTER_DEFAULT};applyListFilters(type);}
-function listFiltersActive(type){const f=lf(type);return Object.keys(LIST_FILTER_DEFAULT).some(k=>f[k]);}
+function listFiltersActive(type,ignoreSort){const f=lf(type);return Object.keys(LIST_FILTER_DEFAULT).some(k=>f[k]&&!(ignoreSort&&k==='sort'));}
 // buildToolbar rebuilds the controls on every render; put the saved
 // choices back so what's shown matches what's applied.
 function restoreToolbarState(type){
@@ -10212,7 +10212,7 @@ async function createDealRecord(d){
     if(target){try{await cuFetch(`/task/${task.id}/field/${rf.id}`,'POST',{value:{add:[target.id],rem:[]}});}catch(e){console.warn('relationship field',rf.name,e.message);}}
   }
   const who=`${S.user?.name||'Admin'} | ${getTS()}`;
-  await cuFetch(`/task/${task.id}/comment`,'POST',{comment_text:`[LOG] ${d.stage==='closed_won'?'Completed job logged':'Deal created'}${d.via?` (${d.via})`:''} — ${[d.amount?fmtMoney(d.amount):'',d.invoiceStatus?`invoice ${d.invoiceStatus}`:''].filter(Boolean).join(', ')} — ${who}`,notify_all:false});
+  await cuFetch(`/task/${task.id}/comment`,'POST',{comment_text:`[LOG] ${d.stage==='closed_won'?'Completed job logged':'Deal created'}${d.via?` (${d.via})`:''} — ${[d.amount?fmtMoney(d.amount):'',d.invoiceStatus?`invoice ${d.invoiceStatus}`:''].filter(Boolean).join(', ')} — ${who}`,notify_all:false}).catch(()=>warnings.push('activity note'));
   if(d.account)await cuFetch(`/task/${d.account.id}/comment`,'POST',{comment_text:`[LOG] ${d.stage==='closed_won'?'Job logged':'Deal created'}: ${name}${d.amount?` — ${fmtMoney(d.amount)}`:''}${d.invoiceStatus?`, invoice ${d.invoiceStatus}`:''} — ${who}`,notify_all:false}).catch(()=>{});
   try{await syncToSheets(task,'pipeline');}catch(e){}
   return{task,warnings};
@@ -10329,6 +10329,11 @@ async function submitJob(another){
       if(!S.creds.listAccounts)throw new Error('Accounts list isn’t configured.');
       const t=await cuFetch(`/list/${S.creds.listAccounts}/task`,'POST',{name:accountName});
       account={id:t.id,name:t.name||accountName};
+      // Known straight away, so "Save & add another" doesn't make it twice.
+      S.entries.accounts=[...(S.entries.accounts||[]),{id:t.id,name:account.name,status:{status:'listed'},custom_fields:[],assignees:[],parent:null,date_updated:String(Date.now()),date_created:String(Date.now())}];
+      document.getElementById('job-new-account').checked=false;
+      document.getElementById('job-new-account-row').hidden=true;
+      fillDatalist('job-accounts',(S.entries.accounts||[]).filter(x=>!x.parent).map(x=>x.name).sort((a,b)=>a.localeCompare(b)));
     }
     const serviceDate=parseLocalDate(date);
     const invoiceStatus=val('job-invoice');
@@ -10455,8 +10460,10 @@ function asstMicState(){
 function asstAutosize(){const ta=document.getElementById('asst-text');if(!ta)return;ta.style.height='auto';ta.style.height=Math.min(140,ta.scrollHeight)+'px';}
 
 // ── Talking to the model ──
-const ASST_YES=/^(yes|yeah|yep|yup|confirm(ed)?|correct|do it|go ahead|save( it| them| that)?|sounds good|ok(ay)?|that'?s right)\b[.!]?\s*$/i;
-const ASST_CANCEL=/^(cancel|start over|forget (it|that)|never ?mind|discard( it| that)?|scrap (it|that))\b/i;
+const ASST_YES=/^(yes|yeah|yep|yup|confirm(ed)?|correct|do it|go ahead|save( it| them| that| all)?|sounds good|that'?s right)( please)?[.!]?\s*$/i;
+// Only when that's the whole message: "Cancel the reminder, keep the
+// deal" is an edit for the model, not a reset.
+const ASST_CANCEL=/^(cancel|start over|forget (it|that)|never ?mind|discard( it| that)?|scrap (it|that))( (it|that|all( of it)?|everything))?( please)?[.!]?\s*$/i;
 async function asstSend(){
   const ta=document.getElementById('asst-text');
   const text=(ta.value||'').trim();
@@ -10465,7 +10472,7 @@ async function asstSend(){
   const viaVoice=AS.lastVoice;
   AS.log.push({who:'user',text,voice:viaVoice});
   if(AS.draft.length&&AS.ready&&ASST_YES.test(text)){asstRender();return asstConfirm();}
-  if(ASST_CANCEL.test(text)){AS.draft=[];AS.ready=false;AS.turns=[];asstSay('OK, I’ve cleared that. What would you like to do?');asstRender();return;}
+  if(ASST_CANCEL.test(text)){AS.draft=[];AS.ready=false;AS.modelReady=false;AS.turns=[];asstSay('OK, I’ve cleared that. What would you like to do?');asstRender();return;}
   AS.turns.push({role:'user',text});
   AS.busy=true;asstRender();
   try{
@@ -10483,10 +10490,10 @@ async function asstSend(){
     }
     const ops=Array.isArray(data.operations)?data.operations:[];
     AS.draft=asstCarry(AS.draft,ops);
-    AS.ready=!!data.ready;AS.missing=Array.isArray(data.missing)?data.missing:[];
+    AS.modelReady=!!data.ready;AS.ready=AS.modelReady;AS.missing=Array.isArray(data.missing)?data.missing:[];
     const question=asstResolve();
     if(question){AS.ready=false;asstSay(question.text,{chips:question.chips});}
-    else asstSay(data.reply||(AS.ready?asstReadback()+' Confirm?':'Go on.'));
+    else asstSay(AS.ready?asstWithMatches(data.reply||asstReadback()+' Confirm?'):(data.reply||'Go on.'));
   }catch(e){
     AS.turns.pop();
     asstSay(`Something went wrong: ${e.message}`,{speak:false});
@@ -10501,18 +10508,50 @@ const asstKey=o=>`${o.op}|${(o.recordHint||o.accountName||'').toLowerCase()}|${(
 // Keep the person's earlier choices ("the Henderson Roofing account")
 // when the model sends the draft back.
 function asstCarry(oldOps,newOps){
-  return newOps.map(n=>{
-    const o=oldOps.find(x=>asstKey(x)===asstKey(n));
-    if(!o)return{...n};
-    const keep={};for(const k of ['_target','_account','_contact','_createAccount','_dupOk','_linkTo'])if(o[k]!==undefined)keep[k]=o[k];
-    return{...n,...keep};
+  const map=new Map();
+  const out=newOps.map(n=>{
+    const o=oldOps.find(x=>!map.has(x)&&asstKey(x)===asstKey(n));
+    const fresh={...n};
+    if(o){
+      for(const k of ['_target','_account','_contact','_createAccount','_dupOk','_linkOp','_accountOp'])if(o[k]!==undefined)fresh[k]=o[k];
+      map.set(o,fresh);
+    }
+    return fresh;
   });
+  // Links to other steps follow those steps into the new draft, or go.
+  for(const o of out)for(const k of ['_linkOp','_accountOp'])if(o[k]){o[k]=map.get(o[k])||undefined;}
+  return out;
 }
-const asstClean=h=>String(h||'').replace(/\b(the|a|an|deal|account|company|contact|lead|job|record|client|from|at)\b/gi,' ').replace(/['’]s\b/g,'').replace(/\s+/g,' ').trim();
+const asstClean=h=>String(h||'').replace(/\b(the|a|an|deal|account|company|contact|lead|job|record|client)\b/gi,' ').replace(/\s+/g,' ').trim();
+// Kinds of record the words themselves point at ("the Henderson deal").
+function asstKindsFor(hint,recordType){
+  const h=String(hint||'').toLowerCase();
+  if(/\bdeal\b/.test(h))return['pipeline'];
+  if(/\b(account|company)\b/.test(h))return['accounts'];
+  return ASST_TYPE_KEYS[recordType]||ASST_TYPE_KEYS.any;
+}
+// Matches a spoken name against records by words, ignoring punctuation:
+// "Dana's Bakery" finds "Dana's Bakery (Sharon O'Neill)", "the Peachtree
+// Holdings F5 Retainer deal" finds "Peachtree Holdings — F5 Retainer".
+const asstNorm=x=>String(x||'').toLowerCase().replace(/['’]s\b/g,'s').replace(/[^a-z0-9]+/g,' ').trim();
+const ASST_STOP=new Set(['the','a','an','deal','account','company','contact','lead','job','record','client','for','of','with','our','my']);
 function asstMatches(hint,kinds){
-  const h=asstClean(hint);if(h.length<2)return[];
-  const seen=new Set();
-  return findEntriesByNameHint(h).filter(m=>kinds.includes(m.type)&&!seen.has(m.id)&&seen.add(m.id)).slice(0,6);
+  const words=asstNorm(hint).split(' ').filter(w=>w&&!ASST_STOP.has(w));
+  const cut=words.findIndex(w=>w==='from'||w==='at');
+  const tries=[words.filter(w=>w!=='from'&&w!=='at'),cut>0?words.slice(0,cut):null].filter(t=>t&&t.length&&t.join('').length>=2);
+  const fits=(ws,text)=>{const tw=asstNorm(text).split(' ');return ws.every(w=>tw.some(n=>n===w||(w.length>=3&&n.startsWith(w))));};
+  for(const ws of tries){
+    const res=[];
+    for(const type of kinds)for(const t of (S.entries[type]||[])){
+      if(t.parent)continue;
+      if(fits(ws,t.name)||fits(ws,getCF(t)['known as']||''))res.push({id:t.id,type,name:t.name,lastUpdated:Number(t.date_updated)||0});
+    }
+    if(!res.length)continue;
+    res.sort((x,y)=>y.lastUpdated-x.lastUpdated);
+    const exact=res.filter(x=>asstNorm(x.name)===ws.join(' '));
+    return(exact.length===1?exact:res).slice(0,6);
+  }
+  return[];
 }
 function asstCreatedName(o){
   if(o.op==='create_account')return o.accountName;
@@ -10526,21 +10565,27 @@ function asstResolve(){
   for(let i=0;i<AS.draft.length;i++){
     const o=AS.draft[i];
     const needsTarget=o.op==='update_record'||o.op==='add_note'||(o.op==='add_task'&&o.recordHint);
-    if(needsTarget&&!o._target&&o._linkTo==null){
+    if(o._linkOp&&!AS.draft.includes(o._linkOp))o._linkOp=undefined;
+    if(needsTarget&&!o._target&&!o._linkOp){
       // About something being created in this same draft?
       const h=asstClean(o.recordHint).toLowerCase();
-      const j=AS.draft.findIndex((x,k)=>k!==i&&x.op.startsWith('create_')&&h&&asstCreatedName(x).toLowerCase().includes(h));
-      if(j>=0){o._linkTo=j;continue;}
-      const m=asstMatches(o.recordHint,ASST_TYPE_KEYS[o.recordType]||ASST_TYPE_KEYS.any);
+      const x=AS.draft.find(x=>x!==o&&x.op.startsWith('create_')&&h&&asstCreatedName(x).toLowerCase().includes(h));
+      if(x){o._linkOp=x;continue;}
+      const m=asstMatches(o.recordHint,asstKindsFor(o.recordHint,o.recordType));
       if(m.length===1){o._target=m[0];continue;}
       if(m.length>1)return{text:`Which ${asstClean(o.recordHint)} do you mean?`,chips:m.map(x=>({label:`${x.name} · ${ASST_TYPE_LABEL[x.type]}`,act:()=>{o._target=x;asstAfterChoice();}}))};
       if(o.op==='add_task'){o._target=null;o._noLink=true;continue;}
-      return{text:`I can’t find “${o.recordHint}” in the CRM. Say the name as it’s saved, or open the record and try again.`,chips:[{label:'Remove this step',act:()=>{AS.draft.splice(i,1);asstAfterChoice();}}]};
+      return{text:`I can’t find “${o.recordHint}” in the CRM. Say the name as it’s saved, or open the record and try again.`,chips:[{label:'Remove this step',act:()=>{asstDropOp(o);asstAfterChoice();}}]};
     }
     if(o.op==='create_deal'){
-      if(!o._account&&!o._createAccount&&o.accountName){
-        const m=asstMatches(o.accountName,['accounts']);
-        if(m.length===1)o._account=m[0];
+      if(o._accountOp&&!AS.draft.includes(o._accountOp))o._accountOp=undefined;
+      if(!o._account&&!o._createAccount&&!o._accountOp&&!asstClean(o.accountName))return{text:'Which account (client company) is this deal for?',chips:null};
+      if(!o._account&&!o._createAccount&&!o._accountOp&&o.accountName){
+        // A new account in this same draft?
+        const na=AS.draft.find(x=>x.op==='create_account'&&(x.accountName||'').trim().toLowerCase()===o.accountName.trim().toLowerCase());
+        const m=na?[]:asstMatches(o.accountName,['accounts']);
+        if(na)o._accountOp=na;
+        else if(m.length===1)o._account=m[0];
         else if(m.length>1)return{text:`Which account is this for?`,chips:m.map(x=>({label:x.name,act:()=>{o._account=x;asstAfterChoice();}}))};
         else return{text:`There’s no account called “${o.accountName}”. Create it?`,chips:[{label:`Create account “${o.accountName}”`,act:()=>{o._createAccount=true;asstAfterChoice();}},{label:'No — I’ll say the right name',act:()=>{asstSay('OK — which account is it?');asstRender();}}]};
       }
@@ -10555,7 +10600,7 @@ function asstResolve(){
       const name=asstCreatedName(o);
       const kinds=o.op==='create_account'?['accounts']:['leads','contacts'];
       const dup=name&&(S.entries[kinds[0]]||[]).concat(kinds[1]?S.entries[kinds[1]]||[]:[]).find(t=>!t.parent&&(t.name||'').trim().toLowerCase()===name.trim().toLowerCase());
-      if(dup)return{text:`“${dup.name}” is already in the CRM. Create another one anyway?`,chips:[{label:'Yes, create a new one',act:()=>{o._dupOk=true;asstAfterChoice();}},{label:'No, remove this step',act:()=>{AS.draft.splice(i,1);asstAfterChoice();}}]};
+      if(dup)return{text:`“${dup.name}” is already in the CRM. Create another one anyway?`,chips:[{label:'Yes, create a new one',act:()=>{o._dupOk=true;asstAfterChoice();}},{label:'No, remove this step',act:()=>{asstDropOp(o);asstAfterChoice();}}]};
       o._dupOk=true;
     }
   }
@@ -10564,9 +10609,23 @@ function asstResolve(){
 function asstAfterChoice(){
   const q=asstResolve();
   if(q)asstSay(q.text,{chips:q.chips});
-  else if(AS.ready||!AS.missing.length){AS.ready=AS.draft.length>0;asstSay(AS.draft.length?asstReadback()+' Confirm?':'Nothing left to save.');}
-  else asstSay(`Got it. I still need ${AS.missing.join(', ')}.`);
+  else if(!AS.draft.length){AS.ready=false;asstSay('Nothing left to save.');}
+  else if(AS.modelReady){AS.ready=true;asstSay(asstWithMatches(asstReadback()+' Confirm?'));}
+  else asstSay(AS.missing.length?`Got it. I still need ${AS.missing.join(', ')}.`:'Got it. Go on.');
   asstRender();
+}
+// Say which records were picked when the name said wasn't exact, so a
+// spoken "yes" confirms the right ones.
+function asstWithMatches(reply){
+  const notes=[];
+  const norm=x=>asstClean(x).toLowerCase();
+  for(const o of AS.draft){
+    for(const[hint,ref]of[[o.recordHint,o._target],[o.accountName,o._account],[o.contactHint,o._contact]]){
+      if(ref&&hint&&norm(hint)!==norm(ref.name))notes.push(`“${hint}” is ${ref.name} (${(ASST_TYPE_LABEL[ref.type]||'').toLowerCase()})`);
+    }
+  }
+  if(!notes.length)return reply;
+  return[String(reply).replace(/\s*Confirm\?\s*$/,'').trim(),`${notes.join('; ')}. Confirm?`].filter(Boolean).join(' ');
 }
 // Current values, for "from → to" on edits.
 function asstCurrentValue(t,type,field){
@@ -10594,13 +10653,13 @@ function asstFmtValue(field,v){
 }
 function asstOpLines(o){
   const lines=[];
-  const target=o._target?`${o._target.name} (${ASST_TYPE_LABEL[o._target.type]})`:o._linkTo!=null?`the new ${ASST_OP_LABEL[AS.draft[o._linkTo]?.op]?.replace('New ','')||'record'}`:'';
+  const target=o._target?`${o._target.name} (${ASST_TYPE_LABEL[o._target.type]})`:o._linkOp?`the new ${(ASST_OP_LABEL[o._linkOp.op]||'record').replace('New ','').toLowerCase()} “${asstCreatedName(o._linkOp)}”`:'';
   if(o.op==='update_record'){
     const t=asstTask(o._target);
     (o.changes||[]).forEach(c=>{const from=asstCurrentValue(t,o._target?.type,c.field);lines.push(`${ASST_FIELD_LABEL[c.field]||c.field}: ${from?`${esc(from)} → `:''}<b>${esc(asstFmtValue(c.field,c.value))}</b>`);});
   }
   if(o.op==='create_deal'){
-    lines.push(`Account: ${o._account?esc(o._account.name):o._createAccount?`<b>new</b> “${esc(o.accountName)}”`:esc(o.accountName||'—')}`);
+    lines.push(`Account: ${o._account?esc(o._account.name):(o._createAccount||o._accountOp)?`<b>new</b> “${esc(o.accountName)}”`:esc(o.accountName||'—')}`);
     if(o._contact)lines.push(`Contact: ${esc(o._contact.name)}`);
     const bits=[o.stage==='closed_won'?'Closed / won':o.stage==='closed_lost'?'Closed / lost':'Open',o.amount?fmtMoney(o.amount):'',o.serviceDate?`service ${fmtDateShort(parseLocalDate(o.serviceDate))}`:'',o.invoiceStatus?`invoice ${o.invoiceStatus}`:''].filter(Boolean);
     lines.push(esc(bits.join(' · ')));
@@ -10621,76 +10680,84 @@ async function asstConfirm(){
   const q=asstResolve();
   if(q){asstSay(q.text,{chips:q.chips});asstRender();return;}
   AS.busy=true;asstRender();
-  const created=[],results=[];
+  const ops=AS.draft.slice();          // the draft can't change under the save
+  const created=new Map(),results=[];
+  const newAccounts=new Map();         // lower-case name → {id,name}, so one new account is made once
   const who=()=>`${S.user?.name||'Admin'} | ${getTS()}`;
   const note=(id,text)=>cuFetch(`/task/${id}/comment`,'POST',{comment_text:`[ASSISTANT] ${text} — ${who()}`,notify_all:false}).catch(()=>{});
-  // New records first, so tasks and notes about them can link to them.
-  const order=[...AS.draft.keys()].sort((a,b)=>(AS.draft[a].op.startsWith('create_')?0:1)-(AS.draft[b].op.startsWith('create_')?0:1)||a-b);
-  for(const i of order){
-    const o=AS.draft[i];
-    const ref=o._target||(o._linkTo!=null?created[o._linkTo]:null);
-    try{
-      let made=null;
-      if(o.op==='create_lead'||o.op==='create_contact'){
-        const listId=o.op==='create_lead'?S.creds.listLeads:S.creds.listContacts;
-        const name=[o.firstName,o.lastName].filter(Boolean).join(' ').trim();
-        if(!name)throw new Error('needs a name');
-        if(o.email&&!isValidEmailFormat(o.email))throw new Error(`email “${o.email}” looks wrong`);
-        const t=await cuFetch(`/list/${listId}/task`,'POST',{name,description:[o.company?`Company: ${o.company}`:'',o.noteText||''].filter(Boolean).join('\n\n')||undefined});
-        const F=CU_FIELDS;
-        if(o.firstName)await setFieldById(t.id,F.FIRST_NAME,o.firstName,'short_text');
-        if(o.lastName)await setFieldById(t.id,F.LAST_NAME,o.lastName,'short_text');
-        if(o.email)await setFieldById(t.id,F.PRIMARY_EMAIL,o.email,'email');
-        if(o.phone)await setFieldById(t.id,F.PHONE,normalizePhoneForClickUp(o.phone),'phone');
-        if(o.title)await setFieldById(t.id,F.TITLE,o.title,'short_text');
-        await note(t.id,`Created with the assistant`);
-        made={id:t.id,name,type:o.op==='create_lead'?'leads':'contacts'};
-      }else if(o.op==='create_account'){
-        if(!o.accountName)throw new Error('needs a name');
-        const t=await cuFetch(`/list/${S.creds.listAccounts}/task`,'POST',{name:o.accountName});
-        await note(t.id,'Created with the assistant');
-        made={id:t.id,name:o.accountName,type:'accounts'};
-      }else if(o.op==='create_deal'){
-        let account=o._account?{id:o._account.id,name:o._account.name}:null;
-        if(!account&&o._createAccount&&o.accountName){
-          const t=await cuFetch(`/list/${S.creds.listAccounts}/task`,'POST',{name:o.accountName});
-          await note(t.id,'Created with the assistant');
-          account={id:t.id,name:o.accountName};
+  const newAccount=async name=>{
+    const key=name.trim().toLowerCase();
+    if(newAccounts.has(key))return newAccounts.get(key);
+    const t=await cuFetch(`/list/${S.creds.listAccounts}/task`,'POST',{name:name.trim()});
+    await note(t.id,'Created with the assistant');
+    const acc={id:t.id,name:name.trim(),type:'accounts'};
+    newAccounts.set(key,acc);return acc;
+  };
+  try{
+    // New records first, so tasks and notes about them can link to them.
+    const order=ops.slice().sort((x,y)=>(x.op.startsWith('create_')?0:1)-(y.op.startsWith('create_')?0:1)||ops.indexOf(x)-ops.indexOf(y));
+    for(const o of order){
+      try{
+        const ref=o._target||(o._linkOp?created.get(o._linkOp):null);
+        let made=null;
+        if(o.op==='create_lead'||o.op==='create_contact'){
+          const listId=o.op==='create_lead'?S.creds.listLeads:S.creds.listContacts;
+          const name=[o.firstName,o.lastName].filter(Boolean).join(' ').trim();
+          if(!name)throw new Error('needs a name');
+          if(o.email&&!isValidEmailFormat(o.email))throw new Error(`email “${o.email}” looks wrong`);
+          const t=await cuFetch(`/list/${listId}/task`,'POST',{name,description:[o.company?`Company: ${o.company}`:'',o.noteText||''].filter(Boolean).join('\n\n')||undefined});
+          const F=CU_FIELDS;
+          if(o.firstName)await setFieldById(t.id,F.FIRST_NAME,o.firstName,'short_text');
+          if(o.lastName)await setFieldById(t.id,F.LAST_NAME,o.lastName,'short_text');
+          if(o.email)await setFieldById(t.id,F.PRIMARY_EMAIL,o.email,'email');
+          if(o.phone)await setFieldById(t.id,F.PHONE,normalizePhoneForClickUp(o.phone),'phone');
+          if(o.title)await setFieldById(t.id,F.TITLE,o.title,'short_text');
+          await note(t.id,`Created with the assistant`);
+          made={id:t.id,name,type:o.op==='create_lead'?'leads':'contacts'};
+        }else if(o.op==='create_account'){
+          if(!o.accountName)throw new Error('needs a name');
+          made=await newAccount(o.accountName);
+        }else if(o.op==='create_deal'){
+          let account=o._account?{id:o._account.id,name:o._account.name}:null;
+          if(!account&&o._accountOp)account=created.get(o._accountOp)||null;
+          if(!account&&(o._createAccount||o._accountOp)&&o.accountName)account=await newAccount(o.accountName);
+          const name=o.dealName||`${account?.name||o.accountName||'Deal'}${o.service?` — ${o.service}`:''}`;
+          const{task,warnings}=await createDealRecord({name,account,accountName:o.accountName,contact:o._contact||null,amount:o.amount||0,
+            serviceDate:o.serviceDate?parseLocalDate(o.serviceDate):(o.stage==='closed_won'?Date.now():0),
+            invoiceStatus:o.invoiceStatus||(o.stage==='closed_won'?'Pending':''),stage:o.stage||'open',via:'assistant'});
+          made={id:task.id,name,type:'pipeline',warnings};
+        }else if(o.op==='update_record'){
+          if(!ref)throw new Error('no record chosen');
+          await asstApplyChanges(ref,o.changes||[]);
+          made={...ref};
+        }else if(o.op==='add_note'){
+          if(!ref)throw new Error('no record chosen');
+          await cuFetch(`/task/${ref.id}/comment`,'POST',{comment_text:`[NOTE] ${o.noteText||o.summary} — ${who()}`,notify_all:false});
+          made={...ref};
+        }else if(o.op==='add_task'){
+          if(o._linkOp&&!ref)throw new Error('the record it belongs to didn’t save');
+          const due=o.taskDueDate||(o.taskKind==='finish_details'?ymd(nextWorkingDay()):'');
+          await bulkExecTask({taskName:o.taskTitle||o.summary||'Follow up',taskDueDate:due,_chosenEntryId:ref?.id||'',_chosenEntryType:ref?.type||''});
+          if(ref)await note(ref.id,`Task added: ${o.taskTitle||o.summary}${due?` (due ${fmtDateShort(parseLocalDate(due))})`:''}`);
+          made=ref?{...ref}:null;
         }
-        const name=o.dealName||`${account?.name||o.accountName||'Deal'}${o.service?` — ${o.service}`:''}`;
-        const{task,warnings}=await createDealRecord({name,account,accountName:o.accountName,contact:o._contact||null,amount:o.amount||0,
-          serviceDate:o.serviceDate?parseLocalDate(o.serviceDate):(o.stage==='closed_won'?Date.now():0),
-          invoiceStatus:o.invoiceStatus||(o.stage==='closed_won'?'Pending':''),stage:o.stage||'open',via:'assistant'});
-        made={id:task.id,name,type:'pipeline',warnings};
-      }else if(o.op==='update_record'){
-        if(!ref)throw new Error('no record chosen');
-        await asstApplyChanges(ref,o.changes||[]);
-        made={...ref};
-      }else if(o.op==='add_note'){
-        if(!ref)throw new Error('no record chosen');
-        await cuFetch(`/task/${ref.id}/comment`,'POST',{comment_text:`[NOTE] ${o.noteText||o.summary} — ${who()}`,notify_all:false});
-        made={...ref};
-      }else if(o.op==='add_task'){
-        const due=o.taskDueDate||(o.taskKind==='finish_details'?ymd(nextWorkingDay()):'');
-        await bulkExecTask({taskName:o.taskTitle||o.summary||'Follow up',taskDueDate:due,_chosenEntryId:ref?.id||'',_chosenEntryType:ref?.type||''});
-        if(ref)await note(ref.id,`Task added: ${o.taskTitle||o.summary}${due?` (due ${fmtDateShort(parseLocalDate(due))})`:''}`);
-        made=ref?{...ref}:null;
+        // "More details later": make sure a finish-details task exists.
+        if(o.incomplete&&made&&o.op.startsWith('create_')&&!ops.some(x=>x!==o&&x.op==='add_task'&&x.taskKind==='finish_details'&&x._linkOp===o)){
+          await bulkExecTask({taskName:`Finish details: ${made.name}`,taskDueDate:ymd(nextWorkingDay()),_chosenEntryId:made.id,_chosenEntryType:made.type});
+        }
+        created.set(o,made);
+        results.push({ok:true,o,made});
+      }catch(e){
+        created.set(o,null);
+        results.push({ok:false,o,err:e.message});
       }
-      // "More details later": make sure a finish-details task exists.
-      if(o.incomplete&&made&&o.op.startsWith('create_')&&!AS.draft.some((x,k)=>k!==i&&x.op==='add_task'&&x.taskKind==='finish_details'&&(x._linkTo===i))){
-        await bulkExecTask({taskName:`Finish details: ${made.name}`,taskDueDate:ymd(nextWorkingDay()),_chosenEntryId:made.id,_chosenEntryType:made.type});
-      }
-      created[i]=made;
-      results.push({ok:true,o,made});
-    }catch(e){
-      created[i]=null;
-      results.push({ok:false,o,err:e.message});
     }
+  }finally{
+    AS.busy=false;
   }
   const ok=results.filter(r=>r.ok).length,failed=results.length-ok;
   AS.log.push({who:'result',results});
-  AS.draft=[];AS.ready=false;AS.missing=[];AS.turns=[];
-  AS.busy=false;
+  AS.draft=[];AS.ready=false;AS.modelReady=false;AS.missing=[];AS.turns=[];
   asstSay(failed?`Saved ${ok} of ${results.length}. ${failed} didn’t save — see the red line${failed===1?'':'s'}.`:`Done — saved ${ok} change${ok===1?'':'s'}. Anything else?`);
   asstRender();
   loadAllEntries().then(()=>{renderDashboard();if(S.currentEntry)openProfile(S.currentEntry.task.id,S.currentEntry.type);});
@@ -10704,8 +10771,13 @@ async function asstApplyChanges(ref,changes){
     switch(c.field){
       case'status':{
         const want=String(c.value).toLowerCase().replace(/[^a-z]/g,'');
-        const st=getStatuses(ref.type).find(s=>s.toLowerCase().replace(/[^a-z]/g,'')===want)||getStatuses(ref.type).find(s=>{const k=s.toLowerCase().replace(/[^a-z]/g,'');return k.includes(want)||want.includes(k)||stageLabel(s).toLowerCase().replace(/[^a-z]/g,'')===want;});
-        if(!st)throw new Error(`“${c.value}” isn’t a ${ASST_TYPE_LABEL[ref.type]?.toLowerCase()||'record'} stage`);
+        const key=x=>x.toLowerCase().replace(/[^a-z]/g,'');
+        const all=getStatuses(ref.type);
+        if(want.length<3)throw new Error(`“${c.value}” isn’t a stage`);
+        let hits=all.filter(x=>key(x)===want||key(stageLabel(x))===want);
+        if(!hits.length)hits=all.filter(x=>key(x).includes(want)||key(stageLabel(x)).includes(want));
+        if(hits.length!==1)throw new Error(hits.length?`“${c.value}” fits more than one stage (${hits.map(stageLabel).join(', ')})`:`“${c.value}” isn’t a ${ASST_TYPE_LABEL[ref.type]?.toLowerCase()||'record'} stage`);
+        const st=hits[0];
         await cuFetch(`/task/${ref.id}`,'PUT',{status:st});break;
       }
       case'amount':ok=await setFieldById(ref.id,F.OPPORTUNITY,parseCurrencyInput(String(c.value)),'currency');break;
@@ -10734,8 +10806,19 @@ async function asstApplyChanges(ref,changes){
   }
   if(done.length)await cuFetch(`/task/${ref.id}/comment`,'POST',{comment_text:`[ASSISTANT] Updated — ${done.join('; ')} — ${S.user?.name||'Admin'} | ${getTS()}`,notify_all:false}).catch(()=>{});
 }
-function asstDiscard(){AS.draft=[];AS.ready=false;AS.missing=[];AS.turns=[];asstSay('Cleared. What would you like to do?',{speak:false});asstRender();}
-function asstRemoveOp(i){AS.draft.splice(i,1);if(!AS.draft.length)AS.ready=false;asstRender();}
+function asstDiscard(){if(AS.busy)return;AS.draft=[];AS.ready=false;AS.modelReady=false;AS.missing=[];AS.turns=[];asstSay('Cleared. What would you like to do?',{speak:false});asstRender();}
+function asstDropOp(o){
+  const i=AS.draft.indexOf(o);if(i<0)return;
+  AS.draft.splice(i,1);
+  for(const x of AS.draft){if(x._linkOp===o)x._linkOp=undefined;if(x._accountOp===o)x._accountOp=undefined;}
+  if(!AS.draft.length)AS.ready=false;
+}
+function asstRemoveOp(i){
+  if(AS.busy)return;
+  asstDropOp(AS.draft[i]);
+  if(AS.draft.length){const q=asstResolve();if(q){AS.ready=false;asstSay(q.text,{chips:q.chips,speak:false});}}
+  asstRender();
+}
 
 // ── Rendering ──
 function asstRender(){
@@ -10753,7 +10836,7 @@ function asstRender(){
       dr.hidden=false;
       const pending=!!asstPendingQuestion();
       dr.innerHTML=`<div class="asst-draft-head"><b>${AS.ready&&!pending?'Ready to save':'Draft'}</b><span>${AS.draft.length} step${AS.draft.length===1?'':'s'} · nothing saved yet</span></div>
-        ${AS.draft.map((o,i)=>`<div class="asst-op"><span class="asst-op-tag">${esc(ASST_OP_LABEL[o.op]||o.op)}</span><div class="asst-op-main"><div class="asst-op-sum">${esc(o.summary||'')}</div>${asstOpLines(o).map(l=>`<div class="asst-op-line">${l}</div>`).join('')}</div><button class="asst-op-x" aria-label="Remove this step" title="Remove this step" onclick="asstRemoveOp(${i})">×</button></div>`).join('')}
+        ${AS.draft.map((o,i)=>`<div class="asst-op"><span class="asst-op-tag">${esc(ASST_OP_LABEL[o.op]||o.op)}</span><div class="asst-op-main"><div class="asst-op-sum">${esc(o.summary||'')}</div>${asstOpLines(o).map(l=>`<div class="asst-op-line">${l}</div>`).join('')}</div><button class="asst-op-x" aria-label="Remove this step" title="Remove this step" onclick="asstRemoveOp(${i})" ${AS.busy?'disabled':''}>×</button></div>`).join('')}
         ${AS.missing.length&&!AS.ready?`<div class="asst-missing">Still needed: ${esc(AS.missing.join(', '))}</div>`:''}
         <div class="asst-draft-actions"><button class="btn btn-primary btn-sm" onclick="asstConfirm()" ${AS.busy||!AS.ready||pending?'disabled':''}>Confirm &amp; save</button><button class="btn btn-ghost btn-sm" onclick="asstDiscard()" ${AS.busy?'disabled':''}>Discard</button></div>`;
     }
