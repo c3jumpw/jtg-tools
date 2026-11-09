@@ -16,7 +16,10 @@
 //
 // Env vars needed (Vercel Project Settings -> Environment Variables):
 //   QUO_API_KEY      -- from Quo Settings -> API
-//   RESEND_API_KEY   -- from Resend Settings -> API Keys
+//   RESEND_KEY_<A..> -- one per Resend account, from that account's
+//                       Settings -> API Keys. Which domains each account
+//                       sends for is in api/_lib/senders.ts.
+//   RESEND_API_KEY   -- the single key used before the split; fallback only
 //
 // Migrated from SendGrid to Resend: Resend verifies at the DOMAIN level
 // (SPF/DKIM), not per-address like SendGrid's Single Sender Verification
@@ -24,6 +27,8 @@
 // send with zero further per-person setup. No frontend changes were
 // needed for this migration; the request/response contract this
 // function exposes is identical to the SendGrid version it replaces.
+
+import { resendKeyFor } from './_lib/senders';
 
 export const config = { runtime: 'edge' };
 
@@ -193,11 +198,6 @@ export default async function handler(req: Request): Promise<Response> {
 
     // ─────────────────────── Email via Resend ───────────────────────
     if (channel === 'email') {
-      const resendKey = process.env.RESEND_API_KEY;
-      if (!resendKey) {
-        return jsonResponse({ error: 'RESEND_API_KEY is not set on this Vercel project.' }, 500);
-      }
-
       const recipientEmail = truncate(body.recipientEmail, 200);
       const senderEmail = truncate(body.senderEmail, 200); // must be @ a domain verified in Resend
       const senderName = truncate(body.senderName, 100) || 'MKC';
@@ -209,6 +209,14 @@ export default async function handler(req: Request): Promise<Response> {
       if (!senderEmail || !senderEmail.includes('@')) {
         return jsonResponse({ error: 'Your sender email could not be found (check the Team Directory sheet, column Q) -- cannot send as you specifically.' }, 400);
       }
+
+      // The key comes from the Resend account that has the sender's
+      // domain verified (api/_lib/senders.ts).
+      const sender = resendKeyFor(senderEmail, process.env);
+      if (!sender.ok) {
+        return jsonResponse({ error: sender.error }, sender.status);
+      }
+      const resendKey = sender.key;
 
       // Signature is optional and entirely assembled from data the
       // frontend already has (login session + the same sheet lookup that
@@ -270,12 +278,12 @@ export default async function handler(req: Request): Promise<Response> {
       // per-domain check instead of per-address now.
       if (resendRes.status === 403) {
         return jsonResponse({
-          error: `Resend rejected this send (403) -- most likely the domain on "${senderEmail}" isn't verified yet. Check Resend -> Domains.`,
+          error: `Resend rejected this send (403) -- ${sender.domain} may not be verified in Resend account ${sender.account} yet, or ${sender.variable} holds another account's key. Check Resend -> Domains.`,
           detail: resendJson,
         }, 502);
       }
       if (resendRes.status === 401) {
-        return jsonResponse({ error: 'Resend rejected the API key (401) -- check RESEND_API_KEY in Vercel.', detail: resendJson }, 502);
+        return jsonResponse({ error: `Resend rejected the API key (401) -- check ${sender.variable} in Vercel.`, detail: resendJson }, 502);
       }
 
       return jsonResponse({ error: `Resend API error (${resendRes.status})`, detail: resendJson }, 502);
