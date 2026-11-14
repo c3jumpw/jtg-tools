@@ -189,6 +189,15 @@ tbody tr.is-subtask{opacity:.7;background:#fafafa}
 .comment-author{font-size:12px;font-weight:600}
 .comment-time{font-size:11px;color:var(--text-muted)}
 .comment-text{font-size:13px;color:var(--text-secondary);line-height:1.5}
+.comment-kind{font-size:12px;color:var(--text-muted)}
+.act-files{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.act-file{display:inline-flex;flex-direction:column;max-width:100%;border:1px solid var(--border);border-radius:10px;overflow:hidden;text-decoration:none;color:var(--text-primary);background:var(--bg-card)}
+.act-file.has-thumb{width:160px}
+.act-file img{display:block;width:100%;height:110px;object-fit:cover;background:var(--bg-main)}
+.act-file-name{display:flex;align-items:center;gap:6px;padding:8px 10px;font-size:13px;min-height:40px;word-break:break-word}
+.act-file-name svg{flex:none;color:var(--text-muted)}
+a.act-file:hover{border-color:var(--accent)}
+.act-note{margin:12px 0 0;font-size:12px;color:var(--text-muted)}
 .hash-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .hash-chip{padding:3px 10px;border-radius:20px;background:var(--bg-main);border:1px solid var(--border);font-size:12px;color:var(--text-secondary);cursor:pointer}
 .hash-chip.selected{background:var(--accent-light);border-color:var(--accent);color:var(--accent);font-weight:600}
@@ -6772,22 +6781,74 @@ function updatePfActivityBadge(){
   const count=(S.currentEntry.comments||[]).filter(c=>{
     const isMine=(c.user?.username||'').toLowerCase()===myName;
     return !isMine&&Number(c.date)>lv;
+  }).length+(task.attachments||[]).filter(a=>{
+    const isMine=(a.user?.username||'').toLowerCase()===myName;
+    return !isMine&&Number(a.date)>lv;
   }).length;
   if(count>0){badge.textContent=count;badge.style.display='inline-block';}
   else badge.style.display='none';
 }
 
+// One feed for the record: comments, files posted inside comments, and
+// files uploaded to the record itself (what ClickUp shows as "X uploaded:
+// file"). ClickUp returns the record's own files with the record, not with
+// its comments, so the feed used to show "No activity yet." on entries
+// whose only history was a photo. ClickUp's automation history ("ClickBot
+// set ...") isn't available through its API, so it can't be shown here.
+const PF_IMAGE_EXT=/^(png|jpe?g|gif|webp|heic|heif|bmp|svg)$/i;
+function pfFileOf(a){
+  if(!a)return null;
+  const ext=String(a.extension||'').replace(/^\./,'').toLowerCase();
+  let name=String(a.title||a.name||'file');
+  if(ext&&!name.toLowerCase().endsWith('.'+ext))name+='.'+ext;
+  const https=u=>/^https:\/\//i.test(String(u||''))?String(u):'';
+  return{id:String(a.id||''),name,ext,url:https(a.url_w_host||a.url),
+    thumb:https(a.thumbnail_medium||a.thumbnail_large||a.thumbnail_small),
+    image:PF_IMAGE_EXT.test(ext)||/^image\//i.test(String(a.mimetype||''))};
+}
+function pfCommentFiles(c){
+  return(Array.isArray(c&&c.comment)?c.comment:[]).map(part=>
+    part&&part.type==='attachment'?pfFileOf(part.attachment):
+    part&&part.type==='image'?pfFileOf(part.image):null).filter(Boolean);
+}
+function pfActivityItems(comments,task){
+  const items=(comments||[]).map(c=>{
+    const files=pfCommentFiles(c);
+    let text=String(c.comment_text||'').trim();
+    // A comment that is only a file carries the file's name as its text.
+    if(files.length&&!files.reduce((t,f)=>t.split(f.name).join(' '),text).trim())text='';
+    return{date:Number(c.date)||0,who:c.user?.username||'Unknown',text,files,uploaded:false};
+  });
+  const seen=new Set(items.flatMap(i=>i.files.map(f=>f.id)).filter(Boolean));
+  for(const a of(task&&task.attachments)||[]){
+    const f=pfFileOf(a);
+    if(!f||(f.id&&seen.has(f.id)))continue;
+    items.push({date:Number(a.date)||0,who:a.user?.username||'',text:'',files:[f],uploaded:true});
+  }
+  return items.sort((x,y)=>y.date-x.date);
+}
+function pfFileHtml(f){
+  const icon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>';
+  const label=`${icon}<span>${esc(f.name)}</span>`;
+  const thumb=f.image&&f.thumb?`<img src="${esc(f.thumb)}" alt="${esc(f.name)}" loading="lazy" onerror="this.remove()">`:'';
+  return f.url?`<a class="act-file${thumb?' has-thumb':''}" href="${esc(f.url)}" target="_blank" rel="noopener">${thumb}<span class="act-file-name">${label}</span></a>`
+    :`<span class="act-file">${thumb}<span class="act-file-name">${label}</span></span>`;
+}
 function renderPfActivity(comments,body){
-  const html=comments.length?comments.slice(0,15).map(c=>`
+  const items=pfActivityItems(comments,S.currentEntry?.task);
+  const html=items.length?items.slice(0,15).map(i=>`
     <div class="comment-item">
       <div class="comment-meta">
-        <div class="user-avatar" style="width:22px;height:22px;font-size:9px">${(c.user?.username||'?')[0].toUpperCase()}</div>
-        <span class="comment-author">${esc(c.user?.username||'Unknown')}</span>
-        <span class="comment-time">${fmtDate(c.date)}</span>
+        <div class="user-avatar" style="width:22px;height:22px;font-size:9px">${esc((i.who||'?')[0].toUpperCase())}</div>
+        <span class="comment-author">${esc(i.who||'Someone')}</span>
+        ${i.uploaded?'<span class="comment-kind">uploaded a file</span>':''}
+        <span class="comment-time">${fmtDate(i.date)}</span>
       </div>
-      <div class="comment-text">${esc(c.comment_text||'')}</div>
+      ${i.text?`<div class="comment-text">${esc(i.text)}</div>`:''}
+      ${i.files.length?`<div class="act-files">${i.files.map(pfFileHtml).join('')}</div>`:''}
     </div>`).join(''):'<div style="padding:16px 0;color:var(--text-muted);font-size:13px">No activity yet.</div>';
-  body.innerHTML=`<div class="pf-section"><h4>Activity Log (Last 15)</h4>${html}</div>`;
+  body.innerHTML=`<div class="pf-section"><h4>Activity (latest 15)</h4>${html}
+    <p class="act-note">Changes ClickUp makes on its own, like automations filling in fields, only show in ClickUp.</p></div>`;
 }
 
 function renderPfRelated(task,body){
@@ -7285,7 +7346,13 @@ async function submitActivity(){
     const file=fileEl?.files?.[0];
     if(file){
       try{
-        await uploadTaskAttachment(S.currentEntry.task.id,file);
+        const att=await uploadTaskAttachment(S.currentEntry.task.id,file);
+        // Shown in the feed at once; the next full load of the record
+        // brings ClickUp's own copy.
+        if(att&&att.id&&S.currentEntry?.task){
+          const t=S.currentEntry.task;
+          t.attachments=[...(t.attachments||[]).filter(x=>String(x.id)!==String(att.id)),{...att,date:att.date||Date.now(),user:att.user||{username:S.user?.name||''}}];
+        }
         showToast(`Attached "${file.name}".`,'success');
       }catch(e){showToast('Attachment upload failed: '+e.message,'error');}
     }
