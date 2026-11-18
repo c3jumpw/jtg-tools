@@ -82,13 +82,16 @@ async function demoPage(browser, server, opts) {
     signedOut: !!opts.signedOut,
     noRhythm: !!opts.noRhythm,
   };
+  // Freeze the clock BEFORE the demo data's init script is registered: init
+  // scripts run in registration order, and demo-env.js dates everything
+  // relative to Date.now() the moment it runs.
+  await ctx.clock.setFixedTime(new Date(DEMO_NOW));
   await ctx.addInitScript({ content: 'window.__CF_DEMO = ' + JSON.stringify(boot) + ';\n' + DEMO_ENV });
   await ctx.addInitScript({ content: `(function(){try{
     ${role !== 'client' && !opts.noCreds && !opts.signedOut ? "localStorage.setItem('contentflow.credentials', JSON.stringify({token:'demo-token', listId:'901715762648'}));" : ''}
     ${opts.freshUser ? '' : "localStorage.setItem('contentflow.tour.seen.demo-' + " + JSON.stringify(role) + ", " + JSON.stringify(opts.seenVersion || APP_VERSION) + ");"}
   }catch(e){}})();` });
   const page = await ctx.newPage();
-  await page.clock.setFixedTime(new Date(DEMO_NOW));
   page.__errors = [];
   page.on('pageerror', (e) => page.__errors.push(e.message));
   return { ctx, page };
