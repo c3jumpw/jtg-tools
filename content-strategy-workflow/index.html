@@ -129,6 +129,18 @@ a { color: inherit; }
 .btn-primary:hover { filter: brightness(1.06); }
 .btn-ghost { background: rgba(255,255,255,0.08); color: #eef2f2; }
 .btn-ghost:hover { background: rgba(255,255,255,0.16); }
+/* The three rules above (and .icon-btn / .view-tab) are styled for the dark
+   top bar. On light surfaces -- the main area, modals, the sign-in and
+   connect cards -- they need dark text, or they all but disappear (before
+   v1.26.0: the modal close button, file/idea delete buttons, the Idea Inbox
+   filter tabs, Foundation's "Back to Ideas" and the connect screen's
+   "Sign out" were near-invisible in light mode). */
+.main .icon-btn, .modal .icon-btn, .modal-card .icon-btn, .connect-card .icon-btn { color: var(--text-secondary); }
+.main .icon-btn:hover, .modal .icon-btn:hover, .modal-card .icon-btn:hover, .connect-card .icon-btn:hover { background: var(--paper-dim); color: var(--heading); }
+.main .btn-ghost, .modal .btn-ghost, .modal-card .btn-ghost, .connect-card .btn-ghost { background: var(--paper-dim); color: var(--text); }
+.main .btn-ghost:hover, .modal .btn-ghost:hover, .modal-card .btn-ghost:hover, .connect-card .btn-ghost:hover { background: var(--border); }
+.main .view-tab { color: var(--text-secondary); }
+.main .view-tab:hover, .main .view-tab.active { color: var(--heading); }
 .btn-outline { background: transparent; border: 1px solid var(--border-strong); color: var(--text); }
 .btn-outline:hover { background: var(--paper-dim); }
 .btn-danger { background: transparent; color: var(--danger); border: 1px solid rgba(201,70,60,0.35); }
@@ -188,6 +200,12 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
 .modal-header { display: flex; align-items: flex-start; gap: 12px; padding: 20px 22px 14px; border-bottom: 1px solid var(--border); }
 .modal-header input.title-input { font-family: var(--font-display); font-size: 20px; font-weight: 600; border: none; width: 100%; padding: 4px 0; background: transparent; }
 .modal-body { padding: 18px 22px 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
+/* The client's entry panel is a single reading column (status, files, social
+   links, log). Before v1.26.0 it inherited the two-column field grid above,
+   which put each heading in one column and its content in the other. */
+.modal-card .modal-body { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+.modal-card .modal-body > h3 { margin: 14px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-faint); }
+.modal-card .modal-header h2 { font-family: var(--font-display); font-size: 19px; margin: 0; display: grid; gap: 6px; justify-items: start; flex: 1; min-width: 0; }
 .field-group { display: flex; flex-direction: column; gap: 5px; }
 .field-group.full { grid-column: 1 / -1; }
 .field-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-faint); }
@@ -251,6 +269,10 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
 .connect-form label { font-size: 12.5px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 5px; }
 .connect-form input { width: 100%; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13.5px; }
 .remember-row { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-secondary); }
+/* Inside .connect-form the generic label/input rules above would stack the
+   checkbox on its own full-width line; keep it beside its label. */
+.connect-form .remember-row { display: flex; margin-bottom: 0; }
+.connect-form .remember-row input { width: auto; padding: 0; }
 .connect-help { font-size: 12px; color: var(--text-faint); margin-top: 4px; line-height: 1.5; }
 .connect-help a { color: var(--accent); font-weight: 600; text-decoration: none; }
 .connect-help a:hover { text-decoration: underline; }
@@ -336,8 +358,15 @@ table.list-table { width: 100%; border-collapse: collapse; font-size: 13px; min-
 .guide-bar { background: var(--ink); color: #eef2f2; display: flex; align-items: center; gap: 10px; padding: calc(8px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid rgba(255,255,255,0.08); }
 .guide-bar-title { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 600; font-size: 17px; }
 .guide-frame { flex: 1; width: 100%; min-height: 0; border: 0; background: var(--paper); }
+.guide-frame[hidden] { display: none; }
+.guide-tabs { margin-left: 6px; }
+.tour-banner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--accent); border-radius: var(--radius-md); padding: 10px 14px; margin-bottom: 16px; box-shadow: var(--shadow-card); }
+.tour-banner-text { flex: 1 1 260px; font-size: 13.5px; color: var(--text); }
+.tour-banner-text strong { color: var(--heading); }
+.tour-banner-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.settings-menu-version { padding: 8px 14px 10px; font-size: 11px; color: var(--text-faint); border-top: 1px solid var(--border); }
 body.guide-open { overflow: hidden; }
-@media (max-width: 420px) { .guide-newtab { display: none; } }
+@media (max-width: 560px) { .guide-newtab, .guide-bar-word { display: none; } .guide-bar { gap: 6px; } .guide-tabs { margin-left: 0; } .guide-tabs .view-tab { padding: 6px 9px; font-size: 12.5px; } }
 </style>
 </head>
 <body>
@@ -347,6 +376,10 @@ body.guide-open { overflow: hidden; }
      Board data itself still comes straight from ClickUp (or, for client-role
      users, from our own backend proxy) -- Supabase never stores task content. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<!-- Tour step definitions -- only its What's new notes are used here (for the
+     update banner). Optional: if it fails to load, the banner falls back to
+     the plain "take the tour" prompt and nothing else is affected. -->
+<script src="tour/steps.js"></script>
 
 <script>
 'use strict';
@@ -955,6 +988,45 @@ body.guide-open { overflow: hidden; }
        tokens, so a visual change here may want a matching tweak there. This
        release also carries v1.24.0's icon files, which had not reached the
        repo yet.
+     v1.26.0 (2026-11-18) -- Getting-started tour built from real screenshots,
+       kept current automatically, plus five fixes those screenshots exposed.
+       New tour.html: a step-by-step slideshow per role (admin 22 steps, team
+       member 20, client 18) -- each step a screenshot of THIS file running
+       on demo data, with numbered rings over the parts being explained.
+       The help layer (the "?" button) now has two tabs, Getting started and
+       Full guide, each in its own iframe so switching keeps your place; the
+       "?" reopens whichever was used last. Settings gains "Getting started
+       tour", "Full guide" and the version number (APP_VERSION, new). A
+       one-time banner above the main view offers the tour on a person's
+       first sign-in on a device, and "what's new" once after each release
+       that has notes in tour/steps.js (remembered per user per device under
+       contentflow.tour.seen.<profile id>).
+       Kept current: tests/tour/capture.js boots this file with
+       tests/demo/demo-env.js (stubbed Supabase, backend and ClickUp proxy,
+       fictional data) and re-shoots every step; tests/tour/check.js fails
+       when the screenshots came from a different index.html, when the app
+       shows a tab, menu item or panel no step covers, or when this release
+       has no What's new note; .github/workflows/contentflow-tour.yml runs
+       both on every push that touches the app and commits fresh
+       screenshots. See RELEASING.md.
+       Fixed (all visible in the new screenshots, all live since earlier
+       versions): (1) the ClickUp "Notebook Link" field also rendered as a
+       generic editable text box in the entry modal, for reps as well as
+       admins, and every Save wrote it back -- now excluded from the field
+       list and the save loop, so it is admin-only and read-only as designed;
+       (2) the For Review check never fired, because ClickUp returns status
+       names lowercase ("for review") and the comparison was case-sensitive;
+       (3) the client Board listed stages in whatever order tasks arrived,
+       not workflow order, and with different header markup from the team
+       Board -- and the Dashboard's "By status" had the same ordering issue
+       for everyone; (4) the client entry panel inherited the modal's
+       two-column field grid, splitting every heading from its content;
+       (5) icon buttons, ghost buttons and tab pills were styled only for the
+       dark top bar, so on light surfaces the modal close button, file and
+       idea delete buttons, the Idea Inbox filter tabs, Foundation's "Back to
+       Ideas" and the connect screen's "Sign out" were near-invisible; and
+       the connect screen's "Remember on this device" checkbox sat on its own
+       line away from its label.
    ============================================================================ */
 
   // ==========================================================================
@@ -969,6 +1041,10 @@ body.guide-open { overflow: hidden; }
   // the Client Secret is, and that never leaves the backend). Real access
   // control happens server-side: Supabase RLS for direct table reads, and our
   // backend's own login+role checks for everything under BACKEND_BASE.
+  // The release this file is. Bump it on every release: the tour's
+  // "What's new" banner, the tour screenshots and tests/tour/check.js all key
+  // off it (see RELEASING.md).
+  var APP_VERSION = '1.26.0';
   var SUPABASE_URL = 'https://uwomibcrrrahucqtsvte.supabase.co';
   var SUPABASE_ANON_KEY = 'sb_publishable_OsvedtyIs10zAaF6GmkHBg_wrtpxntq';
   var CLICKUP_CLIENT_ID = '76HV2C4YQFC4FEHIWYGA42GGCPFD356R';
@@ -3036,6 +3112,11 @@ body.guide-open { overflow: hidden; }
   var GATED_STATUS_NAME = 'For Review';
   var GATE_REQUIRED_CATEGORIES = ['copy_drafts', 'media_raw'];
 
+  /** ClickUp's API returns status names lowercase ("for review"), so compare without case. */
+  function isGatedStatus(name) {
+    return String(name || '').trim().toLowerCase() === GATED_STATUS_NAME.toLowerCase();
+  }
+
   function hasReviewReadyFiles(files) {
     return files.some(function (f) { return GATE_REQUIRED_CATEGORIES.indexOf(f.category) !== -1; });
   }
@@ -3049,7 +3130,7 @@ body.guide-open { overflow: hidden; }
    * @param {string} statusName - must match one of state.listMeta.statuses[].status
    */
   function moveTask(taskId, statusName) {
-    if (statusName === GATED_STATUS_NAME) {
+    if (isGatedStatus(statusName)) {
       backendFetch('/api/files/list?taskId=' + encodeURIComponent(taskId))
         .then(function (data) { return hasReviewReadyFiles(data.files || []); })
         .catch(function () { return true; }) // fail-open: a check failure should never block a legitimate move
@@ -3139,9 +3220,11 @@ body.guide-open { overflow: hidden; }
     var order = [];
     tasks.forEach(function (t) {
       var name = t.status ? t.status.status : '(no status)';
-      if (!map[name]) { map[name] = { name: name, color: t.status && t.status.color, count: 0 }; order.push(name); }
+      if (!map[name]) { map[name] = { name: name, color: t.status && t.status.color, rank: t.status && t.status.orderindex !== undefined ? Number(t.status.orderindex) : 999, count: 0 }; order.push(name); }
       map[name].count++;
     });
+    // Workflow order (ClickUp's orderindex), Idea first and Published last.
+    order.sort(function (a, b) { return map[a].rank - map[b].rank; });
     return order.map(function (n) { return map[n]; });
   }
 
@@ -4088,7 +4171,7 @@ body.guide-open { overflow: hidden; }
             (state.loggingIn ? 'Signing in…' : 'Sign in') +
           '</button>' +
         '</form>' +
-        '<p class="connect-help" style="margin-top:14px">New to ContentFlow? <button type="button" class="btn-linklike" style="display:inline;padding:0" data-action="open-guide" data-anchor="getting-in">Read the guide</button></p>' +
+        '<p class="connect-help" style="margin-top:14px">New to ContentFlow? <button type="button" class="btn-linklike" style="display:inline;padding:0" data-action="open-tour">Take the tour</button></p>' +
       '</div></div>'
     );
   }
@@ -4132,7 +4215,7 @@ body.guide-open { overflow: hidden; }
       body = '<div class="center-loading"><div class="spinner"></div>Loading your ClickUp list…</div>';
     } else {
       var view = state.view === 'ideas' ? ideasViewHtml() : state.view === 'board' ? boardHtml() : state.view === 'list' ? listHtml() : state.view === 'dashboard' ? dashboardHtml() : state.view === 'feed' ? feedHtml() : calendarHtml();
-      body = (state.error ? '<div class="status-banner error">' + esc(state.error) + '</div>' : '') + view;
+      body = tourBannerHtml() + (state.error ? '<div class="status-banner error">' + esc(state.error) + '</div>' : '') + view;
     }
     return (
       '<div class="app-shell">' +
@@ -4153,9 +4236,9 @@ body.guide-open { overflow: hidden; }
    * -- refreshAction is 'refresh' (admin/rep) or 'client-refresh' (client);
    * showDisconnect is false for clients, who never connect ClickUp directly.
    */
-  /** The "?" topnav button that opens the Guide -- shared by both topnavs. */
+  /** The "?" topnav button that opens Help (tour + guide) -- shared by both topnavs. */
   function guideButtonHtml() {
-    return '<button type="button" class="icon-btn" title="Guide" aria-label="Open the ContentFlow guide" data-action="open-guide">' +
+    return '<button type="button" class="icon-btn" title="Help: tour and guide" aria-label="Open the ContentFlow tour and guide" data-action="open-help">' +
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.7.3-1 .9-1 1.6v.3M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' +
     '</button>';
   }
@@ -4170,12 +4253,14 @@ body.guide-open { overflow: hidden; }
           '<div class="settings-menu">' +
             '<button type="button" class="settings-menu-item" data-action="toggle-theme">' + (isDark ? 'Switch to light mode' : 'Switch to dark mode') + '</button>' +
             '<button type="button" class="settings-menu-item" data-action="' + opts.refreshAction + '">Sync now</button>' +
-            '<button type="button" class="settings-menu-item" data-action="open-guide">Open the guide</button>' +
+            '<button type="button" class="settings-menu-item" data-action="open-tour">Getting started tour</button>' +
+            '<button type="button" class="settings-menu-item" data-action="open-guide">Full guide</button>' +
             (opts.isAdmin ? '<button type="button" class="settings-menu-item" data-action="open-admin-panel">Admin panel</button>' : '') +
             '<div class="settings-menu-divider"></div>' +
             '<button type="button" class="settings-menu-item" data-action="open-profile-modal">Edit profile</button>' +
             (opts.showDisconnect ? '<button type="button" class="settings-menu-item" data-action="disconnect">Disconnect ClickUp</button>' : '') +
             '<button type="button" class="settings-menu-item" data-action="sign-out">Sign out</button>' +
+            '<div class="settings-menu-version">ContentFlow v' + APP_VERSION + '</div>' +
           '</div>'
         ) : '') +
       '</div>'
@@ -4287,9 +4372,13 @@ body.guide-open { overflow: hidden; }
     var order = [];
     tasks.forEach(function (t) {
       var name = t.status ? t.status.status : '(no status)';
-      if (!statusesSeen[name]) { statusesSeen[name] = { color: t.status && t.status.color, tasks: [] }; order.push(name); }
+      if (!statusesSeen[name]) { statusesSeen[name] = { color: t.status && t.status.color, rank: t.status && t.status.orderindex !== undefined ? Number(t.status.orderindex) : 999, tasks: [] }; order.push(name); }
       statusesSeen[name].tasks.push(t);
     });
+    // Columns in workflow order (ClickUp's orderindex), not in the order the
+    // first task of each stage happened to arrive -- before v1.26.0 a client
+    // could see "for review" ahead of "copy - in progress".
+    order.sort(function (a, b) { return statusesSeen[a].rank - statusesSeen[b].rank; });
     if (order.length === 0) {
       return '<div class="empty-state">' + (state.accountFilter && state.accountFilter !== 'all' ? 'No tasks yet for ' + esc(accountDisplayName(state.accountFilter)) + '.' : 'No tasks yet for your account.') + '</div>';
     }
@@ -4297,7 +4386,7 @@ body.guide-open { overflow: hidden; }
       var col = statusesSeen[name];
       return (
         '<div class="board-column">' +
-          '<div class="board-column-header"><span class="status-dot" style="background:' + esc(hexColor(col.color)) + '"></span>' + esc(name) + ' <span class="count">' + col.tasks.length + '</span></div>' +
+          '<div class="board-column-header"><span class="status-dot" style="background:' + esc(hexColor(col.color)) + '"></span><span class="board-column-title">' + esc(name) + '</span><span class="board-column-count">' + col.tasks.length + '</span></div>' +
           '<div class="board-column-body">' + col.tasks.map(clientCardHtml).join('') + '</div>' +
         '</div>'
       );
@@ -4376,7 +4465,7 @@ body.guide-open { overflow: hidden; }
         '</div>' +
         '<h1 class="connect-title">Almost there</h1>' +
         '<p class="connect-sub">You\'re signed in, but your admin hasn\'t linked your account to a company yet. Once they do, your content strategy will show up here automatically -- no action needed from you.</p>' +
-        '<p class="connect-help">While you wait: <button type="button" class="btn-linklike" style="display:inline;padding:0" data-action="open-guide" data-anchor="client-start">see what you\'ll be able to do</button></p>' +
+        '<p class="connect-help">While you wait: <button type="button" class="btn-linklike" style="display:inline;padding:0" data-action="open-tour">take the tour</button> to see what you\'ll be able to do.</p>' +
         '<button type="button" class="btn btn-ghost btn-sm" data-action="sign-out" style="margin-top:12px">Sign out</button>' +
       '</div></div>'
     );
@@ -4410,7 +4499,7 @@ body.guide-open { overflow: hidden; }
     if (state.clientLoading && state.clientTasks.length === 0) {
       body = '<div class="center-loading"><div class="spinner"></div>Loading…</div>';
     } else {
-      body = (state.clientCreatingTask ? clientNewTaskFormHtml() : '') +
+      body = tourBannerHtml() + (state.clientCreatingTask ? clientNewTaskFormHtml() : '') +
         (state.clientError ? '<div class="status-banner error">' + esc(state.clientError) + '</div>' : '') +
         (state.view === 'ideas' ? ideasViewHtml() : state.view === 'list' ? clientListHtml() : state.view === 'dashboard' ? clientDashboardHtml() : state.view === 'feed' ? clientFeedHtml() : clientBoardHtml());
     }
@@ -4908,7 +4997,10 @@ body.guide-open { overflow: hidden; }
     // relationship/linked-task one, see getTaskAccountId()) -- we can only
     // offer an editable dropdown against the text one, since writing a
     // relationship field needs a different API payload shape.
-    var EXCLUDED_FIELD_NAMES = [ACCOUNT_FIELD_NAME, 'MKC ID'];
+    // Notebook Link is shown separately (admins only, read-only) -- it must
+    // never also appear as a generic editable field, which is what happened
+    // before v1.26.0 since url-type fields fall back to a text input.
+    var EXCLUDED_FIELD_NAMES = [ACCOUNT_FIELD_NAME, 'MKC ID', NOTEBOOK_FIELD_NAME];
     var accountTextField = state.fields.filter(function (f) { return f.name === ACCOUNT_FIELD_NAME && (f.type === 'text' || f.type === 'short_text'); })[0];
     var fieldInputs = state.fields.filter(function (f) { return EXCLUDED_FIELD_NAMES.indexOf(f.name) === -1; }).map(renderCustomFieldInput).join('');
     var accountBadgeHtml = '';
@@ -5056,7 +5148,7 @@ body.guide-open { overflow: hidden; }
       render();
       return;
     }
-    var enteringGatedStatus = draft.status === GATED_STATUS_NAME && draft.originalStatus !== GATED_STATUS_NAME;
+    var enteringGatedStatus = isGatedStatus(draft.status) && !isGatedStatus(draft.originalStatus);
     if (enteringGatedStatus && !hasReviewReadyFiles(state.taskFiles) && !window.confirm('This task has no draft or media files yet. Move to "For Review" anyway?')) {
       return;
     }
@@ -5094,6 +5186,7 @@ body.guide-open { overflow: hidden; }
           // ({add:[...], rem:[...]}), not a plain value, and this app only
           // ever intends to manage the text-typed sibling field.
           if (f.name === 'MKC ID') return;
+          if (f.name === NOTEBOOK_FIELD_NAME) return; // read-only here: edited only in ClickUp
           if (f.name === ACCOUNT_FIELD_NAME && f.type !== 'text' && f.type !== 'short_text') return;
           chain = chain.then(function () {
             var val = draft.customValues[f.id];
@@ -5219,7 +5312,21 @@ body.guide-open { overflow: hidden; }
         break;
       case 'open-guide':
         if (state.showSettingsMenu) { state.showSettingsMenu = false; render(); }
-        openGuide(el.getAttribute('data-anchor')); // no RENDER: the guide layer lives outside #app
+        openGuide(el.getAttribute('data-anchor')); // no RENDER: the help layer lives outside #app
+        break;
+      case 'open-help':
+        if (state.showSettingsMenu) { state.showSettingsMenu = false; render(); }
+        openLastHelp();
+        render(); // RENDER: opening the tour can retire the tour banner
+        break;
+      case 'open-tour':
+        state.showSettingsMenu = false;
+        openTour(el.getAttribute('data-mode'));
+        render(); // RENDER: retires the tour banner
+        break;
+      case 'dismiss-tour-banner':
+        markTourSeen();
+        render();
         break;
       case 'open-profile-modal':
         openProfileModal(); // RENDER (inside)
@@ -5754,7 +5861,7 @@ body.guide-open { overflow: hidden; }
   }
 
   // ==========================================================================
-  // GUIDE -- guide.html (a sibling file) in a full-screen layer over the app.
+  // HELP -- tour.html and guide.html (sibling files) in a full-screen layer.
   // The layer is appended to <body>, OUTSIDE #app, on purpose: render()
   // rebuilds #app's innerHTML on every state change, which would reload an
   // iframe living inside it and throw away the reader's place. It's built
@@ -5765,47 +5872,96 @@ body.guide-open { overflow: hidden; }
   // storage event.
   // ==========================================================================
   var GUIDE_URL = 'guide.html';
+  var TOUR_URL = 'tour.html';
+  var HELP_DOCS = { tour: { url: TOUR_URL, label: 'Getting started' }, guide: { url: GUIDE_URL, label: 'Full guide' } };
+  var HELP_TAB_KEY = 'contentflow.help.tab';
   var guideReturnFocus = null;
 
-  function guideSrc(role, anchor) {
-    var q = 'embed=1&theme=' + encodeURIComponent(currentTheme()) + (role ? '&role=' + encodeURIComponent(role) : '');
-    return GUIDE_URL + '?' + q + (anchor ? '#' + anchor : '');
+  function helpSrc(doc, role, extra, anchor) {
+    var q = 'embed=1&theme=' + encodeURIComponent(currentTheme()) + (role ? '&role=' + encodeURIComponent(role) : '') + (extra || '');
+    return HELP_DOCS[doc].url + '?' + q + (anchor ? '#' + anchor : '');
   }
 
-  function openGuide(anchor) {
-    var role = (state.profile && state.profile.role) || '';
+  function ensureHelpLayer() {
     var layer = document.getElementById('guide-layer');
-    if (!layer) {
-      layer = document.createElement('div');
-      layer.id = 'guide-layer';
-      layer.className = 'guide-layer';
-      layer.hidden = true;
-      layer.setAttribute('role', 'dialog');
-      layer.setAttribute('aria-modal', 'true');
-      layer.setAttribute('aria-label', 'ContentFlow Guide');
-      layer.innerHTML =
-        '<div class="guide-bar">' +
-          '<span class="guide-bar-title">' + brandMarkSvg() + 'Guide</span>' +
-          '<span class="topnav-spacer"></span>' +
-          '<a class="btn btn-ghost btn-sm guide-newtab" target="_blank" rel="noopener">Open in new tab</a>' +
-          '<button type="button" class="btn btn-primary btn-sm guide-close">Back to ContentFlow</button>' +
+    if (layer) return layer;
+    layer = document.createElement('div');
+    layer.id = 'guide-layer';
+    layer.className = 'guide-layer';
+    layer.hidden = true;
+    layer.setAttribute('role', 'dialog');
+    layer.setAttribute('aria-modal', 'true');
+    layer.setAttribute('aria-label', 'ContentFlow help');
+    layer.innerHTML =
+      '<div class="guide-bar">' +
+        '<span class="guide-bar-title">' + brandMarkSvg() + '<span class="guide-bar-word">Help</span></span>' +
+        '<div class="view-tabs guide-tabs" role="group" aria-label="Help">' +
+          '<button type="button" class="view-tab" data-help-tab="tour" aria-pressed="false">Getting started</button>' +
+          '<button type="button" class="view-tab" data-help-tab="guide" aria-pressed="false">Full guide</button>' +
         '</div>' +
-        '<iframe class="guide-frame" title="ContentFlow Guide"></iframe>';
-      document.body.appendChild(layer);
-      layer.querySelector('.guide-close').addEventListener('click', closeGuide);
-    }
-    var frame = layer.querySelector('.guide-frame');
-    if (frame.getAttribute('data-role') !== role || !frame.getAttribute('src')) {
+        '<span class="topnav-spacer"></span>' +
+        '<a class="btn btn-ghost btn-sm guide-newtab" target="_blank" rel="noopener">Open in new tab</a>' +
+        '<button type="button" class="btn btn-primary btn-sm guide-close">Back to ContentFlow</button>' +
+      '</div>' +
+      '<iframe class="guide-frame" data-doc="tour" title="ContentFlow getting started tour" hidden></iframe>' +
+      '<iframe class="guide-frame" data-doc="guide" title="ContentFlow guide" hidden></iframe>';
+    document.body.appendChild(layer);
+    layer.querySelector('.guide-close').addEventListener('click', closeGuide);
+    layer.addEventListener('click', function (e) {
+      var tab = e.target.closest('[data-help-tab]');
+      if (tab) openHelp(tab.getAttribute('data-help-tab'));
+    });
+    return layer;
+  }
+
+  /**
+   * Shows the help layer on one of its two documents: 'tour' (the
+   * step-by-step walkthrough with screenshots) or 'guide' (the full
+   * reference). Each keeps its own iframe so switching tabs never loses the
+   * reader's place. opts: { anchor, mode } -- mode reloads the tour into a
+   * specific starting point (e.g. 'whats-new').
+   */
+  function openHelp(doc, opts) {
+    opts = opts || {};
+    if (!HELP_DOCS[doc]) doc = 'tour';
+    var role = (state.profile && state.profile.role) || '';
+    var layer = ensureHelpLayer();
+    var frame = layer.querySelector('.guide-frame[data-doc="' + doc + '"]');
+    var extra = opts.mode ? '&mode=' + encodeURIComponent(opts.mode) : '';
+    if (frame.getAttribute('data-role') !== role || !frame.getAttribute('src') || opts.mode) {
       frame.setAttribute('data-role', role);
-      frame.src = guideSrc(role, anchor);
-    } else if (anchor) {
-      try { frame.contentWindow.location.hash = anchor; } catch (e) { frame.src = guideSrc(role, anchor); }
+      frame.src = helpSrc(doc, role, extra, opts.anchor);
+    } else if (opts.anchor) {
+      try { frame.contentWindow.location.hash = opts.anchor; } catch (e) { frame.src = helpSrc(doc, role, extra, opts.anchor); }
     }
-    layer.querySelector('.guide-newtab').href = GUIDE_URL + (role ? '?role=' + encodeURIComponent(role) : '') + (anchor ? '#' + anchor : '');
-    guideReturnFocus = document.activeElement;
-    layer.hidden = false;
-    document.body.classList.add('guide-open');
-    layer.querySelector('.guide-close').focus();
+    Array.prototype.forEach.call(layer.querySelectorAll('.guide-frame'), function (f) { f.hidden = f !== frame; });
+    Array.prototype.forEach.call(layer.querySelectorAll('[data-help-tab]'), function (b) {
+      var on = b.getAttribute('data-help-tab') === doc;
+      b.setAttribute('aria-pressed', String(on));
+      b.classList.toggle('active', on);
+    });
+    layer.querySelector('.guide-newtab').href = HELP_DOCS[doc].url + (role ? '?role=' + encodeURIComponent(role) : '') + (opts.anchor ? '#' + opts.anchor : '');
+    try { localStorage.setItem(HELP_TAB_KEY, doc); } catch (e) {}
+    if (layer.hidden) {
+      guideReturnFocus = document.activeElement;
+      layer.hidden = false;
+      document.body.classList.add('guide-open');
+      layer.querySelector('.guide-close').focus();
+    }
+  }
+
+  function openGuide(anchor) { openHelp('guide', { anchor: anchor }); }
+
+  function openTour(mode) {
+    openHelp('tour', { mode: mode || null });
+    markTourSeen();
+  }
+
+  /** The "?" button: reopens whichever help tab was used last, the tour the first time. */
+  function openLastHelp() {
+    var last = null;
+    try { last = localStorage.getItem(HELP_TAB_KEY); } catch (e) {}
+    if (last === 'guide') openGuide(); else openTour();
   }
 
   function closeGuide() {
@@ -5820,11 +5976,67 @@ body.guide-open { overflow: hidden; }
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closeGuide();
   });
-  // Escape pressed while focus is inside the guide's own document arrives as a
-  // same-origin message (keydown inside an iframe never reaches this window).
+  // The guide and tour talk to this window by same-origin message: Escape
+  // pressed inside their own document (keydown in an iframe never reaches
+  // this window), the tour's Finish button, and the tour's "More in the full
+  // guide" links, which switch tabs here instead of navigating the frame.
   window.addEventListener('message', function (e) {
-    if (e.origin === window.location.origin && e.data && e.data.type === 'contentflow-guide-close') closeGuide();
+    if (e.origin !== window.location.origin || !e.data) return;
+    if (e.data.type === 'contentflow-guide-close') closeGuide();
+    if (e.data.type === 'contentflow-open-guide') openGuide(e.data.anchor || null);
+    if (e.data.type === 'contentflow-open-tour') { openTour(); render(); }
   });
+
+  // ---- Tour banner ------------------------------------------------------------
+  // One dismissible line above the main view: "take the tour" the first time
+  // someone signs in on this device, and "see what's new" once after each
+  // release that has What's new notes in tour/steps.js. Remembered per user
+  // per device under contentflow.tour.seen.<profile id> = the APP_VERSION
+  // they last saw.
+  var TOUR_SEEN_PREFIX = 'contentflow.tour.seen.';
+
+  function whatsNewFor(version) {
+    var t = window.CF_TOUR;
+    return (t && t.whatsNew && t.whatsNew[version]) || [];
+  }
+
+  function tourBannerKind() {
+    if (!state.profile || state.tourBannerDismissedFor === APP_VERSION) return null;
+    var seen;
+    try { seen = localStorage.getItem(TOUR_SEEN_PREFIX + state.profile.id); } catch (e) { return null; }
+    if (!seen) return 'welcome';
+    if (seen !== APP_VERSION && whatsNewFor(APP_VERSION).length) return 'whats-new';
+    return null;
+  }
+
+  function markTourSeen() {
+    state.tourBannerDismissedFor = APP_VERSION;
+    if (!state.profile) return;
+    try { localStorage.setItem(TOUR_SEEN_PREFIX + state.profile.id, APP_VERSION); } catch (e) {}
+  }
+
+  function tourBannerHtml() {
+    var kind = tourBannerKind();
+    if (!kind) return '';
+    var text, action;
+    if (kind === 'welcome') {
+      text = '<strong>Take the tour.</strong> A step-by-step walkthrough of ContentFlow for your role, with a screenshot of every screen.';
+      action = '<button type="button" class="btn btn-primary btn-sm" data-action="open-tour">Start the tour</button>';
+    } else {
+      var items = whatsNewFor(APP_VERSION);
+      text = '<strong>New in ContentFlow ' + esc(APP_VERSION) + ':</strong> ' + esc(items[0].title) + (items.length > 1 ? ', plus ' + (items.length - 1) + ' more' : '') + '.';
+      action = '<button type="button" class="btn btn-primary btn-sm" data-action="open-tour" data-mode="whats-new">See what\'s new</button>';
+    }
+    return (
+      '<div class="tour-banner" role="status">' +
+        brandMarkSvg() +
+        '<span class="tour-banner-text">' + text + '</span>' +
+        '<span class="tour-banner-actions">' + action +
+          '<button type="button" class="btn btn-outline btn-sm" data-action="dismiss-tour-banner">' + (kind === 'welcome' ? 'Not now' : 'Dismiss') + '</button>' +
+        '</span>' +
+      '</div>'
+    );
+  }
 
   function toggleTheme() {
     var next = currentTheme() === 'dark' ? 'light' : 'dark';

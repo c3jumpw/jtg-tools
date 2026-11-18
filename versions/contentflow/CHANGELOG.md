@@ -276,3 +276,18 @@ In-app Guide.
 - openGuide() shows it in a full-screen layer appended to <body>, outside #app, so render() never reloads it; the guide keeps its place between opens. It passes embed=1, the viewer's role and the current theme; clients are kept on the client view. Theme toggles reach an open guide via the contentflow.theme storage event. Escape closes it from either document.
 - Also ships v1.24.0's icon files, which had not reached the repo.
 - Verified with a Playwright run against a stubbed Supabase client (admin, rep, client, signed out): 46/46 checks passing, including no iframe reload across app re-renders, Escape from inside the guide, theme propagation and the admin-panel deep link. The old jsdom suite is still not rebuilt.
+
+## v1.26.0 (2026-11-18)
+Getting-started tour from real screenshots, kept current with every release; five fixes the screenshots exposed.
+
+- New tour.html: a step-by-step slideshow per role (admin 22 steps, team member 20, client 18). Every step is a screenshot of the real app running on fictional demo data, with numbered rings over the parts being explained and matching notes. Keyboard, swipe and tap-to-enlarge; light and dark; phone layout.
+- Help layer: the ? button now opens two tabs, Getting started and Full guide, each keeping its place; Settings gains "Getting started tour", "Full guide" and the version number (new APP_VERSION constant).
+- One-time banner: "take the tour" on a person's first sign-in on a device, and "what's new" once after each release with notes in tour/steps.js.
+- Kept current: tests/tour/capture.js re-shoots every step from index.html using tests/demo/demo-env.js; tests/tour/check.js fails when the screenshots came from a different index.html, when the app has a tab/menu item/panel no step covers, when a release has no What's new note, or when the guide footer names an older version; .github/workflows/contentflow-tour.yml runs both on every push touching the app and commits fresh screenshots. RELEASING.md and CLAUDE.md spell out the release steps.
+- Fixed: the ClickUp "Notebook Link" field also showed as an editable text box in the entry modal (for reps too) and was rewritten on every save; now admin-only and read-only as designed.
+- Fixed: the For Review check never fired, because ClickUp returns lowercase status names and the comparison was case-sensitive.
+- Fixed: the client Board and everyone's Dashboard "By status" listed stages in arrival order instead of workflow order; client Board headers now match the team Board.
+- Fixed: the client entry panel inherited a two-column grid that split every heading from its content.
+- Fixed: icon buttons, ghost buttons and tab pills were styled only for the dark top bar, leaving the modal close button, delete buttons, Idea Inbox filter tabs, "Back to Ideas" and the connect screen's "Sign out" near-invisible in light mode.
+- Fixed: the connect screen's "Remember on this device" checkbox sat on its own line, away from its label.
+- Tests: tests/help.test.js, 86 browser checks across admin, team member, client and signed-out, all passing. tour/check.js passing.

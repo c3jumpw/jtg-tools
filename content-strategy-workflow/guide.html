@@ -121,6 +121,9 @@ kbd { font-family: var(--font-body); font-size: 0.85em; font-weight: 600; backgr
 .brand small { font-family: var(--font-body); font-weight: 500; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--on-ink-dim); margin-left: 4px; }
 .open-app { color: var(--on-ink); font-size: 13px; font-weight: 600; text-decoration: none; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 6px 12px; }
 .open-app:hover { background: rgba(255,255,255,0.08); }
+.tour-cta { display: inline-flex; align-items: center; gap: 10px; width: fit-content; max-width: 100%; background: var(--accent); color: var(--on-accent); font-weight: 600; font-size: 14.5px; text-decoration: none; border-radius: 10px; padding: 10px 16px; }
+.tour-cta:hover { filter: brightness(1.05); }
+.tour-cta small { font-weight: 500; font-size: 12.5px; opacity: 0.8; }
 .mast-title { font-size: clamp(28px, 4.4vw, 44px); font-weight: 600; color: var(--on-ink); max-width: 20ch; letter-spacing: -0.01em; }
 .mast-title em { font-style: italic; color: var(--accent); font-weight: 500; }
 .mast-sub { color: var(--on-ink-dim); max-width: 62ch; font-size: 15.5px; }
@@ -490,6 +493,7 @@ body[data-role="all"] #matrix { min-width: 560px; }
     </div>
     <h1 class="mast-title">From first idea to <em>published</em>, screen by screen.</h1>
     <p class="mast-sub">Every page, menu and setting in ContentFlow, shown the way it looks in the app. Pick your role and the guide hides what doesn't apply to you.</p>
+    <a class="tour-cta" id="tour-cta" href="tour.html">Prefer to be walked through it? Take the step-by-step tour &rarr; <small>real screenshots</small></a>
     <div class="role-switch-wrap" id="role-switch-wrap">
       <span class="role-switch-label" id="role-switch-label">Show the guide for</span>
       <div class="role-switch" role="group" aria-labelledby="role-switch-label">
@@ -678,11 +682,14 @@ body[data-role="all"] #matrix { min-width: 560px; }
           <div class="m-menu">
             <div>Switch to dark mode</div>
             <div>Sync now</div>
+            <div>Getting started tour</div>
+            <div>Full guide</div>
             <div data-for="admin">Admin panel <span class="r">Admin</span></div>
             <hr>
             <div>Edit profile</div>
             <div data-for="admin rep">Disconnect ClickUp <span class="r">Admin &amp; team</span></div>
             <div>Sign out</div>
+            <div class="r" style="padding-top:6px;border-top:1px solid var(--border)">ContentFlow v1.26.0</div>
           </div>
         </div>
       </div>
@@ -695,7 +702,7 @@ body[data-role="all"] #matrix { min-width: 560px; }
         <li><i class="pin">4</i><span><b>Board, List, Calendar, Feed</b> share one colour because they show the same content entries four ways.<span data-for="client"> Clients get Board, List and Feed.</span></span></li>
         <li><i class="pin">5</i><span><b>Account filter</b> narrows every view to one account, or shows all of them together.<span data-for="client"> Clients see it only when they have more than one business (&ldquo;All my businesses&rdquo;).</span></span></li>
         <li><i class="pin">6</i><span><b>+ New</b> starts a new content entry.<span data-for="client"> For clients it asks only for a name.</span></span></li>
-        <li><i class="pin">7</i><span><b>Guide</b> opens this page inside ContentFlow, already set to your role.</span></li>
+        <li><i class="pin">7</i><span><b>?</b> opens Help: the step-by-step <b>Getting started</b> tour and this <b>Full guide</b>, already set to your role.</span></li>
         <li><i class="pin">8</i><span><b>Settings</b> holds the theme switch, <b>Sync now</b>, your profile and sign out.<span data-for="admin"> Admins also find the <b>Admin panel</b> here.</span></span></li>
       </ol>
     </figcaption>
@@ -1339,6 +1346,7 @@ body[data-role="all"] #matrix { min-width: 560px; }
       <h3 style="margin:0">The rest of the menu</h3>
       <p><b>Switch to dark / light mode</b> is remembered on this device. Until you choose, ContentFlow follows your device's setting.</p>
       <p><b>Sync now</b> reloads everything from ClickUp. Use it after someone edits a task directly in ClickUp.</p>
+      <p><b>Getting started tour</b> and <b>Full guide</b> open Help. The bottom of the menu shows which version of ContentFlow you're on; after an update, a banner above the main view offers what's new, once.</p>
       <p data-for="admin rep"><b>Disconnect ClickUp</b> unlinks your ClickUp login on this device. You'll be asked to connect again next time.</p>
       <p data-for="admin"><b>Admin panel</b> opens people and account management (see <a href="#admin-panel">Admin panel</a>).</p>
       <p><b>Sign out</b> ends your session on this device.<span data-for="admin rep"> It also unlinks ClickUp, so you'll connect again when you next sign in.</span></p>
@@ -1551,7 +1559,7 @@ body[data-role="all"] #matrix { min-width: 560px; }
   </dl>
 </section>
 
-    <footer class="footer"><span>ContentFlow Guide &middot; matches ContentFlow v1.25</span><span>Example accounts and people are fictional.</span></footer>
+    <footer class="footer"><span>ContentFlow Guide &middot; matches ContentFlow v1.26</span><span>Example accounts and people are fictional.</span></footer>
   </main>
 </div>
 
@@ -1707,6 +1715,7 @@ body[data-role="all"] #matrix { min-width: 560px; }
     roleBtns.forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-role') === role)); });
     blurb.innerHTML = BLURBS[role];
     document.body.setAttribute('data-role', role);
+    document.getElementById('tour-cta').href = 'tour.html' + (role !== 'all' ? '?role=' + role : '');
     buildToc();
     return role;
   }
@@ -1738,6 +1747,14 @@ body[data-role="all"] #matrix { min-width: 560px; }
   }
   revealHash();
   window.addEventListener('hashchange', revealHash);
+
+  // Inside ContentFlow the tour is the Help layer's other tab: switch to it
+  // rather than loading the tour inside this frame.
+  document.getElementById('tour-cta').addEventListener('click', function (e) {
+    if (!(embed && window.parent !== window)) return;
+    e.preventDefault();
+    try { window.parent.postMessage({ type: 'contentflow-open-tour' }, window.location.origin); } catch (err) {}
+  });
 
   // Inside ContentFlow: Escape closes the guide layer. Keydown inside this
   // frame never reaches the app's window, so tell it (same origin only).

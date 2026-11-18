@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ContentFlow Tour</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Step-by-step getting-started tour of ContentFlow for admins, team members and clients, with screenshots of every screen.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a slide viewer. Screenshot of the real app on the left (top on a
+   phone) with numbered rings over the parts being explained; the matching
+   notes on the right; Back / progress / Next pinned to the bottom. Tokens
+   mirror ContentFlow's own (index.html :root). */
+:root {
+  --ink: #14232b;
+  --on-ink: #eef2f2;
+  --on-ink-dim: rgba(238, 242, 242, 0.66);
+  --paper: #fbfaf7;
+  --paper-dim: #f1eee6;
+  --surface: #ffffff;
+  --heading: #14232b;
+  --text: #1b2430;
+  --text-2: #5b6670;
+  --text-3: #8a9297;
+  --border: #e2dfd5;
+  --border-strong: #cfc9ba;
+  --accent: #e8a23d;
+  --accent-dim: #f6d9a8;
+  --accent-ink: #8a5a1c;
+  --on-accent: #21160a;
+  --stage: #e9e5da;
+  --ring-glow: rgba(232, 162, 61, 0.28);
+  --shadow-shot: 0 18px 40px -18px rgba(20, 35, 43, 0.35);
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #182225; --paper-dim: #202b2f; --surface: #1f2a2e; --heading: #e9edec;
+    --text: #e9edec; --text-2: #a7b1b0; --text-3: #75807f; --border: #2c3a3d; --border-strong: #3e4d50;
+    --accent-dim: #4a3a1f; --accent-ink: #e0b060; --stage: #121a1d; --shadow-shot: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #182225; --paper-dim: #202b2f; --surface: #1f2a2e; --heading: #e9edec;
+  --text: #e9edec; --text-2: #a7b1b0; --text-3: #75807f; --border: #2c3a3d; --border-strong: #3e4d50;
+  --accent-dim: #4a3a1f; --accent-ink: #e0b060; --stage: #121a1d; --shadow-shot: 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+  color-scheme: dark;
+}
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--paper); color: var(--text); font-family: var(--font-body); font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--ink); }
+h1, h2, h3 { font-family: var(--font-display); color: var(--heading); margin: 0; line-height: 1.2; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--accent-ink); }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* ---- Top bar ---------------------------------------------------------------- */
+.bar { background: var(--ink); color: var(--on-ink); flex: 0 0 auto; }
+.bar-inner { max-width: 1320px; margin: 0 auto; display: flex; align-items: center; gap: 14px; padding-block: 10px; flex-wrap: wrap; }
+.brand { display: inline-flex; align-items: center; gap: 9px; font-family: var(--font-display); font-weight: 600; font-size: 17px; white-space: nowrap; }
+.brand-mark { width: 22px; height: 22px; border-radius: 6px; background: var(--accent); display: inline-flex; align-items: center; justify-content: center; }
+.brand-mark svg { width: 14px; height: 14px; }
+.brand small { font-family: var(--font-body); font-weight: 500; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--on-ink-dim); }
+.spacer { flex: 1; }
+.seg { display: flex; gap: 2px; background: rgba(255,255,255,0.07); border-radius: 9px; padding: 3px; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+.seg::-webkit-scrollbar { display: none; }
+.seg button { border: 0; background: none; color: var(--on-ink-dim); font-weight: 600; font-size: 13px; padding: 6px 12px; border-radius: 7px; white-space: nowrap; flex-shrink: 0; }
+.seg button:hover { color: var(--on-ink); }
+.seg button[aria-pressed="true"] { background: var(--paper); color: var(--heading); }
+.bar a.guide-link { color: var(--on-ink); font-size: 13px; font-weight: 600; text-decoration: none; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 6px 12px; white-space: nowrap; }
+.bar a.guide-link:hover { background: rgba(255,255,255,0.08); }
+body.embed .bar { display: none; }
+
+/* ---- Intro / What's new / Done panels ------------------------------------------ */
+.panel-wrap { flex: 1 1 auto; overflow-y: auto; }
+.panel { max-width: 920px; margin: 0 auto; padding-block: 40px 56px; display: grid; gap: 22px; }
+.panel h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 600; letter-spacing: -0.01em; }
+.panel h1 em { font-style: italic; color: var(--accent-ink); font-weight: 500; }
+.lede { font-size: 16.5px; color: var(--text-2); max-width: 60ch; }
+.role-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.role-card { text-align: left; border: 1px solid var(--border); background: var(--surface); border-radius: 14px; padding: 18px; display: grid; gap: 8px; align-content: start; transition: border-color 0.15s, transform 0.15s; }
+.role-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.role-card h2 { font-size: 20px; }
+.role-card p { font-size: 14px; color: var(--text-2); }
+.role-card .meta { font-size: 12.5px; font-weight: 600; color: var(--accent-ink); }
+@media (max-width: 720px) { .role-cards { grid-template-columns: minmax(0, 1fr); } }
+.news { border: 1px solid var(--border); background: var(--surface); border-radius: 14px; padding: 16px 18px; display: grid; gap: 12px; }
+.news h2 { font-size: 18px; }
+.news ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.news li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 12px; align-items: start; padding-top: 10px; border-top: 1px solid var(--border); }
+.news li:first-child { border-top: 0; padding-top: 0; }
+.news li::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 7px; }
+.news b { color: var(--heading); display: block; }
+.news span { font-size: 14px; color: var(--text-2); }
+.btn { display: inline-flex; align-items: center; gap: 6px; border-radius: 9px; padding: 9px 16px; font-weight: 600; font-size: 14px; border: 1px solid transparent; white-space: nowrap; text-decoration: none; }
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { filter: brightness(1.05); }
+.btn-outline { background: var(--surface); border-color: var(--border-strong); color: var(--text); }
+.btn-outline:hover { border-color: var(--text-3); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.fineprint { font-size: 12.5px; color: var(--text-3); }
+
+/* ---- Slide ------------------------------------------------------------------------ */
+.slide { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; }
+.shot-area { background: var(--stage); min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 28px; overflow: auto; position: relative; }
+.shot-frame { position: relative; width: 100%; max-width: 1100px; border-radius: 10px; overflow: hidden; box-shadow: var(--shadow-shot); background: var(--surface); border: 1px solid var(--border-strong); line-height: 0; cursor: zoom-in; }
+.shot-frame.phone { max-width: 300px; border-radius: 26px; border: 7px solid var(--ink); }
+.shot-frame img { width: 100%; height: auto; display: block; }
+.shot-missing { line-height: 1.5; padding: 60px 24px; text-align: center; color: var(--text-3); font-size: 14px; }
+.ring { position: absolute; border: 2.5px solid var(--accent); border-radius: 8px; box-shadow: 0 0 0 4px var(--ring-glow); pointer-events: none; transition: box-shadow 0.15s, border-color 0.15s; animation: ring-in 0.35s ease-out both; }
+.ring.hot { box-shadow: 0 0 0 7px var(--ring-glow), 0 0 0 1px var(--accent); }
+.ring .pin { position: absolute; top: -11px; left: -11px; }
+.ring.edge-top .pin { top: 3px; }
+.ring.edge-left .pin { left: 3px; }
+@keyframes ring-in { from { opacity: 0; transform: scale(1.04); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ring { animation: none; } * { transition: none !important; } }
+.pin { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; flex: 0 0 auto; border-radius: 50%; background: var(--accent); color: var(--on-accent); font: 700 12px/1 var(--font-body); box-shadow: 0 0 0 2px var(--surface), 0 1px 3px rgba(0,0,0,0.3); }
+.zoom-hint { position: absolute; right: 14px; bottom: 10px; font-size: 11.5px; color: var(--text-3); line-height: 1.4; }
+.copy { border-left: 1px solid var(--border); background: var(--paper); min-height: 0; overflow-y: auto; padding: 28px 26px 24px; display: flex; flex-direction: column; gap: 14px; }
+.eyebrow { font-size: 11.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-ink); }
+.copy h1 { font-size: 26px; font-weight: 600; letter-spacing: -0.005em; }
+.copy .body { color: var(--text); font-size: 15px; }
+.points { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.points li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; font-size: 14.5px; padding: 8px 10px; margin: 0 -10px; border-radius: 9px; transition: background 0.15s; }
+.points li.has-ring { cursor: default; }
+.points li.hot { background: var(--paper-dim); }
+.points li.no-ring .pin { background: var(--paper-dim); color: var(--text-2); box-shadow: none; }
+.more { font-size: 13.5px; font-weight: 600; text-decoration: none; margin-top: auto; padding-top: 8px; }
+.more:hover { text-decoration: underline; }
+
+@media (max-width: 980px) {
+  body { display: block; height: auto; }
+  .slide { display: block; }
+  .shot-area { padding: 16px; }
+  .copy { border-left: 0; border-top: 1px solid var(--border); padding: 20px max(16px, env(safe-area-inset-left, 0px)) 110px; overflow: visible; }
+  .copy h1 { font-size: 23px; }
+  .zoom-hint { position: static; display: block; text-align: center; margin-top: 8px; }
+  .shot-area { flex-direction: column; }
+  .panel-wrap { overflow: visible; }
+}
+
+/* ---- Controls --------------------------------------------------------------------- */
+.controls { flex: 0 0 auto; border-top: 1px solid var(--border); background: var(--surface); }
+.controls-inner { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; padding-block: 10px; }
+.progress { display: grid; gap: 6px; min-width: 0; }
+.progress-label { font-size: 12.5px; color: var(--text-2); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.progress-label b { color: var(--heading); font-variant-numeric: tabular-nums; }
+.ticks { display: flex; gap: 3px; justify-content: center; }
+.tick { flex: 1 1 0; max-width: 34px; height: 6px; border-radius: 999px; background: var(--border); border: 0; padding: 0; }
+.tick.done { background: var(--accent-dim); }
+.tick.current { background: var(--accent); }
+.tick.gap { margin-left: 7px; }
+@media (max-width: 980px) {
+  .controls { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .controls-inner { gap: 10px; }
+  .controls .btn { padding: 9px 13px; }
+}
+
+/* ---- Lightbox --------------------------------------------------------------------- */
+.lightbox { position: fixed; inset: 0; z-index: 50; background: rgba(10, 16, 19, 0.92); overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: calc(56px + env(safe-area-inset-top, 0px)) 16px 24px; cursor: zoom-out; }
+.lightbox img { max-width: none; width: auto; height: auto; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.lightbox .close { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); background: var(--paper); color: var(--heading); border: 0; border-radius: 9px; padding: 8px 14px; font-weight: 600; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-mark" viewBox="0 0 24 24"><path d="M4 13 L10 7 L14 11 L20 5" fill="none" stroke="#21160a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<header class="bar">
+  <div class="bar-inner gutter">
+    <span class="brand"><span class="brand-mark"><svg aria-hidden="true"><use href="#i-mark"/></svg></span>ContentFlow <small>Getting started</small></span>
+    <span class="spacer"></span>
+    <div class="seg" id="role-seg" role="group" aria-label="Tour for">
+      <button type="button" id="role-admin" data-role="admin" aria-pressed="false">Admin</button>
+      <button type="button" id="role-rep" data-role="rep" aria-pressed="false">Team member</button>
+      <button type="button" id="role-client" data-role="client" aria-pressed="false">Client</button>
+    </div>
+    <a class="guide-link" id="guide-link" href="guide.html">Full guide</a>
+  </div>
+</header>
+
+<div class="panel-wrap" id="intro" hidden>
+  <div class="panel gutter">
+    <p class="eyebrow">ContentFlow</p>
+    <h1>Getting started, <em>one screen at a time</em>.</h1>
+    <p class="lede">Every step shows the real app with the parts that matter circled and explained. Pick your role and use the arrow keys, the buttons, or swipe on a phone.</p>
+    <div class="role-cards" id="role-cards"></div>
+    <div class="news" id="intro-news" hidden></div>
+    <p class="fineprint" id="captured-note"></p>
+  </div>
+</div>
+
+<div class="panel-wrap" id="news-panel" hidden>
+  <div class="panel gutter">
+    <p class="eyebrow" id="news-eyebrow">What's new</p>
+    <h1 id="news-title">New in ContentFlow</h1>
+    <div class="news" id="news-list"></div>
+    <div class="row">
+      <button type="button" class="btn btn-primary" id="news-start">Take the full tour</button>
+      <button type="button" class="btn btn-outline" id="news-close" hidden>Back to ContentFlow</button>
+    </div>
+  </div>
+</div>
+
+<div class="panel-wrap" id="done-panel" hidden>
+  <div class="panel gutter">
+    <p class="eyebrow">Tour complete</p>
+    <h1>You're all set.</h1>
+    <p class="lede">The <b>?</b> button at the top of ContentFlow brings this tour back any time, next to the full guide, which covers every screen in more depth.</p>
+    <div class="row">
+      <button type="button" class="btn btn-primary" id="done-close">Back to ContentFlow</button>
+      <a class="btn btn-outline" id="done-guide" href="guide.html">Open the full guide</a>
+      <button type="button" class="btn btn-outline" id="done-restart">Start again</button>
+    </div>
+  </div>
+</div>
+
+<main class="slide" id="slide" hidden>
+  <div class="shot-area" id="shot-area">
+    <div class="shot-frame" id="shot-frame" role="button" tabindex="0" aria-label="Enlarge screenshot">
+      <img id="shot-img" alt="">
+      <div id="rings"></div>
+    </div>
+    <span class="zoom-hint" id="zoom-hint">Click the screenshot to enlarge</span>
+  </div>
+  <aside class="copy" id="copy" aria-live="polite">
+    <p class="eyebrow" id="step-eyebrow"></p>
+    <h1 id="step-title" tabindex="-1"></h1>
+    <p class="body" id="step-body"></p>
+    <ol class="points" id="step-points"></ol>
+    <a class="more" id="step-more" href="guide.html">More in the full guide &rarr;</a>
+  </aside>
+</main>
+
+<nav class="controls" id="controls" hidden aria-label="Tour steps">
+  <div class="controls-inner gutter">
+    <button type="button" class="btn btn-outline" id="prev">&larr; Back</button>
+    <div class="progress">
+      <div class="progress-label" id="progress-label"></div>
+      <div class="ticks" id="ticks"></div>
+    </div>
+    <button type="button" class="btn btn-primary" id="next">Next &rarr;</button>
+  </div>
+</nav>
+
+<div class="lightbox" id="lightbox" hidden>
+  <button type="button" class="close" id="lightbox-close">Close</button>
+  <img id="lightbox-img" alt="">
+</div>
+
+<script src="tour/steps.js"></script>
+<script src="tour/manifest.js"></script>
+<script>
+(function () {
+  'use strict';
+  var TOUR = window.CF_TOUR;
+  var MANIFEST = window.CF_TOUR_MANIFEST || { shots: {} };
+  var ROLE_KEY = 'contentflow.tour.role';
+  var THEME_KEY = 'contentflow.theme';
+  var $ = function (id) { return document.getElementById(id); };
+
+  function safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function safeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function pick(v, role) { return v && typeof v === 'object' && !Array.isArray(v) ? (v[role] !== undefined ? v[role] : v.default) : v; }
+
+  var params = {};
+  try { new URLSearchParams(location.search).forEach(function (v, k) { params[k] = v; }); } catch (e) {}
+  var embed = params.embed === '1' && window.parent !== window;
+  if (embed) document.body.classList.add('embed');
+
+  function applyTheme(t) { if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme'); }
+  applyTheme(params.theme || safeGet(THEME_KEY));
+  window.addEventListener('storage', function (e) { if (e.key === THEME_KEY) applyTheme(e.newValue); });
+
+  function tell(msg) { if (!embed) return; try { window.parent.postMessage(msg, location.origin); } catch (e) {} }
+
+  // Inside ContentFlow, "full guide" links switch the help layer's tab instead of navigating this frame.
+  function guideHref(anchor) { return 'guide.html' + (role ? '?role=' + role : '') + (anchor ? '#' + anchor : ''); }
+  function wireGuideLink(a, anchorFn) {
+    a.addEventListener('click', function (e) {
+      if (!embed) return;
+      e.preventDefault();
+      tell({ type: 'contentflow-open-guide', anchor: anchorFn ? anchorFn() : null });
+    });
+  }
+
+  var role = null;
+  var steps = [];
+  var index = 0;
+
+  function stepsFor(r) { return TOUR.steps.filter(function (s) { return s.roles.indexOf(r) !== -1; }); }
+  function newsFor(r) {
+    var list = (TOUR.whatsNew && TOUR.whatsNew[TOUR.version]) || [];
+    return list.filter(function (n) { return !n.roles || n.roles.indexOf(r) !== -1; });
+  }
+
+  function show(which) {
+    ['intro', 'news-panel', 'done-panel', 'slide'].forEach(function (id) { $(id).hidden = id !== which; });
+    $('controls').hidden = which !== 'slide';
+  }
+
+  function setRole(r, opts) {
+    role = r;
+    steps = stepsFor(r);
+    Array.prototype.forEach.call(document.querySelectorAll('#role-seg button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-role') === r)); });
+    $('guide-link').href = guideHref();
+    $('done-guide').href = guideHref();
+    if (!opts || !opts.silent) safeSet(ROLE_KEY, r);
+    buildTicks();
+  }
+
+  // ---- Intro (no role chosen yet) ----
+  function renderIntro() {
+    $('role-cards').innerHTML = ['admin', 'rep', 'client'].map(function (r) {
+      var n = stepsFor(r).length;
+      return '<button type="button" class="role-card" data-pick-role="' + r + '"><h2>' + esc(TOUR.roles[r].label) + '</h2><p>' + esc(TOUR.roles[r].blurb) + '</p><span class="meta">' + n + ' steps &middot; about ' + Math.max(2, Math.round(n * 20 / 60)) + ' minutes</span></button>';
+    }).join('');
+    var all = (TOUR.whatsNew && TOUR.whatsNew[TOUR.version]) || [];
+    if (all.length) {
+      $('intro-news').hidden = false;
+      $('intro-news').innerHTML = '<h2>New in ContentFlow ' + esc(TOUR.version) + '</h2><ul>' + all.map(function (n) { return '<li><span><b>' + esc(n.title) + '</b>' + esc(n.body) + '</span></li>'; }).join('') + '</ul>';
+    }
+    show('intro');
+  }
+  document.addEventListener('click', function (e) {
+    var card = e.target.closest('[data-pick-role]');
+    if (card) { setRole(card.getAttribute('data-pick-role')); go(0); }
+    var jump = e.target.closest('[data-jump-step]');
+    if (jump) { var i = indexOfStep(jump.getAttribute('data-jump-step')); go(i < 0 ? 0 : i); }
+  });
+
+  if (MANIFEST.appVersion) {
+    var when = MANIFEST.capturedAt ? new Date(MANIFEST.capturedAt) : null;
+    $('captured-note').textContent = 'Screenshots taken from ContentFlow v' + MANIFEST.appVersion + (when ? ' on ' + when.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) : '') + ', using example businesses and people.';
+  }
+
+  // ---- What's new ----
+  function renderNews() {
+    var items = newsFor(role);
+    $('news-eyebrow').textContent = "What's new";
+    $('news-title').textContent = 'New in ContentFlow ' + TOUR.version;
+    $('news-list').innerHTML = '<ul>' + (items.length ? items : [{ title: 'Small fixes', body: 'This update tidies up a few things behind the scenes.' }]).map(function (n) {
+      var target = n.step && indexOfStep(n.step) !== -1 ? '<button type="button" class="btn btn-outline" data-jump-step="' + esc(n.step) + '">Show me</button>' : '';
+      return '<li><span><b>' + esc(n.title) + '</b>' + esc(n.body) + '</span>' + target + '</li>';
+    }).join('') + '</ul>';
+    $('news-close').hidden = !embed;
+    show('news-panel');
+  }
+  $('news-start').addEventListener('click', function () { go(0); });
+  $('news-close').addEventListener('click', function () { tell({ type: 'contentflow-guide-close' }); });
+
+  // ---- Progress ticks, one per step, a gap between sections ----
+  function buildTicks() {
+    var prevSection = null;
+    $('ticks').innerHTML = steps.map(function (s, i) {
+      var gap = prevSection !== null && s.section !== prevSection;
+      prevSection = s.section;
+      return '<button type="button" class="tick' + (gap ? ' gap' : '') + '" data-tick="' + i + '" aria-label="Step ' + (i + 1) + ': ' + esc(pick(s.title, role)) + '"></button>';
+    }).join('');
+  }
+  $('ticks').addEventListener('click', function (e) { var t = e.target.closest('[data-tick]'); if (t) go(Number(t.getAttribute('data-tick'))); });
+
+  function indexOfStep(id) { for (var i = 0; i < steps.length; i++) if (steps[i].id === id) return i; return -1; }
+
+  // ---- A step ----
+  function go(i, opts) {
+    if (!steps.length) return;
+    index = Math.max(0, Math.min(steps.length - 1, i));
+    var s = steps[index];
+    var shot = MANIFEST.shots[s.id + '-' + role];
+    var frame = $('shot-frame'), img = $('shot-img');
+    frame.classList.toggle('phone', !!(shot && shot.phone));
+    var missing = frame.querySelector('.shot-missing');
+    if (missing) missing.remove();
+    frame.setAttribute('data-ar', shot ? shot.width / shot.height : 1.6);
+    if (shot) {
+      img.hidden = false;
+      img.src = 'tour/shots/' + shot.file;
+      img.width = shot.width; img.height = shot.height;
+      img.alt = 'ContentFlow screenshot: ' + pick(s.title, role);
+    } else {
+      img.hidden = true;
+      img.removeAttribute('src');
+      frame.insertAdjacentHTML('beforeend', '<div class="shot-missing">This screenshot hasn\'t been captured yet. Run node tests/tour/capture.js.</div>');
+    }
+    var points = pick(s.points, role) || [];
+    var rings = shot ? shot.highlights : [];
+    $('rings').innerHTML = rings.map(function (h, n) {
+      var cls = 'ring' + (h.y < 3 ? ' edge-top' : '') + (h.x < 2 ? ' edge-left' : '');
+      return '<div class="' + cls + '" data-ring="' + n + '" style="left:' + h.x + '%;top:' + h.y + '%;width:' + h.w + '%;height:' + h.h + '%"><span class="pin">' + (n + 1) + '</span></div>';
+    }).join('');
+    $('step-eyebrow').textContent = s.section + ' · Step ' + (index + 1) + ' of ' + steps.length;
+    $('step-title').textContent = pick(s.title, role);
+    $('step-body').textContent = pick(s.body, role) || '';
+    $('step-points').innerHTML = points.map(function (p, n) {
+      var hasRing = n < rings.length;
+      return '<li class="' + (hasRing ? 'has-ring' : 'no-ring') + '" data-point="' + n + '"><span class="pin">' + (n + 1) + '</span><span>' + esc(p) + '</span></li>';
+    }).join('');
+    $('step-more').href = guideHref(s.guide);
+    $('step-more').hidden = !s.guide;
+    $('prev').disabled = index === 0;
+    $('next').innerHTML = index === steps.length - 1 ? 'Finish' : 'Next &rarr;';
+    $('progress-label').innerHTML = '<b>' + (index + 1) + '</b> / ' + steps.length + ' &middot; ' + esc(TOUR.roles[role].label) + ' tour';
+    Array.prototype.forEach.call(document.querySelectorAll('.tick'), function (t, n) {
+      t.classList.toggle('current', n === index);
+      t.classList.toggle('done', n < index);
+      t.setAttribute('aria-current', n === index ? 'step' : 'false');
+    });
+    show('slide');
+    fitShot();
+    try { history.replaceState(null, '', location.pathname + location.search + '#' + s.id); } catch (e) {}
+    // Warm the next screenshot so Next feels instant.
+    var nxt = steps[index + 1] && MANIFEST.shots[steps[index + 1].id + '-' + role];
+    if (nxt) { var pre = new Image(); pre.src = 'tour/shots/' + nxt.file; }
+    if (!opts || !opts.keepScroll) { $('copy').scrollTop = 0; window.scrollTo(0, 0); }
+  }
+
+  // Desktop: size the screenshot so all of it fits between the bars. Phone:
+  // full width, and the page scrolls.
+  function fitShot() {
+    var frame = $('shot-frame');
+    if (window.innerWidth <= 980) { frame.style.maxWidth = ''; return; }
+    var avail = $('shot-area').clientHeight - 56;
+    var ar = Number(frame.getAttribute('data-ar')) || 1.6;
+    var cap = frame.classList.contains('phone') ? 300 : 1100;
+    frame.style.maxWidth = Math.max(240, Math.min(cap, Math.floor(avail * ar))) + 'px';
+  }
+  window.addEventListener('resize', function () { if (!$('slide').hidden) fitShot(); });
+  if (window.matchMedia && window.matchMedia('(hover: none)').matches) $('zoom-hint').textContent = 'Tap the screenshot to enlarge';
+
+  function next() { if (index >= steps.length - 1) { show('done-panel'); $('done-close').hidden = !embed; return; } go(index + 1); }
+  function prev() { go(index - 1); }
+  $('next').addEventListener('click', next);
+  $('prev').addEventListener('click', prev);
+  $('done-close').addEventListener('click', function () { tell({ type: 'contentflow-guide-close' }); });
+  $('done-restart').addEventListener('click', function () { go(0); });
+
+  // Point <-> ring hover pairing
+  $('step-points').addEventListener('mouseover', function (e) {
+    var li = e.target.closest('[data-point]');
+    Array.prototype.forEach.call(document.querySelectorAll('.ring'), function (r) { r.classList.toggle('hot', !!li && r.getAttribute('data-ring') === li.getAttribute('data-point')); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-point]'), function (p) { p.classList.toggle('hot', p === li && p.classList.contains('has-ring')); });
+  });
+  $('step-points').addEventListener('mouseleave', function () {
+    Array.prototype.forEach.call(document.querySelectorAll('.ring.hot, [data-point].hot'), function (el) { el.classList.remove('hot'); });
+  });
+
+  // Lightbox
+  function openLightbox() {
+    var img = $('shot-img');
+    if (!img.getAttribute('src')) return;
+    var shot = MANIFEST.shots[steps[index].id + '-' + role];
+    $('lightbox-img').src = img.src;
+    $('lightbox-img').style.width = shot ? shot.width + 'px' : '';
+    $('lightbox').hidden = false;
+    $('lightbox-close').focus();
+  }
+  function closeLightbox() { $('lightbox').hidden = true; $('shot-frame').focus(); }
+  $('shot-frame').addEventListener('click', openLightbox);
+  $('shot-frame').addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(); } });
+  $('lightbox').addEventListener('click', closeLightbox); // a tap anywhere closes; scrolling to pan doesn't count as a tap
+
+  // Keyboard
+  document.addEventListener('keydown', function (e) {
+    if (!$('lightbox').hidden) { if (e.key === 'Escape') closeLightbox(); return; }
+    if (e.key === 'Escape') { tell({ type: 'contentflow-guide-close' }); return; }
+    if ($('slide').hidden) return;
+    if (e.target.closest && e.target.closest('input, textarea, select')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+    if (e.key === 'Home') go(0);
+    if (e.key === 'End') go(steps.length - 1);
+  });
+
+  // Swipe on the screenshot
+  var touchX = null, touchY = null;
+  $('shot-area').addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; touchY = e.touches[0].clientY; }, { passive: true });
+  $('shot-area').addEventListener('touchend', function (e) {
+    if (touchX === null) return;
+    var dx = e.changedTouches[0].clientX - touchX, dy = e.changedTouches[0].clientY - touchY;
+    touchX = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) { if (dx < 0) next(); else prev(); }
+  });
+
+  // Role switch
+  Array.prototype.forEach.call(document.querySelectorAll('#role-seg button'), function (b) {
+    b.addEventListener('click', function () {
+      var current = steps[index] && steps[index].id;
+      setRole(b.getAttribute('data-role'));
+      var i = indexOfStep(current);
+      go(i < 0 ? 0 : i);
+    });
+  });
+
+  wireGuideLink($('step-more'), function () { return steps[index] && steps[index].guide; });
+  wireGuideLink($('guide-link'));
+  wireGuideLink($('done-guide'));
+
+  // ---- Start ----
+  if (!TOUR) { document.body.innerHTML = '<p style="padding:24px">The tour steps did not load.</p>'; return; }
+  var startRole = TOUR.roles[params.role] ? params.role : (TOUR.roles[safeGet(ROLE_KEY)] ? safeGet(ROLE_KEY) : null);
+  if (embed && params.role === 'client') $('role-seg').hidden = true;
+  if (!startRole) { renderIntro(); return; }
+  setRole(startRole, { silent: !!params.role });
+  var hashStep = indexOfStep((location.hash || '').slice(1));
+  if (params.mode === 'whats-new') renderNews();
+  else if (hashStep >= 0) go(hashStep);
+  else if (!params.role && !embed) renderIntro();
+  else go(0);
+})();
+</script>
+</html>

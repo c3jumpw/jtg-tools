@@ -1,0 +1,15 @@
+{
+  "name": "contentflow-tests",
+  "private": true,
+  "description": "Browser tests and getting-started tour capture for ContentFlow (content-strategy-workflow/). See ../RELEASING.md.",
+  "scripts": {
+    "capture": "node tour/capture.js",
+    "check": "node tour/check.js",
+    "test": "node help.test.js",
+    "release-check": "node tour/capture.js && node tour/check.js && node help.test.js"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0",
+    "sharp": "0.33.5"
+  }
+}

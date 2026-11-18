@@ -1,0 +1,73 @@
+# Keeps ContentFlow's getting-started tour and guide in step with the app.
+#
+# On every push that touches the app (content-strategy-workflow/), this:
+#   1. re-captures every tour screenshot from the app as committed, running it
+#      on demo data (tests/tour/capture.js), and commits them if they changed;
+#   2. fails the run if the tour or guide is behind the app: a tab, menu item
+#      or panel no tour step covers, no What's new note for this version, or a
+#      guide footer still naming an older version (tests/tour/check.js);
+#   3. runs the Help layer and regression tests (tests/help.test.js).
+# A red run here means the help content needs attention before users see the
+# change. See content-strategy-workflow/RELEASING.md.
+name: ContentFlow tour
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'content-strategy-workflow/index.html'
+      - 'content-strategy-workflow/guide.html'
+      - 'content-strategy-workflow/tour.html'
+      - 'content-strategy-workflow/tour/steps.js'
+      - 'content-strategy-workflow/tests/**'
+      - '.github/workflows/contentflow-tour.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: contentflow-tour
+  cancel-in-progress: false
+
+jobs:
+  tour:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: content-strategy-workflow
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright and sharp
+        run: npm install --prefix tests --no-audit --no-fund
+
+      - name: Install Chromium
+        run: npx --prefix tests playwright install --with-deps chromium
+
+      - name: Re-capture the tour from this commit
+        run: node tests/tour/capture.js
+
+      - name: Commit refreshed screenshots
+        run: |
+          if [ -n "$(git status --porcelain tour)" ]; then
+            version=$(grep -o "var APP_VERSION = '[^']*'" index.html | cut -d"'" -f2)
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add tour
+            git commit -m "ContentFlow tour: re-capture screenshots for v${version}"
+            git push
+          else
+            echo "Screenshots unchanged."
+          fi
+
+      - name: Check the tour and guide cover this version
+        run: node tests/tour/check.js
+
+      - name: Help layer and regression tests
+        run: node tests/help.test.js
