@@ -1,0 +1,55 @@
+# Keeps the CRM's getting-started tour current: on every change to the CRM
+# it remakes the tour's screenshots from sample data, commits them, and
+# runs the CRM's browser tests and the tour check (which fails when a new
+# screen, button or pop-up has no slide). See mkc-crm/tools/README.md.
+name: CRM tour and tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mkc-crm/index.html'
+      - 'mkc-crm/tools/**'
+      - '.github/workflows/crm-tour.yml'
+  pull_request:
+    paths:
+      - 'mkc-crm/index.html'
+      - 'mkc-crm/tools/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: crm-tour-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tour:
+    runs-on: ubuntu-latest
+    env:
+      TZ: America/New_York
+    defaults:
+      run:
+        working-directory: mkc-crm/tools
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - name: Remake the tour pictures
+        run: node guide/make.js
+      - name: Commit new pictures (main only)
+        if: github.event_name != 'pull_request'
+        working-directory: .
+        run: |
+          git add mkc-crm/media/guide
+          if git diff --cached --quiet; then echo "Pictures already current."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "CRM tour: refresh screenshots"
+          git push
+      - name: Tests and tour check
+        run: npm test
