@@ -501,6 +501,8 @@ button,input,select,textarea{font-family:inherit}
   .list-toolbar.show-filters>select.filter-select{display:block;flex:1 1 45%}
   .list-toolbar.show-filters>.btn-clear,.list-toolbar.show-filters>button[onclick*="export"]{display:inline-flex}
   .list-toolbar.show-filters .filter-toggle{background:var(--accent-light);color:var(--accent);border-color:#BFDAF5}
+  /* Search and the Filters button keep their own row; the filters wrap below. */
+  .list-toolbar.show-filters>div:first-child{flex:1 1 calc(100% - 96px)!important}
 }
 /* Phone: list rows become cards */
 @media(max-width:640px){
@@ -625,6 +627,43 @@ body.asst-open #toast-container{right:464px}
   .task-item .task-meta select{min-width:0;max-width:100%;flex:1 1 auto}
   .table-wrap tbody td.cell-amt{order:3}
 }
+/* Getting-started tour */
+.guide-overlay{position:fixed;inset:0;z-index:3000;background:rgba(14,18,28,.62);display:flex;align-items:center;justify-content:center;padding:24px}
+.guide-overlay[hidden]{display:none}
+.guide-card{background:var(--bg-card);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.35);width:min(880px,100%);max-height:100%;display:flex;flex-direction:column;overflow:hidden}
+.guide-top{display:flex;align-items:center;gap:10px;padding:14px 16px 10px 20px}
+.guide-kicker{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.guide-count{font-size:12.5px;color:var(--text-muted);margin-left:auto}
+.guide-x{width:36px;height:36px;border:none;border-radius:8px;background:var(--bg-main);color:var(--text-secondary);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.guide-x:hover{background:var(--border)}
+.guide-progress{height:3px;background:var(--border)}
+.guide-bar{height:100%;background:var(--accent);transition:width .25s ease}
+.guide-figure{margin:0;background:#E9EDF3;display:flex;align-items:center;justify-content:center;flex:1 1 auto;min-height:0;padding:16px}
+.guide-figure img{display:block;max-width:100%;max-height:52vh;border-radius:8px;box-shadow:0 6px 24px rgba(16,24,40,.18);object-fit:contain;background:#fff}
+.guide-figure.phone img{max-height:46vh;border-radius:18px;border:6px solid #161B26}
+.guide-figure.noimg{display:none}
+.guide-text{padding:16px 22px 4px}
+.guide-text h2{font-size:20px;line-height:1.25;margin:0 0 6px;color:var(--text-primary)}
+.guide-text p{font-size:14.5px;line-height:1.55;margin:0;color:var(--text-secondary)}
+.guide-foot{display:flex;align-items:center;gap:8px;padding:14px 16px 16px 16px}
+.guide-spacer{flex:1}
+.guide-foot .btn{min-height:40px}
+body.guide-open{overflow:hidden}
+.guide-card-cta{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:16px 18px;border:1px solid var(--border);border-radius:12px;background:var(--accent-light);margin-bottom:18px}
+.guide-card-cta h4{margin:0 0 2px;font-size:15px}
+.guide-card-cta p{margin:0;font-size:13px;color:var(--text-secondary)}
+.guide-card-cta .grow{flex:1 1 240px}
+@media (max-width:768px){
+  /* No room in the phone top bar; the tour is under More → Resources and in Search. */
+  #guide-btn{display:none}
+  .guide-overlay{padding:0;align-items:stretch}
+  .guide-card{border-radius:0;width:100%;height:100%;max-height:none}
+  .guide-figure{padding:12px}
+  .guide-figure.phone img{max-height:56vh}
+  .guide-text{padding:12px 18px 0}
+  .guide-text h2{font-size:18px}
+  .guide-foot{padding:12px 14px calc(14px + env(safe-area-inset-bottom))}
+}
 </style>
 </head>
 <body>
@@ -743,6 +782,7 @@ body.asst-open #toast-container{right:464px}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
       </button>
       <button class="btn btn-secondary btn-sm btn-asst" id="asst-btn" onclick="openAssistant()" title="Assistant — say or type what happened" aria-label="Assistant"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 17v4"/></svg><span class="asst-btn-label">Assistant</span></button>
+      <button class="btn btn-secondary btn-sm guide-btn" id="guide-btn" onclick="openGuide()" title="Tour and help" aria-label="Tour and help"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></button>
       <button class="btn btn-primary btn-sm" onclick="openNewEntryModal()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Entry
       </button>
@@ -795,7 +835,8 @@ body.asst-open #toast-container{right:464px}
     <!-- MY WORK (Personal Dashboard, Section 11-H) -->
     <div class="view" id="view-resources">
       <div style="max-width:760px">
-        <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:16px">Brief how-tos for features across the app. Only showing what's relevant to your access level.</p>
+        <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:16px">A picture tour of every feature, plus short how-tos. Only showing what's relevant to your access level.</p>
+        <div id="guide-cta"></div>
         <div id="resources-list"></div>
       </div>
     </div>
@@ -1639,6 +1680,29 @@ body.asst-open #toast-container{right:464px}
 
 <div id="sidebar-overlay" onclick="toggleMobileMenu()"></div>
 <div id="toast-container" role="status" aria-live="polite"></div>
+<!-- Getting-started tour (see GETTING-STARTED TOUR in the script) -->
+<div id="guide" class="guide-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="guide-title" aria-describedby="guide-body">
+  <div class="guide-card">
+    <div class="guide-top">
+      <span class="guide-kicker" id="guide-kicker">Getting started</span>
+      <span class="guide-count" id="guide-count" aria-live="polite"></span>
+      <button class="guide-x" onclick="closeGuide()" aria-label="Close the tour"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="guide-progress"><div class="guide-bar" id="guide-bar"></div></div>
+    <figure class="guide-figure" id="guide-figure"><img id="guide-img" alt="" decoding="async"></figure>
+    <div class="guide-text">
+      <h2 id="guide-title"></h2>
+      <p id="guide-body"></p>
+    </div>
+    <div class="guide-foot">
+      <button class="btn btn-ghost btn-sm" id="guide-show" onclick="guideShowMe()">Show me</button>
+      <span class="guide-spacer"></span>
+      <button class="btn btn-secondary" id="guide-prev" onclick="guideGo(-1)">Back</button>
+      <button class="btn btn-primary" id="guide-next" onclick="guideGo(1)">Next</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════
 // CONFIG & CREDENTIALS
@@ -2322,6 +2386,7 @@ async function init(){
   refreshQcBadge();
   startAutoRefresh();
   setSyncState(failed?'error':'ok',failed?'Sync incomplete':'Synced '+new Date().toLocaleTimeString());
+  maybeOpenGuide();
 }
 
 function startAutoRefresh(){
@@ -3640,6 +3705,9 @@ function openAddTeamMemberModal(){
     .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('atm-branch').value='';
   document.getElementById('atm-access').value='Staff';
+  // Only super admins grant Admin or Super Admin (see "Understanding
+  // Access Levels" in Resources).
+  document.querySelectorAll('#atm-access option').forEach(o=>{o.disabled=o.value!=='Staff'&&!isSuperAdmin();});
   document.getElementById('add-team-status').textContent='';
   document.getElementById('add-team-modal').style.display='flex';
 }
@@ -3661,6 +3729,7 @@ async function submitAddTeamMember(){
   const wsEmail=document.getElementById('atm-wsemail').value.trim();
   const passcode=document.getElementById('atm-passcode').value.trim();
   const access=document.getElementById('atm-access').value;
+  if(access!=='Staff'&&!isSuperAdmin())return showToast('Only a Super Admin can give Admin or Super Admin access.','error');
   const pubEmail=document.getElementById('atm-pubemail').value.trim();
   const pubPhone=document.getElementById('atm-pubphone').value.trim();
   const persEmail=document.getElementById('atm-persemail').value.trim();
@@ -9698,9 +9767,253 @@ function isStaffOnly(){return accessTier()==='staff';}
 // minTier: 'staff' (everyone), 'admin' (Admin + Super Admin), 'super'
 // (Super Admin only) -- reuses the exact same tier concept as the rest
 // of the app's access control.
+// ═══════════════════════════════════════════
+// GETTING-STARTED TOUR
+// ═══════════════════════════════════════════
+// Slides with a screenshot of each feature, filtered by access level:
+// everyone gets "Getting started", admins add "For admins", super admins
+// add "For super admins". The screenshots (media/guide/d = desktop,
+// media/guide/m = phone) are generated from sample data by
+// mkc-crm/tools/guide/make.js and must be regenerated whenever the app
+// changes; mkc-crm/tools/guide/check.js fails when they are stale or when
+// a screen, record tab, quick action, modal or Settings section has no
+// slide. A slide's `since` is the date it was added or last changed:
+// people who already took the tour are shown only the newer slides, as
+// "What's new", the next time they sign in.
+const GUIDE_DECKS=[
+  {id:'start',label:'Getting started',minTier:'staff'},
+  {id:'admin',label:'For admins',minTier:'admin'},
+  {id:'super',label:'For super admins',minTier:'super'}
+];
+const GUIDE_FIRST_RECORD=type=>()=>{const t=(S.entries[type]||[]).find(x=>!x.parent);if(t)openProfile(t.id,type);};
+const GUIDE_STEPS=[
+  {id:'today',deck:'start',since:'2026-11-18',covers:['view:dashboard'],go:()=>switchView('dashboard'),
+    title:'Start each day on Today',
+    body:'Today shows what needs you: overdue tasks, follow-ups that are due, messages waiting for your OK and invoices still to send or chase. Tap any line to open it.'},
+  {id:'myday',deck:'start',since:'2026-11-18',covers:['view:myday'],go:()=>switchView('myday'),
+    title:'My Day is your short list',
+    body:'Only what is urgent for you today: your overdue tasks, leads going stale, and anything in your Outbox waiting to be confirmed.'},
+  {id:'mywork',deck:'start',since:'2026-11-18',covers:['view:mywork'],go:()=>switchView('mywork'),
+    title:'My Work: everything that is yours',
+    body:'All the leads, deals, contacts, accounts and tasks assigned to you, with the counts at the top.'},
+  {id:'lists',deck:'start',since:'2026-11-18',covers:['view:leads','view:contacts','view:accounts'],go:()=>switchView('leads'),
+    title:'Find anyone in Leads, Contacts and Accounts',
+    body:'Each list has search, filters (branch, status, follow-up due) and sorting, and your filters stay put. The coloured dot shows when a record was last touched: green is fresh, amber is getting old, red needs attention.'},
+  {id:'board',deck:'start',since:'2026-11-18',covers:['view:pipeline'],go:()=>{switchView('pipeline');setViewMode('pipeline','kanban');},
+    title:'See the pipeline as a board',
+    body:'Pipeline can be a list, a board by stage (Kanban) or a calendar. The Amount column and the Unpaid filter show what each deal is worth and what is still owed.'},
+  {id:'bulk',deck:'start',since:'2026-11-18',covers:['bulk','modal:bulk-assign-modal'],go:()=>switchView('leads'),
+    title:'Work on many records at once',
+    body:'Tick the boxes at the left of a list to assign or archive several records together.'},
+  {id:'new-entry',deck:'start',since:'2026-11-18',covers:['action:new-entry','modal:entry-modal'],go:()=>openNewEntryModal('Lead'),
+    title:'Add a lead, contact, deal or account',
+    body:'Use New Entry at the top (or + on your phone). Fill in what you know; you can add the rest later.'},
+  {id:'record',deck:'start',since:'2026-11-18',covers:['pf:details','action:call','action:edit-record','action:notebook','action:view-in-clickup','modal:edit-profile-modal'],go:GUIDE_FIRST_RECORD('leads'),
+    title:'Everything about a record in one place',
+    body:'Open any record to see its stage, owner, when it was last touched and how to reach them. Change the stage from the coloured badge, tap Call to ring them, and use Edit Record for everything else. Notebook and View in ClickUp open its notes and its ClickUp page.'},
+  {id:'log-activity',deck:'start',since:'2026-11-18',covers:['action:log-activity','modal:activity-modal','modal:gcal-prompt-modal'],go:GUIDE_FIRST_RECORD('leads'),
+    title:'Log every call, text, meeting or note',
+    body:'Log activity records what you did and how they responded. You can attach a file and add a follow-up task in the same step.'},
+  {id:'message',deck:'start',since:'2026-11-18',covers:['pf:actions','action:message'],go:GUIDE_FIRST_RECORD('leads'),
+    title:'Send the right message, in your voice',
+    body:'Message opens CRM Actions. Pick what you want to say and a draft is written for you. Edit it, then send it by email or text as yourself, schedule it for later, or copy it.'},
+  {id:'activity',deck:'start',since:'2026-11-18',covers:['pf:activity'],go:GUIDE_FIRST_RECORD('leads'),
+    title:'The record’s history',
+    body:'Activity lists everything logged on the record, newest first, so anyone can pick up where the last person left off.'},
+  {id:'related-tasks',deck:'start',since:'2026-11-18',covers:['pf:related','pf:tasks','action:task','modal:task-modal'],go:GUIDE_FIRST_RECORD('leads'),
+    title:'Related records and follow-up tasks',
+    body:'Related shows the accounts, contacts and deals a record is linked to. Tasks lists its follow-ups; + Task adds one, with a Google Calendar reminder if you want it.'},
+  {id:'catchup',deck:'start',since:'2026-11-18',covers:['action:catch-up','modal:catchup-modal'],go:GUIDE_FIRST_RECORD('leads'),
+    title:'Catch up in seconds',
+    body:'Catch Up reads a record’s history and gives you a short summary and a suggested next step.'},
+  {id:'close-deal',deck:'start',since:'2026-11-18',covers:['modal:closedwon-modal','modal:closedlost-modal'],go:GUIDE_FIRST_RECORD('pipeline'),
+    title:'Closing a deal',
+    body:'Moving a deal to Closed/Won asks for the deposit and remaining balance; Closed/Lost asks why. Both are saved on the deal, and you can archive it from the same screen.'},
+  {id:'job',deck:'start',since:'2026-11-18',covers:['action:log-job','modal:job-modal'],go:()=>openJobModal(),
+    title:'Log a completed job',
+    body:'Log job records finished work as a won deal with its amount, date of service and invoice status, and can add a "send invoice" task. Save & add another makes entering past jobs quick.'},
+  {id:'invoices',deck:'start',since:'2026-11-18',covers:['dash:invoices','action:mark-paid'],go:()=>switchView('dashboard'),
+    title:'Know what is still owed',
+    body:'Unpaid invoices on Today shows the total still owed. Change a deal’s invoice status from its record, or tap Mark paid when the money arrives.'},
+  {id:'assistant',deck:'start',since:'2026-11-18',covers:['assistant'],go:()=>openAssistant(),
+    title:'Just say what happened',
+    body:'Tap Assistant and speak or type, for example “Finished the Smith job, $450, invoice pending”. It drafts the changes, reads them back, and saves nothing until you confirm.'},
+  {id:'inbox',deck:'start',since:'2026-11-18',covers:['view:qcinbox','modal:triage-modal','modal:qc-thread-modal','modal:qc-assign-modal'],go:()=>switchView('qcinbox'),
+    title:'Activity Inbox',
+    body:'Calls and texts from your business line land here, matched to a record where possible. Assign each one to a record, archive what does not matter, or use Smart Triage to clear the lot in one pass.'},
+  {id:'capture',deck:'start',since:'2026-11-18',covers:['quick-capture','modal:quick-capture-modal'],go:()=>openQuickCapture(),
+    title:'Quick capture',
+    body:'Jot down anything that happened outside the CRM the moment it happens, no fields to fill. Sort it out later in Smart Triage.'},
+  {id:'action-hub',deck:'start',since:'2026-11-18',covers:['view:tasks'],go:()=>switchView('tasks'),
+    title:'Action Hub: every task',
+    body:'All follow-up tasks in one place, with due dates and owners, as a list or a board.'},
+  {id:'cmdk',deck:'start',since:'2026-11-18',covers:['cmdk','view:search-view'],go:()=>openCmdk(),
+    title:'Jump anywhere',
+    body:'Press Ctrl K (⌘K on a Mac) or tap Search to find any record by name, email or phone, or go straight to any screen.'},
+  {id:'frontrow',deck:'start',since:'2026-11-18',covers:['action:add-to-frontrow'],go:GUIDE_FIRST_RECORD('contacts'),
+    title:'Give a client their portal',
+    body:'On a contact or account, Add to Frontrow opens Frontrow Manager so the client can sign in and follow their updates on their phone.'},
+  {id:'phone',deck:'start',since:'2026-11-18',only:'phone',covers:['bottom-nav','create-sheet'],go:()=>openCreateSheet(),
+    title:'On your phone',
+    body:'The bar at the bottom takes you to Today, Leads and Pipeline. The + in the middle adds a record, logs a job, opens the assistant or captures a note.'},
+  {id:'finish',deck:'start',since:'2026-11-18',covers:['view:export','view:resources','guide'],go:()=>switchView('resources'),
+    title:'Export, help and this tour',
+    body:'Export downloads your lists. Resources has short how-tos and this tour, which you can replay any time (also from the ? button at the top on a computer, or by searching “tour”).'},
+  {id:'admin-team-view',deck:'admin',since:'2026-11-18',covers:['filter:owner'],go:()=>switchView('pipeline'),
+    title:'You see the whole team',
+    body:'Admins see every record, not only their own, and can filter lists, Action Hub and the Activity Inbox by owner.'},
+  {id:'settings-team',deck:'admin',since:'2026-11-18',covers:['view:settings','settings:team-management','modal:add-team-modal'],go:()=>switchView('settings'),
+    title:'Team Management',
+    body:'Settings → Team Management adds a team member: their ClickUp record and their sign-in, in one step. Each person can update their own passcode and public contact details from their profile.'},
+  {id:'settings-dictation',deck:'admin',since:'2026-11-18',covers:['settings:crm-dictation-reader'],go:()=>switchView('settings'),
+    title:'CRM Dictation Reader',
+    body:'Paste dictated notes or a recap and the reader splits them into new records, activities, tasks and comments, each shown for you to check and edit before anything is saved.'},
+  {id:'settings-templates',deck:'admin',since:'2026-11-18',covers:['settings:message-templates'],go:()=>switchView('settings'),
+    title:'Message templates',
+    body:'See the templates CRM Actions uses to draft each kind of message, grouped by where they are used.'},
+  {id:'settings-health',deck:'admin',since:'2026-11-18',covers:['settings:connection-status','settings:workspace-info','settings:integrations'],go:()=>switchView('settings'),
+    title:'Connections and workspace',
+    body:'Connection Status shows whether ClickUp, Google Sheets and the phone and email services are reachable. Workspace Info and Integrations show how this CRM is set up.'},
+  {id:'super-templates',deck:'super',since:'2026-11-18',covers:['templates:edit'],go:()=>switchView('settings'),
+    title:'Edit message templates',
+    body:'Super admins can change any template, and the change applies to everyone straight away. Reset to Default brings back the original.'},
+  {id:'super-access',deck:'super',since:'2026-11-18',covers:['team:access-level'],go:()=>switchView('settings'),
+    title:'Access levels',
+    body:'Staff see only what is assigned to them. Admins see everything and the admin settings. Super admins also edit templates, run the data tools, and are the only ones who can give someone Admin or Super Admin access when adding them.'},
+  {id:'super-data',deck:'super',since:'2026-11-18',covers:['settings:data-maintenance'],go:()=>switchView('settings'),
+    title:'Data maintenance',
+    body:'One-off repair tools, such as backfilling account links or checking the Team Directory for drift. They write straight to ClickUp and are not easy to undo, so read what a tool does before running it.'}
+];
+const GUIDE_VERSION=GUIDE_STEPS.reduce((m,s)=>s.since>m?s.since:m,'');
+const GUIDE_RANK={staff:0,admin:1,super:2};
+const G={open:false,steps:[],i:0,mode:'tour',returnFocus:null,autoChecked:false};
+
+function guideIsPhone(){return window.matchMedia('(max-width: 768px)').matches;}
+function guideDeckOf(step){return GUIDE_DECKS.find(d=>d.id===step.deck)||GUIDE_DECKS[0];}
+function guideStepsForMe(){
+  const rank=GUIDE_RANK[accessTier()]??0;
+  const device=guideIsPhone()?'phone':'desktop';
+  return GUIDE_STEPS.filter(s=>(GUIDE_RANK[guideDeckOf(s).minTier]??0)<=rank&&(!s.only||s.only===device));
+}
+function guideKey(){return'mkc_guide_'+(S.user?.mkcId||S.user?.name||'me');}
+function guideSeen(){try{return JSON.parse(localStorage.getItem(guideKey())||'null');}catch(e){return null;}}
+function guideMarkSeen(){try{localStorage.setItem(guideKey(),JSON.stringify({version:GUIDE_VERSION,at:Date.now()}));}catch(e){}}
+function guideNewSinceSeen(){
+  const seen=guideSeen();
+  if(!seen)return null;
+  return guideStepsForMe().filter(s=>s.since>(seen.version||''));
+}
+// The newest slides, for "What's new" when it's opened by hand.
+function guideLatest(){
+  const mine=guideStepsForMe();
+  const latest=mine.reduce((m,s)=>s.since>m?s.since:m,'');
+  return mine.filter(s=>s.since===latest);
+}
+// Called once per page load after the first sync. First sign-in on this
+// device: the whole tour. Afterwards: only slides added since the last
+// time, if any.
+function maybeOpenGuide(){
+  if(G.autoChecked||!S.user)return;
+  G.autoChecked=true;
+  const fresh=guideNewSinceSeen();
+  const busy=()=>G.open||document.querySelector('.modal-overlay[style*="flex"]')||document.body.classList.contains('asst-open');
+  setTimeout(()=>{
+    if(busy())return;
+    if(fresh===null)openGuide('tour');
+    else if(fresh.length)openGuide('new',fresh);
+  },700);
+}
+function openGuide(mode='tour',steps=null,startId=null){
+  G.mode=mode;
+  G.steps=steps||(mode==='new'?guideLatest():guideStepsForMe());
+  if(!G.steps.length)return;
+  G.i=Math.max(0,startId?G.steps.findIndex(s=>s.id===startId):0);
+  G.returnFocus=document.activeElement;
+  G.open=true;
+  const el=document.getElementById('guide');
+  el.hidden=false;
+  document.body.classList.add('guide-open');
+  guideRender();
+  document.getElementById('guide-next').focus();
+}
+function closeGuide(){
+  if(!G.open)return;
+  G.open=false;
+  guideMarkSeen();
+  document.getElementById('guide').hidden=true;
+  document.body.classList.remove('guide-open');
+  if(G.returnFocus&&G.returnFocus.focus)try{G.returnFocus.focus();}catch(e){}
+}
+function guideGo(delta){
+  const n=G.i+delta;
+  if(n<0)return;
+  if(n>=G.steps.length)return closeGuide();
+  G.i=n;guideRender();
+}
+function guideShowMe(){
+  const step=G.steps[G.i];
+  closeGuide();
+  // Record slides open a record themselves; everything else should not
+  // leave the last record's panel covering the screen it goes to.
+  try{if(document.getElementById('profile-panel')?.classList.contains('open'))closeProfile();}catch(e){}
+  try{step.go&&step.go();}catch(e){showToast('Couldn’t open that screen: '+e.message,'error');}
+}
+function guideImg(step,phone){return`media/guide/${phone?'m':'d'}/${step.id}.jpg`;}
+function guideRender(){
+  const step=G.steps[G.i];
+  const phone=guideIsPhone();
+  const deck=guideDeckOf(step);
+  const img=document.getElementById('guide-img');
+  const fig=document.getElementById('guide-figure');
+  fig.classList.toggle('phone',phone);
+  fig.classList.remove('noimg');
+  img.onerror=()=>fig.classList.add('noimg');
+  img.src=guideImg(step,phone);
+  img.alt=`Screenshot: ${step.title}`;
+  // Warm the next slide's picture so Next feels instant.
+  const next=G.steps[G.i+1];
+  if(next){const pre=new Image();pre.src=guideImg(next,phone);}
+  document.getElementById('guide-kicker').textContent=G.mode==='new'?'What’s new':deck.label;
+  document.getElementById('guide-count').textContent=`${G.i+1} of ${G.steps.length}`;
+  document.getElementById('guide-title').textContent=step.title;
+  document.getElementById('guide-body').textContent=step.body;
+  document.getElementById('guide-bar').style.width=`${((G.i+1)/G.steps.length)*100}%`;
+  document.getElementById('guide-prev').disabled=G.i===0;
+  const last=G.i===G.steps.length-1;
+  document.getElementById('guide-next').textContent=last?'Done':'Next';
+  document.getElementById('guide-show').style.display=step.go?'':'none';
+}
+function guideKey_(e){
+  if(!G.open)return;
+  if(e.key==='Escape'){e.preventDefault();closeGuide();}
+  else if(e.key==='ArrowRight'){e.preventDefault();guideGo(1);}
+  else if(e.key==='ArrowLeft'){e.preventDefault();guideGo(-1);}
+  else if(e.key==='Tab'){
+    const f=[...document.querySelectorAll('#guide button:not([disabled])')].filter(b=>b.offsetParent!==null);
+    if(!f.length)return;
+    const first=f[0],lastEl=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();lastEl.focus();}
+    else if(!e.shiftKey&&document.activeElement===lastEl){e.preventDefault();first.focus();}
+  }
+}
+function setupGuide(){
+  document.addEventListener('keydown',guideKey_);
+  const fig=document.getElementById('guide-figure');
+  let x0=null;
+  fig.addEventListener('touchstart',e=>{x0=e.touches[0].clientX;},{passive:true});
+  fig.addEventListener('touchend',e=>{
+    if(x0==null)return;
+    const dx=e.changedTouches[0].clientX-x0;x0=null;
+    if(Math.abs(dx)>50)guideGo(dx<0?1:-1);
+  },{passive:true});
+}
+
+// Brief how-tos (text), alongside the tour above.
 const RESOURCE_ARTICLES=[
   {id:'myday-vs-dashboard',category:'Getting Started',minTier:'staff',title:'My Day, My Work & Dashboard — what\'s the difference?',
-    body:`<strong>Dashboard</strong> is the team-wide overview — active counts, recent activity across everyone you can see, and a Needs Follow-Up widget.<br><br><strong>My Work</strong> is your own reference: your assigned counts, plus your complete task list.<br><br><strong>My Day</strong> is only what's actually urgent today — your overdue tasks, your stale leads, and anything waiting on your confirmation in the Outbox. Start here each morning.`},
+    body:`<strong>Dashboard (Today)</strong> opens with what needs you: overdue and due-today tasks, follow-ups whose date has come, messages waiting for your confirmation, unpaid invoices, and the team's stalest follow-ups.<br><br><strong>My Work</strong> is your own reference: your assigned counts, plus your complete task list.<br><br><strong>My Day</strong> is only what's actually urgent today — your overdue tasks, your stale leads, and anything waiting on your confirmation in the Outbox.<br><br>For a picture walkthrough of every screen, use <strong>Take the tour</strong> at the top of this page.`},
+  {id:'command-bar',category:'Getting Started',minTier:'staff',title:'Finding anything fast',
+    body:`Press <strong>Ctrl K</strong> (⌘K on a Mac) or tap Search at the top to find any record by name, email or phone, jump to any screen, or start something new (a lead, a capture, the tour). Your recent records are listed first.`},
   {id:'staleness',category:'Staying on Top of Leads & Clients',minTier:'staff',title:'The Staleness Indicator',
     body:`Every entry shows how long it's been since it was last touched — green (0-3 days), amber (4-7), red (8+). Shows in list views and on every entry's profile header. Use the Follow-Up filter on any list to see only what's overdue.`},
   {id:'logging-activity',category:'Staying on Top of Leads & Clients',minTier:'staff',title:'Logging an Activity',
@@ -9709,12 +10022,16 @@ const RESOURCE_ARTICLES=[
     body:`Pick an action from the list on any entry to get an AI-drafted message personalized to that lead's context. Edit before sending, or use Schedule Send to queue it for later (minimum 10 minutes out, so it doesn't get lost between check-ins).`},
   {id:'closing-deals',category:'Staying on Top of Leads & Clients',minTier:'staff',title:'Closing a Deal',
     body:`Mark as Closed/Won to log deposit and remaining balance details — this writes to real, reportable fields, not just a comment. Mark as Closed/Lost to log a reason. Both let you Archive right from the same screen once you're ready to close it out.`},
+  {id:'jobs-invoices',category:'Staying on Top of Leads & Clients',minTier:'staff',title:'Completed Jobs & Invoices',
+    body:`Use <strong>Log job</strong> (on Today, on an account or deal, or the + on your phone) for every finished job, including repeat work: it creates a Closed/Won deal with the amount, date of service and invoice status (Pending, Sent, Paid, Overdue), linked to the account and contact. Tick the reminder to get a "send invoice" task. <strong>Unpaid invoices</strong> on Today totals what is still owed (the remaining balance when a deposit was taken); <strong>Mark paid</strong> on the deal settles it.`},
+  {id:'assistant',category:'Staying on Top of Leads & Clients',minTier:'staff',title:'The Assistant',
+    body:`Tap <strong>Assistant</strong> (top bar, Today, or the + on your phone) and speak or type what happened, in your own words. It keeps a running draft, asks only for what's missing, asks "which one?" when a name matches more than one record, and reads back every change before saving. Nothing is saved until you confirm. Say "details later" to save what you have with a task to finish it.`},
   {id:'activity-inbox',category:'The Activity Inbox',minTier:'staff',title:'The Activity Inbox',
     body:`Every incoming and outgoing text or call from Quo lands here automatically, matched to a CRM entry when possible. Assign to log it to that entry, Archive to dismiss it, or create a new Lead/Contact right from an unmatched thread.`},
   {id:'smart-triage',category:'The Activity Inbox',minTier:'staff',title:'Smart Triage',
     body:`Click Start Smart Triage to review everything pending at once instead of one at a time. It sorts items into three groups: <strong>likely not CRM-relevant</strong> (scam calls, personal chats — bulk-archive with one click), <strong>confident matches</strong> (review summaries, confirm in bulk), and <strong>needs your judgment</strong> (reviewed individually, same as opening from the feed).`},
   {id:'quick-capture',category:'The Activity Inbox',minTier:'staff',title:'Quick Capture',
-    body:`Tap the pencil button (bottom-right, anywhere in the app) to jot down anything that happened outside the CRM — a live conversation, a text from your personal phone, a stray idea. No fields to fill in, just write what happened, even mid-sentence. Sort it out later through Smart Triage, when you're in review mode instead of mid-day.`},
+    body:`Tap the pencil button (bottom-right on a computer; the + in the bottom bar on a phone) to jot down anything that happened outside the CRM — a live conversation, a text from your personal phone, a stray idea. No fields to fill in, just write what happened, even mid-sentence. Sort it out later through Smart Triage, when you're in review mode instead of mid-day.`},
   {id:'bulk-actions',category:'Working Efficiently',minTier:'staff',title:'Bulk Actions',
     body:`Check the boxes on any list view to select multiple entries, then Assign or Archive them together instead of one at a time. Selections clear automatically when you navigate away, so nothing stale carries over to a later visit.`},
   {id:'custom-messages',category:'Working Efficiently',minTier:'staff',title:'Custom Messages & "Both" Mode',
@@ -9729,7 +10046,20 @@ const RESOURCE_ARTICLES=[
     body:`In Settings, under <strong>CRM Dictation Reader</strong>. Paste dictated notes or a recap — ideally cleaned first with your <em>CRM Dictation Cleaner</em> Claude prompt — and the reader extracts distinct operations (new leads/contacts, logged activities, tasks, comments) into a per-row preview. Each row is editable before it writes. When a note refers to a person by first name and multiple matches exist, the reader shows all plausible matches instead of picking one — so a "Maurice" mention with three Maurices on file surfaces the choice rather than silently guessing.`}
 ];
 
+function renderGuideCta(){
+  const el=document.getElementById('guide-cta');
+  if(!el)return;
+  const mine=guideStepsForMe();
+  const latest=guideLatest();
+  const newer=guideNewSinceSeen();
+  el.innerHTML=`<div class="guide-card-cta">
+    <div class="grow"><h4>Take the tour</h4><p>${mine.length} slides with screenshots, for ${esc({staff:'staff',admin:'admins',super:'super admins'}[accessTier()])}. About ${Math.max(2,Math.round(mine.length*0.25))} minutes.</p></div>
+    <button class="btn btn-primary btn-sm" onclick="openGuide('tour')">Start the tour</button>
+    ${latest.length&&latest.length<mine.length?`<button class="btn btn-secondary btn-sm" onclick="openGuide('new')">What’s new${newer&&newer.length?` (${newer.length})`:''}</button>`:''}
+  </div>`;
+}
 function renderResources(){
+  renderGuideCta();
   const tier=accessTier();
   const rank={staff:0,admin:1,super:2};
   const visible=RESOURCE_ARTICLES.filter(a=>rank[a.minTier]<=rank[tier]);
@@ -9893,6 +10223,8 @@ async function renderToday(){
 // ---------- ⌘K: search and commands ----------
 const CMDK_IS_MAC=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent||'');
 const CMDK_COMMANDS=[
+  {group:'Help',label:'Take the tour',kw:'help tour guide getting started how to',run:()=>openGuide('tour')},
+  {group:'Help',label:'What’s new',kw:'help new changes updates release',run:()=>openGuide('new')},
   {group:'Create',label:'New lead',kw:'add create lead',run:()=>openNewEntryModal('Lead')},
   {group:'Create',label:'New contact',kw:'add create contact person',run:()=>openNewEntryModal('Contact')},
   {group:'Create',label:'New deal',kw:'add create deal opportunity pipeline',run:()=>openNewEntryModal('Deal')},
@@ -10916,7 +11248,7 @@ function labelIconButtons(root){
   (root||document).querySelectorAll('button[title]:not([aria-label])').forEach(b=>{if(!b.textContent.trim())b.setAttribute('aria-label',b.title);});
 }
 document.addEventListener('DOMContentLoaded',()=>{
-  setupAssistant();labelIconButtons();
+  setupAssistant();setupGuide();labelIconButtons();
   try{new MutationObserver(ms=>{for(const m of ms)for(const n of m.addedNodes)if(n.nodeType===1)labelIconButtons(n);}).observe(document.body,{childList:true,subtree:true});}catch(e){}
 });
 </script>

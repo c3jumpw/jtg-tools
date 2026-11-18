@@ -1,0 +1,13 @@
+{
+  "name": "mkc-crm-tools",
+  "private": true,
+  "description": "Browser tests and tour screenshots for the MKC CRM (mkc-crm/index.html), run on invented sample data.",
+  "scripts": {
+    "guide": "node guide/make.js",
+    "guide:check": "node guide/check.js",
+    "test": "node test/features.test.js && node test/statuses.test.js && node test/guide.test.js && node test/sweep.js && node guide/check.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}
