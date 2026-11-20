@@ -18,7 +18,7 @@ const MAKE = fs.readFileSync(path.join(__dirname, 'make.js'), 'utf8');
 
 // Things the app has that aren't found by scanning the page, each named
 // the way slides list them in `covers`.
-const ALSO_REQUIRED = ['assistant', 'cmdk', 'quick-capture', 'bottom-nav', 'create-sheet', 'dash:invoices', 'bulk', 'filter:owner', 'guide', 'templates:edit', 'team:access-level', 'action:new-entry'];
+const ALSO_REQUIRED = ['whats-new', 'assistant', 'cmdk', 'quick-capture', 'bottom-nav', 'create-sheet', 'dash:invoices', 'bulk', 'filter:owner', 'guide', 'templates:edit', 'team:access-level', 'action:new-entry'];
 // Found by the scan but deliberately without a slide of their own.
 const EXEMPT = {
   'action:close': 'the record panel’s close button',

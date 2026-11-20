@@ -5,7 +5,8 @@
   "scripts": {
     "guide": "node guide/make.js",
     "guide:check": "node guide/check.js",
-    "test": "node test/features.test.js && node test/statuses.test.js && node test/guide.test.js && node test/sweep.js && node guide/check.js"
+    "test": "node test/features.test.js && node test/statuses.test.js && node test/guide.test.js && node test/changelog.test.js && node test/sweep.js && node guide/check.js && node changelog/check.js",
+    "changelog:check": "node changelog/check.js"
   },
   "devDependencies": {
     "playwright": "^1.48.0"

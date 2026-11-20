@@ -92,7 +92,13 @@ const STEPS = {
   cmdk: { setup: async p => { await p.evaluate('openCmdk()'); await p.waitForTimeout(200); await p.keyboard.type('nor'); await p.waitForTimeout(300); }, target: '#cmdk .cmdk-box' },
   frontrow: { setup: openRecord('contacts'), target: '#pf-frontrow-btn' },
   phone: { setup: async p => { await p.evaluate('openCreateSheet()'); await p.waitForTimeout(350); }, target: '#create-sheet .cs-box' },
+  'whats-new': { setup: async p => {
+    await p.evaluate("loadChangelog().then(()=>openChanges(CL.entries.filter(e=>['jobs-invoices','assistant','activity-files'].includes(e.id)),'new'))");
+    await p.waitForFunction(() => !document.getElementById('changes').hidden);
+    await p.waitForTimeout(700);
+  }, target: '#changes .chg-dialog' },
   finish: { setup: view('resources'), target: '#guide-cta' },
+  changelog: { setup: async p => { await view('changelog')(p); await p.waitForSelector('#changelog-list .cl-entry'); await p.evaluate("clSetFilter('order','newest')"); await p.waitForTimeout(250); }, target: '#view-changelog .cl-tools' },
   'admin-team-view': { setup: async p => { await view('pipeline')(p); await p.evaluate("setViewMode('pipeline','list',document.querySelector(\"#view-pipeline .vt-btn[onclick*='list']\"))"); await showFilters(p, 'pipeline'); await p.waitForTimeout(250); }, target: '#fs-assignee-pipeline' },
   'settings-team': { setup: settings('Team Management'), target: inSettings('Team Management') },
   'settings-dictation': { setup: settings('CRM Dictation Reader'), target: inSettings('CRM Dictation Reader') },
@@ -111,6 +117,8 @@ const STEPS = {
 async function reset(page) {
   await page.evaluate(() => {
     try { if (typeof closeGuide === 'function') closeGuide(); } catch (e) {}
+    try { if (typeof closeChanges === 'function') closeChanges(); } catch (e) {}
+    try { if (typeof clSetFilter === 'function') { CL.filter = { q: '', type: '', audience: '', order: 'oldest' }; } } catch (e) {}
     document.querySelectorAll('.modal-overlay').forEach(o => { o.style.display = 'none'; });
     try { if (document.getElementById('profile-panel')?.classList.contains('open')) closeProfile(); } catch (e) {}
     try { if (typeof closeAssistant === 'function') closeAssistant(); } catch (e) {}

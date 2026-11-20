@@ -12,7 +12,7 @@ every organization:
 | an organization's own domain | that organization's portal at `/` |
 
 - Vercel project: `jtg-tools-frontrow`, **Root Directory `frontrow`**
-- Suggested domain: `frontrow.jtgworkspace.com`
+- Suggested domain: `frontrow.mkcworkspace.com`
 - Database: Supabase MKC-Admin (`symbmscaajjmgywbifhv`), schema `frontrow`
 
 ## Accounts
@@ -46,7 +46,7 @@ mistyped domain can never receive account links.
 | --- | --- |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | same as Frontrow Manager |
 | `RESEND_API_KEY`, `FROM_EMAIL` | same as Frontrow Manager |
-| `FRONTROW_URL` | this app's URL, e.g. `https://frontrow.jtgworkspace.com` (links in emails) |
+| `FRONTROW_URL` | this app's URL, e.g. `https://frontrow.mkcworkspace.com` (links in emails) |
 | `CLICKUP_API_TOKEN` | same new token as Frontrow Manager (notes and request contacts) |
 | `ALLOWED_ORIGINS` | optional; only if a form is posted from another origin |
 
@@ -54,7 +54,7 @@ mistyped domain can never receive account links.
 
 1. Vercel project `jtg-tools-frontrow` → Settings → General → **Root
    Directory** `frontrow`; add the variables; redeploy.
-2. Add `frontrow.jtgworkspace.com` (Settings → Domains). **Until a domain is
+2. Add `frontrow.mkcworkspace.com` (Settings → Domains). **Until a domain is
    added, clients can't open the `*.vercel.app` URL** — Vercel's deployment
    protection asks them to log in to Vercel. Either add the domain or turn
    protection off for production.

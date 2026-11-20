@@ -38,6 +38,6 @@ export default route(async (request) => {
     role: session.role,
     can: CAN[session.role],
     gemini: { available: g.available, model: g.model, reason: g.reason },
-    frontrowUrl: (process.env.FRONTROW_URL || 'https://frontrow.jtgworkspace.com').replace(/\/$/, '')
+    frontrowUrl: (process.env.FRONTROW_URL || 'https://frontrow.mkcworkspace.com').replace(/\/$/, '')
   });
 });
