@@ -84,7 +84,8 @@ const script = [
       assert.equal(await page.evaluate(() => document.getElementById('job-modal').style.display), 'none');
       // Unknown account without the tick → refused
       await page.evaluate(() => openJobModal()); await page.fill('#job-account', 'Nobody Co'); await page.fill('#job-service', 'x'); await page.fill('#job-amount', '10');
-      await page.click('#job-modal .modal-footer .btn-primary'); await page.waitForTimeout(200);
+      await page.click('#job-modal .modal-footer .btn-primary');
+      await page.waitForFunction(() => /no account called/i.test(document.getElementById('job-status').textContent), null, { timeout: 4000 }).catch(() => {});
       r.jobRefused = await page.textContent('#job-status');
       assert(/no account called/i.test(r.jobRefused));
       await page.evaluate(() => closeModal('job-modal'));

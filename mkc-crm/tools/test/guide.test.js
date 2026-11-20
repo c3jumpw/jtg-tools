@@ -6,7 +6,7 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { newPage, APP } = require('../harness/mock');
+const { newPage, reloadKeepingStorage, APP } = require('../harness/mock');
 const FILE = process.argv[2] || APP;
 const OUT = process.env.SWEEP_OUT || fs.mkdtempSync(path.join(os.tmpdir(), 'crm-guide-'));
 
@@ -62,7 +62,7 @@ const state = page => page.evaluate(() => ({
     s = await state(page); assert.strictEqual(s.open, false);
     assert.strictEqual(await page.evaluate(() => S.currentView || document.querySelector('.nav-item.active')?.dataset.view), 'pipeline');
     // Closing marks it seen: a reload doesn't open it again.
-    await page.reload(); await ready(page); await page.waitForTimeout(1200);
+    await reloadKeepingStorage(page); await ready(page); await page.waitForTimeout(1200);
     assert.strictEqual((await state(page)).open, false, 'not shown again once seen');
     // Ways back in: Resources, the ? button, and the command bar.
     await page.evaluate(() => switchView('resources')); await page.waitForTimeout(200);
@@ -88,15 +88,12 @@ const state = page => page.evaluate(() => ({
     await page.context().close();
   }
 
-  // 3) Someone who took the tour before the newest slides: What's new, only those.
+  // 3) Someone who has taken the tour isn't shown it again (What's new is
+  //    the change log's job: test/changelog.test.js).
   {
     const { page } = await newPage(browser, { mobile: false, opts: { guideSeen: '2026-01-01' } });
-    await page.goto('file://' + FILE); await ready(page);
-    await page.waitForFunction(() => !document.getElementById('guide').hidden, null, { timeout: 4000 });
-    const s = await state(page);
-    assert.strictEqual(s.kicker, 'What’s new');
-    const expected = await page.evaluate(() => GUIDE_STEPS.filter(x => x.since > '2026-01-01' && x.only !== 'phone').map(x => x.id));
-    assert.deepStrictEqual(s.ids, expected);
+    await page.goto('file://' + FILE); await ready(page); await page.waitForTimeout(1200);
+    assert.strictEqual((await state(page)).open, false, 'the tour stays closed once taken');
     await page.context().close();
   }
 

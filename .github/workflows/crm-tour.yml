@@ -1,7 +1,8 @@
-# Keeps the CRM's getting-started tour current: on every change to the CRM
-# it remakes the tour's screenshots from sample data, commits them, and
-# runs the CRM's browser tests and the tour check (which fails when a new
-# screen, button or pop-up has no slide). See mkc-crm/tools/README.md.
+# Keeps the CRM's tour and change log current: on every change to the CRM
+# it remakes the tour's screenshots from sample data, commits them, and runs
+# the CRM's browser tests, the tour check (fails when a new screen, button or
+# pop-up has no slide) and the change-log check (fails when the CRM changed
+# after the newest change-log entry). See mkc-crm/tools/README.md.
 name: CRM tour and tests
 
 on:
@@ -9,12 +10,16 @@ on:
     branches: [main]
     paths:
       - 'mkc-crm/index.html'
+      - 'mkc-crm/changelog.json'
       - 'mkc-crm/tools/**'
+      - 'api/**'
       - '.github/workflows/crm-tour.yml'
   pull_request:
     paths:
       - 'mkc-crm/index.html'
+      - 'mkc-crm/changelog.json'
       - 'mkc-crm/tools/**'
+      - 'api/**'
   workflow_dispatch:
 
 permissions:
@@ -34,6 +39,8 @@ jobs:
         working-directory: mkc-crm/tools
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # the change-log check reads when the CRM last changed
       - uses: actions/setup-node@v4
         with:
           node-version: 20

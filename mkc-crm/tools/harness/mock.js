@@ -21,12 +21,14 @@ function installMock({ FX, seedSession, opts }) {
     localStorage.setItem('mkc_session_token', 'fixture-token');
     // The tour opens itself on a first sign-in; tests that aren't about
     // the tour start as someone who has already seen it.
-    if (opts.guideSeen !== undefined) { if (opts.guideSeen) localStorage.setItem('mkc_guide_' + FX.SESSION_USER.mkcId, JSON.stringify({ version: opts.guideSeen })); }
+    // guideSeen seeds once, so a reload in a test sees what the app saved.
+    if (opts.guideSeen !== undefined) { const k = 'mkc_guide_' + FX.SESSION_USER.mkcId; if (opts.guideSeen && !localStorage.getItem(k)) localStorage.setItem(k, JSON.stringify({ version: opts.guideSeen })); }
     else if (!opts.guideFresh) localStorage.setItem('mkc_guide_' + FX.SESSION_USER.mkcId, JSON.stringify({ version: '9999-12-31' }));
   }
   const realFetch = window.fetch.bind(window);
   window.fetch = async (input, init = {}) => {
     const url = typeof input === 'string' ? input : input.url;
+    if (/(^|\/)changelog\.json(\?|$)/.test(url) && opts.changelog) return json(opts.changelog);
     if (!url.startsWith(W)) return realFetch(input, init);
     const u = new URL(url);
     const method = (init.method || 'GET').toUpperCase();
@@ -119,9 +121,23 @@ async function newPage(browser, { mobile, seedSession = true, opts = {} }) {
     if (mm) { const f = path.join(MEDIA, decodeURIComponent(mm[1])); if (fs.existsSync(f)) return route.fulfill({ path: f }); }
     return route.fulfill({ status: 404, body: '' });
   });
+  // The page reads changelog.json next to it; serve the repo's copy.
+  if (opts.changelog === undefined) { try { opts = { ...opts, changelog: JSON.parse(fs.readFileSync(path.join(path.dirname(APP), 'changelog.json'), 'utf8')) }; } catch (e) {} }
   await page.addInitScript(installMock, { FX, seedSession, opts });
   page.__errors = errors;
   return { ctx, page, errors };
 }
 
-module.exports = { newPage, FX, APP };
+// "Sign in again": reload, keeping what the app saved in localStorage.
+// Chromium sometimes drops localStorage written by a file:// page in these
+// throwaway test browsers when the page reloads (about 1 reload in 10, even
+// after a pause; a real browser keeps it). This carries over exactly what
+// the app had saved before the reload, for this and any later load of the
+// page, so a test still fails if the app never saved it.
+async function reloadKeepingStorage(page) {
+  const saved = await page.evaluate(() => Object.fromEntries(Object.keys(localStorage).map(k => [k, localStorage.getItem(k)])));
+  await page.addInitScript(s => { for (const [k, v] of Object.entries(s)) localStorage.setItem(k, v); }, saved);
+  await page.reload();
+}
+
+module.exports = { newPage, reloadKeepingStorage, FX, APP };
