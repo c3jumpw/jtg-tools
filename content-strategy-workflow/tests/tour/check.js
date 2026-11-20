@@ -5,7 +5,9 @@
  * Fails (exit 1) when any of these is true, so an update can't ship with
  * help pages that describe an older ContentFlow:
  *   1. tour/steps.js `version` differs from APP_VERSION in index.html.
- *   2. tour/steps.js has no What's new entry for APP_VERSION.
+ *   2. changelog.js has no entry for APP_VERSION, isn't in order, has an item
+ *      with a bad type/role/step, or is missing a version that index.html's
+ *      version history lists (the change log must stay complete).
  *   3. The screenshots were captured from a different index.html than the
  *      one in the repo (any edit to the app needs a re-capture).
  *   4. A step is missing a screenshot for one of its roles, or has more
@@ -22,6 +24,7 @@ const path = require('path');
 const crypto = require('crypto');
 const H = require('../lib/harness');
 const TOUR = require('../../tour/steps.js');
+const CHANGELOG = require('../../changelog.js');
 
 const problems = [];
 function fail(msg) { problems.push(msg); }
@@ -34,6 +37,46 @@ function readManifest() {
   return mod.exports;
 }
 function pick(v, role) { return v && typeof v === 'object' && !Array.isArray(v) ? (v[role] !== undefined ? v[role] : v.default) : v; }
+
+function cmp(a, b) {
+  const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
+  for (let i = 0; i < 3; i++) if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) - (pb[i] || 0);
+  return 0;
+}
+
+function checkChangelog(indexHtml, version) {
+  const rel = (CHANGELOG && CHANGELOG.releases) || [];
+  if (!rel.length) return fail('changelog.js has no releases.');
+  const last = rel[rel.length - 1];
+  if (last.version !== version) fail(`changelog.js ends at v${last.version}, but index.html is v${version}. Add a v${version} entry at the end (RELEASING.md step 2).`);
+  const stepIds = new Set(TOUR.steps.map((s) => s.id));
+  const seen = new Set();
+  rel.forEach((r, i) => {
+    const where = `changelog.js v${r.version}`;
+    if (!/^\d+\.\d+\.\d+$/.test(r.version || '')) fail(`${where}: version must look like 1.2.3.`);
+    if (seen.has(r.version)) fail(`${where}: listed twice.`);
+    seen.add(r.version);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(r.date || '') || isNaN(new Date(r.date))) fail(`${where}: date must be YYYY-MM-DD.`);
+    if (i > 0) {
+      if (cmp(r.version, rel[i - 1].version) <= 0) fail(`${where}: comes after v${rel[i - 1].version} but isn't newer. Keep the log oldest to newest.`);
+      if (r.date < rel[i - 1].date) fail(`${where}: dated before the release above it.`);
+    }
+    if (!r.title) fail(`${where}: needs a title.`);
+    if (!(r.items || []).length) fail(`${where}: has no items.`);
+    (r.items || []).forEach((it, n) => {
+      const w = `${where} item ${n + 1}`;
+      if (!['new', 'improved', 'fixed'].includes(it.type)) fail(`${w}: type must be new, improved or fixed.`);
+      if (!it.title || !it.text) fail(`${w}: needs a title and text.`);
+      if (!(it.roles || []).length || it.roles.some((ro) => !['admin', 'rep', 'client'].includes(ro))) fail(`${w}: roles must list admin, rep and/or client.`);
+      if (it.step && !stepIds.has(it.step)) fail(`${w}: step "${it.step}" isn't a tour step.`);
+      if (it.focus !== undefined && (!it.step || !Number.isInteger(it.focus) || it.focus < 0)) fail(`${w}: focus must be a highlight number (0, 1, ...) and needs a step.`);
+    });
+  });
+  // Every version in index.html's version history must be in the change log.
+  const history = new Set([...indexHtml.matchAll(/^\s+v(\d+\.\d+\.\d+) \(\d{4}-\d{2}-\d{2}\)/gm)].map((m) => m[1]));
+  history.forEach((v) => { if (!seen.has(v)) fail(`index.html's version history has v${v}, but changelog.js doesn't. Add it.`); });
+  if (!history.has(version)) fail(`index.html's version history comment has no v${version} entry.`);
+}
 
 async function appFeatures(browser, server, role) {
   const { ctx, page } = await H.demoPage(browser, server, { role });
@@ -74,7 +117,7 @@ async function appFeatures(browser, server, role) {
 
   // 1 + 2
   if (TOUR.version !== version) fail(`tour/steps.js is for v${TOUR.version} but index.html is v${version}. Review the steps for this release, then set version: '${version}'.`);
-  if (!(TOUR.whatsNew && TOUR.whatsNew[version] && TOUR.whatsNew[version].length)) fail(`tour/steps.js has no whatsNew['${version}'] entry. Add at least one line about what changed.`);
+  checkChangelog(indexHtml.toString(), version);
 
   // 3 + 4 + 5
   const M = readManifest();
@@ -90,6 +133,14 @@ async function appFeatures(browser, server, role) {
       if (!fs.existsSync(path.join(H.APP_DIR, 'tour', 'shots', shot.file))) fail(`tour/shots/${shot.file} is missing.`);
       const points = pick(s.points, r) || [];
       if (shot.highlights.length > points.length) fail(`Step "${s.id}" (${r}) has ${shot.highlights.length} rings but only ${points.length} notes.`);
+    }));
+    // A change-log close-up must point at a highlight every affected role has.
+    CHANGELOG.releases.forEach((rel) => (rel.items || []).forEach((it) => {
+      if (it.focus === undefined || !it.step) return;
+      it.roles.forEach((r) => {
+        const shot = M.shots[it.step + '-' + r];
+        if (shot && !shot.highlights[it.focus]) fail(`changelog.js v${rel.version} "${it.title}": focus ${it.focus}, but step "${it.step}" (${r}) has only ${shot.highlights.length} highlights.`);
+      });
     }));
     const valid = new Set();
     TOUR.steps.forEach((s) => s.roles.forEach((r) => valid.add(s.id + '-' + r)));
@@ -122,5 +173,5 @@ async function appFeatures(browser, server, role) {
     console.log('\nTour/guide check FAILED:\n' + problems.map((p) => '  - ' + p).join('\n'));
     process.exit(1);
   }
-  console.log(`\nTour/guide check passed for ContentFlow v${version}: ${Object.keys(M.shots).length} screenshots, every page and menu covered.`);
+  console.log(`\nTour/guide check passed for ContentFlow v${version}: ${Object.keys(M.shots).length} screenshots, every page and menu covered, change log complete (${CHANGELOG.releases.length} releases).`);
 })();

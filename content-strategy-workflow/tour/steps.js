@@ -8,9 +8,8 @@
  *     screen each step describes and saves the screenshot + highlight boxes
  *     to tour/shots/ and tour/manifest.js;
  *   - tests/tour/check.js, which fails the release when a page, menu item or
- *     tab exists in the app that no step covers, when the screenshots were
- *     captured from an older index.html, or when this release has no
- *     What's new entry.
+ *     tab exists in the app that no step covers, or when the screenshots were
+ *     captured from an older index.html.
  *
  * Per-role text: any of title/body/points/shot.actions/shot.highlight may be
  * an object keyed by role ({ admin, rep, client, default }).
@@ -32,7 +31,7 @@
   var TOUR = {
     // The release these steps were written for. check.js requires this to
     // match APP_VERSION in index.html, so every release gets a review here.
-    version: '1.26.0',
+    version: '1.27.0',
 
     roles: {
       admin: { label: 'Admin', blurb: 'Run the workspace: people, accounts and all the content in between.' },
@@ -40,16 +39,9 @@
       client: { label: 'Client', blurb: 'Follow your content, add ideas and files, and talk to your team.' },
     },
 
-    // Shown once to everyone after an update (banner in the app), and at the
-    // start of the tour in "what's new" mode. Add an entry for every release.
-    whatsNew: {
-      '1.26.0': [
-        { title: 'A step-by-step tour', body: 'This tour: real screenshots of every screen for your role, under the ? button and Settings › Getting started tour. It is re-captured from the live app with every release.', step: 'top-bar' },
-        { title: 'Notebook links stay read-only', body: 'The Notebook Link field no longer shows as an editable box inside entries. Admins see it as a link; it is edited only in ClickUp.', roles: ['admin', 'rep'] },
-        { title: 'The For Review check now works', body: 'Moving an entry into For Review with no draft or raw media now asks you to confirm first, as intended.', roles: ['admin', 'rep'] },
-        { title: 'Board stages in order', body: 'Your Board now lists stages in workflow order, from Idea to Published.', roles: ['client'], step: 'board' },
-      ],
-    },
+    // What's new notes live in changelog.js (one entry per release, tagged by
+    // role), which feeds the app's What's new window, Admin › Change log and
+    // this tour's What's new page.
 
     sections: ['Getting in', 'Find your way', 'Production', 'Ideas & strategy', 'Settings', 'Admin'],
 
@@ -342,13 +334,13 @@
           rep: 'The gear holds everything that isn’t content: light or dark mode, Sync now, this tour and the full guide, your profile, disconnecting ClickUp, and sign out.',
           client: 'The gear holds everything that isn’t content: light or dark mode, Sync now, this tour and the full guide, your profile, and sign out.',
         },
-        points: ['Sync now reloads everything, for example after someone edits a task in ClickUp.', 'Bring back this tour, or open the full guide.', 'The version you are on. After an update, a banner offers what’s new.'],
-        covers: ['settings:toggle-theme', 'settings:refresh', 'settings:client-refresh', 'settings:open-tour', 'settings:open-guide', 'settings:open-admin-panel', 'settings:open-profile-modal', 'settings:disconnect', 'settings:sign-out', 'topnav:toggle-settings-menu'],
+        points: ['Sync now reloads everything, for example after someone edits a task in ClickUp.', 'Bring back this tour, or open the full guide.', 'What’s new shows the latest update’s changes for you again.', 'The version you are on.'],
+        covers: ['settings:toggle-theme', 'settings:refresh', 'settings:client-refresh', 'settings:open-tour', 'settings:open-guide', 'settings:open-whats-new', 'settings:open-admin-panel', 'settings:open-profile-modal', 'settings:disconnect', 'settings:sign-out', 'topnav:toggle-settings-menu'],
         shot: {
           actions: { default: [['click', '.topnav [data-action="toggle-settings-menu"]'], ['wait', '.settings-menu']] },
           highlight: {
-            default: ['.settings-menu [data-action="refresh"]', '.settings-menu [data-action="open-tour"]', '.settings-menu-version'],
-            client: ['.settings-menu [data-action="client-refresh"]', '.settings-menu [data-action="open-tour"]', '.settings-menu-version'],
+            default: ['.settings-menu [data-action="refresh"]', '.settings-menu [data-action="open-tour"]', '.settings-menu [data-action="open-whats-new"]', '.settings-menu-version'],
+            client: ['.settings-menu [data-action="client-refresh"]', '.settings-menu [data-action="open-tour"]', '.settings-menu [data-action="open-whats-new"]', '.settings-menu-version'],
           },
         },
       },
@@ -361,6 +353,20 @@
         shot: {
           actions: [['click', '.topnav [data-action="toggle-settings-menu"]'], ['click', '.settings-menu [data-action="open-profile-modal"]'], ['wait', '#profile-name-input']],
           highlight: ['#profile-name-input', '#profile-email-input', '#profile-new-password-input'],
+        },
+      },
+
+      {
+        id: 'whats-new', section: 'Settings', roles: ['admin', 'rep', 'client'], guide: 'whats-new',
+        title: 'What’s new after an update',
+        body: 'The first time you sign in after ContentFlow is updated, this window shows what changed, only the changes that affect you. If you missed several updates, it covers all of them.',
+        points: ['Each change, marked New, Improved or Fixed.', 'Show me opens the tour at that screen.', 'Got it closes it until the next update. Settings › What’s new brings it back.'],
+        covers: [],
+        shot: {
+          boot: { seenVersion: '1.25.0' },
+          viewport: { width: 1280, height: 860 },
+          actions: [['wait', '#whats-new-modal'], ['waitMs', 400]],
+          highlight: ['#whats-new-modal .wn-card >> nth=0', '#whats-new-modal .wn-body [data-action="whats-new-show"] >> nth=0', '#whats-new-modal .wn-footer [data-action="close-whats-new"]'],
         },
       },
 
@@ -386,6 +392,18 @@
           viewport: { width: 1280, height: 900 },
           actions: [['click', '.topnav [data-action="toggle-settings-menu"]'], ['click', '.settings-menu [data-action="open-admin-panel"]'], ['click', '[data-action="set-admin-tab"][data-value="users"]'], ['wait', '#invite-form'], ['fill', '#invite-email', 'priya@northside.example'], ['select', '#invite-role', 'client'], ['fill', '#invite-accounts', '86demo103'], ['wait', '.table-wrap']],
           highlight: ['#invite-role', '#invite-accounts', '.table-wrap'],
+        },
+      },
+      {
+        id: 'admin-changelog', section: 'Admin', roles: ['admin'], guide: 'admin-changelog',
+        title: 'Admin panel: change log',
+        body: 'Every ContentFlow release since the first, with who each change affects. It is updated with every release.',
+        points: ['Search, filter by who it affects or by New / Improved / Fixed, and flip the order.', 'Download the whole history as CSV or JSON to keep or share.', 'The current version, and how many people have seen its notes.', 'Each change, with the roles it affects.'],
+        covers: ['admin:changelog'],
+        shot: {
+          viewport: { width: 1280, height: 900 },
+          actions: [['click', '.topnav [data-action="toggle-settings-menu"]'], ['click', '.settings-menu [data-action="open-admin-panel"]'], ['click', '[data-action="set-admin-tab"][data-value="changelog"]'], ['wait', '.cl-timeline'], ['wait', '.cl-seen'], ['waitMs', 300]],
+          highlight: ['.cl-controls', '[data-action="export-changelog"][data-format="csv"]', '.cl-release.current .cl-head', '.cl-release.current .cl-items li >> nth=0'],
         },
       },
 

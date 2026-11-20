@@ -50,11 +50,23 @@
     { id: 503, username: 'Sam Okafor', email: 'sam@studio.example', color: '#2e9e4f', initials: 'SO' },
   ];
   var DANA = { id: 601, username: 'Dana Reyes', email: 'dana@harborpine.example', color: '#7c5cbf' };
+  // Everyone joined in September unless the session is a brand-new user
+  // (CFG.freshUser), whose account is dated after any release (it isn't shown
+  // anywhere; it only tells the app this person is new, not returning).
+  var JOINED = CFG.freshUser ? '2099-01-01T00:00:00Z' : '2026-09-19T15:00:00Z';
   var PROFILES = {
-    admin: { id: 'demo-admin', role: 'admin', email: 'morgan@studio.example', display_name: 'Morgan Ellis' },
-    rep: { id: 'demo-rep', role: 'rep', email: 'jordan@studio.example', display_name: 'Jordan Taylor' },
-    client: { id: 'demo-client', role: 'client', email: 'dana@harborpine.example', display_name: 'Dana Reyes' },
+    admin: { id: 'demo-admin', role: 'admin', email: 'morgan@studio.example', display_name: 'Morgan Ellis', created_at: JOINED },
+    rep: { id: 'demo-rep', role: 'rep', email: 'jordan@studio.example', display_name: 'Jordan Taylor', created_at: JOINED },
+    client: { id: 'demo-client', role: 'client', email: 'dana@harborpine.example', display_name: 'Dana Reyes', created_at: JOINED },
   };
+  // contentflow_release_views: the last release each person has seen.
+  // CFG.seenVersion is this session's own row (null = never seen anything).
+  var RELEASE_VIEWS = [
+    { email: 'jordan@studio.example', role: 'rep', last_seen_version: '1.27.0', seen_at: iso(0, 3) },
+    { email: 'dana@harborpine.example', role: 'client', last_seen_version: '1.27.0', seen_at: iso(0, 5) },
+    { email: 'alex@studio.example', role: 'rep', last_seen_version: '1.26.0', seen_at: iso(2) },
+  ];
+  window.__CF_DEMO_UPSERTS = [];
   var ACCESS = {
     admin: [],
     rep: [HP, ROAST, LD],
@@ -262,6 +274,19 @@
   window.supabase = {
     createClient: function () {
       function query(table) {
+        if (table === 'contentflow_release_views') {
+          var own = CFG.seenVersion ? { last_seen_version: CFG.seenVersion } : null;
+          var rv = {
+            select: function () { return rv; }, eq: function () { return rv; },
+            maybeSingle: function () { return Promise.resolve({ data: own, error: null }); },
+            upsert: function (row) { window.__CF_DEMO_UPSERTS.push(row); CFG.seenVersion = row.last_seen_version; return Promise.resolve({ data: null, error: null }); },
+            then: function (res, rej) {
+              var rows = RELEASE_VIEWS.concat(CFG.seenVersion ? [{ email: PROFILES[ROLE].email, role: ROLE, last_seen_version: CFG.seenVersion, seen_at: new Date(NOW).toISOString() }] : []);
+              return Promise.resolve({ data: ROLE === 'admin' ? rows : [], error: null }).then(res, rej);
+            },
+          };
+          return rv;
+        }
         var data = table === 'profiles' ? PROFILES[ROLE]
           : table === 'account_access' ? ACCESS[ROLE].map(function (id) { return { clickup_account_id: id, clickup_list_id: null }; })
           : table === 'account_settings' ? ACCOUNTS.map(function (a) { return { account_id: a.id, is_active: INACTIVE.indexOf(a.id) === -1 }; })

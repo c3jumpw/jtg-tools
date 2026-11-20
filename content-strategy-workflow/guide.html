@@ -684,12 +684,13 @@ body[data-role="all"] #matrix { min-width: 560px; }
             <div>Sync now</div>
             <div>Getting started tour</div>
             <div>Full guide</div>
+            <div>What's new</div>
             <div data-for="admin">Admin panel <span class="r">Admin</span></div>
             <hr>
             <div>Edit profile</div>
             <div data-for="admin rep">Disconnect ClickUp <span class="r">Admin &amp; team</span></div>
             <div>Sign out</div>
-            <div class="r" style="padding-top:6px;border-top:1px solid var(--border)">ContentFlow v1.26.0</div>
+            <div class="r" style="padding-top:6px;border-top:1px solid var(--border)">ContentFlow v1.27.0</div>
           </div>
         </div>
       </div>
@@ -1346,12 +1347,48 @@ body[data-role="all"] #matrix { min-width: 560px; }
       <h3 style="margin:0">The rest of the menu</h3>
       <p><b>Switch to dark / light mode</b> is remembered on this device. Until you choose, ContentFlow follows your device's setting.</p>
       <p><b>Sync now</b> reloads everything from ClickUp. Use it after someone edits a task directly in ClickUp.</p>
-      <p><b>Getting started tour</b> and <b>Full guide</b> open Help. The bottom of the menu shows which version of ContentFlow you're on; after an update, a banner above the main view offers what's new, once.</p>
+      <p><b>Getting started tour</b> and <b>Full guide</b> open Help. <b>What's new</b> shows the latest update's changes for you again (see <a href="#whats-new">What's new</a>). The bottom of the menu shows which version of ContentFlow you're on.</p>
       <p data-for="admin rep"><b>Disconnect ClickUp</b> unlinks your ClickUp login on this device. You'll be asked to connect again next time.</p>
       <p data-for="admin"><b>Admin panel</b> opens people and account management (see <a href="#admin-panel">Admin panel</a>).</p>
       <p><b>Sign out</b> ends your session on this device.<span data-for="admin rep"> It also unlinks ClickUp, so you'll connect again when you next sign in.</span></p>
     </div>
   </div>
+</section>
+
+<section class="sec" id="whats-new" data-group="You &amp; your device" data-for="admin rep client">
+  <div class="sec-head">
+    <p class="eyebrow">After an update</p>
+    <h2>What's new</h2>
+  </div>
+  <p class="lede">The first time you sign in after ContentFlow is updated, a window shows what changed: only the changes that affect your role, and every update you missed if you've been away. It appears once per person, on any device.</p>
+  <figure class="plate">
+    <div class="plate-frame">
+      <div class="m-app" style="padding:16px;background:var(--paper-dim)">
+        <div class="m-modal" style="max-width:520px;overflow:hidden">
+          <div style="background:var(--ink);color:var(--on-ink);padding:16px 18px">
+            <span class="m-label" style="color:var(--accent)">What's new in ContentFlow</span>
+            <div class="m-h" style="color:#fff;font-size:18px;margin-top:6px">Change log and What's new</div>
+            <span style="font-size:11.5px;color:var(--on-ink-dim)">v1.27.0 &middot; Nov 20, 2026 &middot; 2 changes for you <i class="pin">1</i></span>
+          </div>
+          <div style="padding:12px;display:grid;gap:8px;background:var(--paper)">
+            <div class="m-panel" style="display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px;align-items:start">
+              <div style="aspect-ratio:16/10;border-radius:6px;background:var(--paper-dim);border:1px solid var(--border)"></div>
+              <div style="display:grid;gap:3px;justify-items:start"><span class="m-chip" style="background:var(--md-email)">New</span><b style="font-size:12.5px;color:var(--heading)">What's new after updates</b><span class="m-help">After an update, ContentFlow shows you once what changed for your role.</span><span class="m-link">Show me &rarr; <i class="pin">2</i></span></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:10px 12px;border-top:1px solid var(--border)"><span class="m-btn outline">Take the tour</span><span class="m-btn primary">Got it <i class="pin">3</i></span></div>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>Which update</b>, and how many changes affect you. Missed several? They're all listed, newest first.</span></li>
+        <li><i class="pin">2</i><span><b>Show me</b> (or the picture) opens the tour at that screen.</span></li>
+        <li><i class="pin">3</i><span><b>Got it</b> closes it until the next update. <b>Settings &rsaquo; What's new</b> brings it back any time.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="note" data-for="admin"><span class="note-tag admin">Admins</span><span>The window has a <b>Full change log</b> button, and the Change log shows how many people have seen the latest update.</span></div>
 </section>
 
 <section class="sec" id="mobile" data-group="You &amp; your device" data-for="admin rep client">
@@ -1391,7 +1428,7 @@ body[data-role="all"] #matrix { min-width: 560px; }
     <p class="eyebrow">Settings &rsaquo; Admin panel</p>
     <h2>Admin panel</h2>
   </div>
-  <p class="lede">Two tabs: <b>Accounts</b> controls which client accounts are live in ContentFlow, and <b>Invite &amp; Users</b> controls who can sign in and what they see. <b>Back to board</b> returns you to the app.</p>
+  <p class="lede">Three tabs: <b>Accounts</b> controls which client accounts are live in ContentFlow, <b>Invite &amp; Users</b> controls who can sign in and what they see, and <b>Change log</b> holds every release (see <a href="#admin-changelog">Change log</a>). <b>Back to board</b> returns you to the app.</p>
   <figure class="plate">
     <div class="plate-frame plate-scroll">
       <div class="m-app" style="min-width:620px">
@@ -1451,6 +1488,39 @@ body[data-role="all"] #matrix { min-width: 560px; }
     </figcaption>
   </figure>
   <div class="note"><span class="note-tag heads-up">Heads-up</span><span>Access is set when you send the invite, so include every account the person needs. The panel can't yet add an account to someone who's already been invited.</span></div>
+</section>
+
+<section class="sec" id="admin-changelog" data-group="Admin" data-for="admin">
+  <div class="sec-head">
+    <p class="eyebrow">Admin panel &rsaquo; Change log</p>
+    <h2>Change log</h2>
+  </div>
+  <p class="lede">Every ContentFlow release since the first, in one timeline, with who each change affects. A new entry is added with every release; a release can't ship without one.</p>
+  <figure class="plate">
+    <div class="plate-frame plate-scroll">
+      <div class="m-app m-body" style="min-width:620px;display:grid;gap:10px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="m-input" style="width:170px">Search changes&hellip;</span><span class="m-select">Everyone</span><span class="m-filter"><span class="active">All</span><span>New</span><span>Improved</span><span>Fixed</span></span><span class="m-btn outline">Newest first &#8645;</span><i class="pin">1</i><span style="flex:1"></span><span class="m-btn outline">Export CSV</span><span class="m-btn outline">Export JSON</span><i class="pin">2</i></div>
+        <div class="m-panel" style="border-color:var(--accent);display:grid;gap:6px">
+          <span style="display:flex;gap:6px;align-items:center"><span class="m-chip" style="background:var(--ink);font-family:var(--font-mono)">v1.27.0</span><span class="m-help">Nov 20, 2026</span><span class="m-acct">Current version</span></span>
+          <b class="m-h" style="font-size:14px">Change log and What's new</b>
+          <span class="m-help">Seen by <b>3</b> of 5 people <i class="pin">3</i></span>
+          <span style="display:grid;grid-template-columns:70px minmax(0,1fr);gap:8px;font-size:12px"><span class="m-chip" style="background:var(--md-email);width:fit-content">New</span><span><b>Change log.</b> Every release since the first&hellip; <span class="m-pill" style="padding:0 6px">Admin</span> <i class="pin">4</i></span></span>
+        </div>
+        <div class="m-panel" style="display:grid;gap:6px;opacity:0.85">
+          <span style="display:flex;gap:6px;align-items:center"><span class="m-chip" style="background:var(--ink);font-family:var(--font-mono)">v1.26.0</span><span class="m-help">Nov 18, 2026</span></span>
+          <b class="m-h" style="font-size:14px">Step-by-step tour</b>
+        </div>
+      </div>
+    </div>
+    <figcaption>
+      <ol class="callouts">
+        <li><i class="pin">1</i><span><b>Search and filter</b>: by who a change affects, by New / Improved / Fixed, and newest or oldest first.</span></li>
+        <li><i class="pin">2</i><span><b>Export</b> the whole history as CSV (for a spreadsheet) or JSON, to keep or share.</span></li>
+        <li><i class="pin">3</i><span><b>Seen by</b>: how many people have seen the current release's notes. Open it to see who.</span></li>
+        <li><i class="pin">4</i><span>Each change, with the <b>roles</b> it affects. That's exactly what decides who sees it in What's new.</span></li>
+      </ol>
+    </figcaption>
+  </figure>
 </section>
 
 <section class="sec" id="admin-recipes" data-group="Admin" data-for="admin">
@@ -1559,7 +1629,7 @@ body[data-role="all"] #matrix { min-width: 560px; }
   </dl>
 </section>
 
-    <footer class="footer"><span>ContentFlow Guide &middot; matches ContentFlow v1.26</span><span>Example accounts and people are fictional.</span></footer>
+    <footer class="footer"><span>ContentFlow Guide &middot; matches ContentFlow v1.27</span><span>Example accounts and people are fictional.</span></footer>
   </main>
 </div>
 

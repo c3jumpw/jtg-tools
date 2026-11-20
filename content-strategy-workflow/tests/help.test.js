@@ -9,6 +9,7 @@ const TOUR = require('../tour/steps.js');
 let pass = 0, fail = 0;
 function ok(cond, msg) { if (cond) { pass++; console.log('  ok   ' + msg); } else { fail++; console.log('  FAIL ' + msg); } }
 const frameFor = (page, file) => page.frames().find((f) => f.url().includes(file));
+function H_cmp(a, b) { const pa = a.split('.').map(Number), pb = b.split('.').map(Number); for (let i = 0; i < 3; i++) if (pa[i] !== pb[i]) return pa[i] - pb[i]; return 0; }
 
 async function boot(browser, server, opts) {
   const s = await H.demoPage(browser, server, opts);
@@ -94,34 +95,131 @@ async function boot(browser, server, opts) {
     await ctx.close();
   }
 
-  console.log('\ntour banner');
+  console.log('\nwelcome banner (new person)');
   {
     const { ctx, page } = await boot(browser, server, { role: 'rep', freshUser: true });
-    ok(await page.locator('.tour-banner').isVisible(), 'first sign-in on a device shows the take-the-tour banner');
+    await page.locator('.tour-banner').waitFor({ timeout: 6000 });
+    ok(await page.locator('.tour-banner').isVisible(), 'someone new gets the take-the-tour banner');
+    ok(!(await page.locator('#whats-new-modal').count()), 'and no What\'s new window');
     await page.locator('[data-action="dismiss-tour-banner"]').click();
     ok(!(await page.locator('.tour-banner').count()), 'Not now hides it');
     await page.locator('.topnav [data-view="list"]').first().click();
     ok(!(await page.locator('.tour-banner').count()), 'and it stays hidden after re-renders');
+    ok((await page.evaluate(() => window.__CF_DEMO_UPSERTS.map((u) => u.last_seen_version))).includes(H.APP_VERSION), 'dismissing records this version as seen');
     await page.reload();
     await page.locator('.topnav').first().waitFor();
-    await page.waitForTimeout(300);
-    ok(!(await page.locator('.tour-banner').count()), 'and after a reload');
+    await page.waitForTimeout(400);
+    ok(!(await page.locator('.tour-banner').count()), 'and it stays gone after a reload');
+    await ctx.close();
+  }
+
+  console.log("\nWhat's new window");
+  const CL = require('../changelog.js').releases;
+  const forRole = (role, since) => CL.filter((r) => H_cmp(r.version, since) > 0).map((r) => r.items.filter((it) => it.roles.includes(role))).filter((x) => x.length);
+  for (const role of ['admin', 'rep', 'client']) {
+    const { ctx, page } = await boot(browser, server, { role, seenVersion: '1.26.0' });
+    await page.locator('#whats-new-modal').waitFor({ timeout: 6000 });
+    const expected = forRole(role, '1.26.0').flat().length;
+    const cards = await page.locator('#whats-new-modal .wn-card').count();
+    ok(cards === expected, role + ': shows only the ' + expected + ' changes for this role (' + cards + ')');
+    ok(!(await page.locator('.tour-banner').count()), role + ': no welcome banner for a returning person');
+    const crop = await page.locator('#whats-new-modal .wn-card .wn-crop').first().evaluate((el) => ({ bg: el.style.backgroundImage, size: parseFloat(el.style.backgroundSize) })).catch(() => null);
+    ok(crop && /tour\/shots\/settings-/.test(crop.bg) && crop.size > 150, role + ': pictures are close-ups of the changed part (' + (crop ? Math.round(crop.size) + '% zoom' : 'none') + ')');
+    if (role === 'admin') ok(await page.locator('#whats-new-modal [data-action="open-changelog"]').isVisible(), 'admin: has a Full change log button');
+    if (role === 'client') {
+      const titles = await page.locator('#whats-new-modal .wn-title').allTextContents();
+      ok(!titles.includes('Change log'), 'client: the admin-only Change log item is not shown');
+    }
+    await page.locator('#whats-new-modal .wn-footer [data-action="close-whats-new"]').click();
+    ok(!(await page.locator('#whats-new-modal').count()), role + ': Got it closes it');
+    const ups = await page.evaluate(() => window.__CF_DEMO_UPSERTS);
+    ok(ups.length === 1 && ups[0].last_seen_version === H.APP_VERSION && ups[0].user_id === 'demo-' + role, role + ': saved as seen for this person (Supabase)');
+    await page.locator('.topnav [data-action="toggle-settings-menu"]').click();
+    await page.locator('.settings-menu [data-action="open-whats-new"]').click();
+    ok(await page.locator('#whats-new-modal').isVisible(), role + ': Settings > What\'s new reopens it');
+    ok(!(await page.locator('#whats-new-modal .wn-release').count()), role + ': reopened, it shows just the latest update');
+    await page.keyboard.press('Escape');
+    ok(!(await page.locator('#whats-new-modal').count()), role + ': Escape closes it');
     await ctx.close();
   }
   {
-    const { ctx, page } = await boot(browser, server, { role: 'client', seenVersion: '1.25.0' });
-    ok(await page.locator('.tour-banner').isVisible(), "after an update, the banner offers what's new");
-    ok((await page.locator('.tour-banner-text').textContent()).includes(TOUR.whatsNew[H.APP_VERSION][0].title), 'banner names the first What\'s new item');
-    await page.locator('.tour-banner [data-action="open-tour"]').click();
-    await page.frameLocator('.guide-frame[data-doc="tour"]').locator('#news-panel').waitFor({ timeout: 8000 });
-    const tour = frameFor(page, 'tour.html');
-    const items = await tour.locator('#news-list li').count();
-    const expected = TOUR.whatsNew[H.APP_VERSION].filter((n) => !n.roles || n.roles.includes('client')).length;
-    ok(items === expected, "What's new lists the " + expected + ' items for clients');
-    await page.locator('.guide-close').click();
-    ok(!(await page.locator('.tour-banner').count()), 'opening it retires the banner');
+    const { ctx, page } = await boot(browser, server, { role: 'client', seenVersion: '1.24.0' });
+    await page.locator('#whats-new-modal').waitFor({ timeout: 6000 });
+    const groups = forRole('client', '1.24.0').length;
+    ok((await page.locator('#whats-new-modal .wn-release').count()) === groups, 'away for several updates: each one is listed (' + groups + ')');
+    ok((await page.locator('#whats-new-heading').textContent()).includes(groups + ' updates'), 'heading says how many updates were missed');
+    await page.locator('#whats-new-modal .wn-body [data-action="whats-new-show"]').first().click();
+    ok(!(await page.locator('#whats-new-modal').count()), 'Show me closes the window');
+    ok(await page.locator('.guide-frame[data-doc="tour"]').isVisible(), 'and opens the tour');
+    const src = await page.locator('.guide-frame[data-doc="tour"]').getAttribute('src');
+    ok(/#[a-z-]+$/.test(src), 'at that change\'s step (' + src.split('#')[1] + ')');
     await ctx.close();
   }
+  {
+    const { ctx, page } = await boot(browser, server, { role: 'rep', seenVersion: 'none' });
+    await page.locator('#whats-new-modal').waitFor({ timeout: 6000 });
+    ok(!(await page.locator('#whats-new-modal .wn-release').count()), 'an existing person with no record sees just the latest update');
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await boot(browser, server, { role: 'client', seenVersion: '1.26.0' });
+    await page.locator('#whats-new-modal').waitFor({ timeout: 6000 });
+    await page.mouse.click(5, 5);
+    await page.waitForTimeout(200);
+    ok(!(await page.locator('#whats-new-modal').count()), 'clicking the backdrop closes it');
+    await ctx.close();
+  }
+
+  console.log('\nAdmin change log');
+  {
+    const { ctx, page } = await boot(browser, server, { role: 'admin' });
+    await page.locator('.topnav [data-action="toggle-settings-menu"]').click();
+    await page.locator('.settings-menu [data-action="open-admin-panel"]').click();
+    await page.locator('[data-action="set-admin-tab"][data-value="changelog"]').click();
+    await page.locator('.cl-timeline').waitFor();
+    ok((await page.locator('.cl-release').count()) === CL.length, 'lists all ' + CL.length + ' releases');
+    ok((await page.locator('.cl-release').first().locator('.cl-version').textContent()) === 'v' + H.APP_VERSION, 'newest first by default, current version on top');
+    ok(await page.locator('.cl-release.current .cl-current').isVisible(), 'current version is marked');
+    await page.locator('.cl-seen').waitFor();
+    ok((await page.locator('.cl-seen summary').textContent()).includes('Seen by 3 of 5'), 'shows how many people have seen the current release (' + (await page.locator('.cl-seen summary').textContent()) + ')');
+    await page.locator('[data-action="toggle-changelog-sort"]').click();
+    ok((await page.locator('.cl-release').first().locator('.cl-version').textContent()) === 'v' + CL[0].version, 'Oldest first puts v' + CL[0].version + ' on top');
+    const total = CL.reduce((n, r) => n + r.items.length, 0);
+    await page.locator('#changelog-role').selectOption('client');
+    const clientItems = CL.reduce((n, r) => n + r.items.filter((it) => it.roles.includes('client')).length, 0);
+    ok((await page.locator('.cl-items li').count()) === clientItems, 'Affects clients shows the ' + clientItems + ' client changes');
+    await page.locator('#changelog-role').selectOption('all');
+    await page.locator('[data-action="set-changelog-type"][data-value="fixed"]').click();
+    const fixed = CL.reduce((n, r) => n + r.items.filter((it) => it.type === 'fixed').length, 0);
+    ok((await page.locator('.cl-items li').count()) === fixed, 'Fixed shows the ' + fixed + ' fixes');
+    await page.locator('[data-action="set-changelog-type"][data-value="all"]').click();
+    await page.locator('#changelog-search').fill('dark mode');
+    ok((await page.locator('.cl-release .cl-version').allTextContents()).includes('v1.14.0'), 'search finds "dark mode" in v1.14.0');
+    ok(await page.locator('#changelog-search').evaluate((el) => el === document.activeElement), 'search box keeps focus while typing');
+    await page.locator('#changelog-search').fill('');
+    const [csv] = await Promise.all([page.waitForEvent('download'), page.locator('[data-action="export-changelog"][data-format="csv"]').click()]);
+    const csvText = require('fs').readFileSync(await csv.path(), 'utf8');
+    ok(csv.suggestedFilename().endsWith('.csv') && csvText.trim().split('\r\n').length === total + 1, 'Export CSV downloads every change (' + total + ' rows + header)');
+    const [json] = await Promise.all([page.waitForEvent('download'), page.locator('[data-action="export-changelog"][data-format="json"]').click()]);
+    const parsed = JSON.parse(require('fs').readFileSync(await json.path(), 'utf8'));
+    ok(parsed.releases.length === CL.length && parsed.current_version === H.APP_VERSION, 'Export JSON has every release');
+    ok(page.__errors.length === 0, 'no page errors' + (page.__errors.length ? ': ' + page.__errors.join(' | ') : ''));
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await boot(browser, server, { role: 'rep' });
+    await page.locator('.topnav [data-action="toggle-settings-menu"]').click();
+    ok(!(await page.locator('.settings-menu [data-action="open-admin-panel"]').count()), 'team members have no Admin panel, so no change log');
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await boot(browser, server, { role: 'admin', seenVersion: '1.26.0' });
+    await page.locator('#whats-new-modal [data-action="open-changelog"]').click();
+    await page.locator('.cl-timeline').waitFor({ timeout: 6000 });
+    ok(true, "admin: Full change log in What's new opens the Change log tab");
+    await ctx.close();
+  }
+
   {
     const { ctx, page } = await boot(browser, server, { role: 'admin', signedOut: true });
     await page.locator('[data-action="open-tour"]').click();

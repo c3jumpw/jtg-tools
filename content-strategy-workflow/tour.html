@@ -259,6 +259,7 @@ body.embed .bar { display: none; }
   <img id="lightbox-img" alt="">
 </div>
 
+<script src="changelog.js"></script>
 <script src="tour/steps.js"></script>
 <script src="tour/manifest.js"></script>
 <script>
@@ -301,9 +302,16 @@ body.embed .bar { display: none; }
   var index = 0;
 
   function stepsFor(r) { return TOUR.steps.filter(function (s) { return s.roles.indexOf(r) !== -1; }); }
+  // What's new comes from changelog.js (the same notes the app shows after an
+  // update), latest release only.
+  function latestRelease() {
+    var rel = (window.CF_CHANGELOG && window.CF_CHANGELOG.releases) || [];
+    return rel.length ? rel[rel.length - 1] : null;
+  }
   function newsFor(r) {
-    var list = (TOUR.whatsNew && TOUR.whatsNew[TOUR.version]) || [];
-    return list.filter(function (n) { return !n.roles || n.roles.indexOf(r) !== -1; });
+    var latest = latestRelease();
+    var list = latest ? latest.items.map(function (it) { return { title: it.title, body: it.text, step: it.step, roles: it.roles }; }) : [];
+    return list.filter(function (n) { return !r || !n.roles || n.roles.indexOf(r) !== -1; });
   }
 
   function show(which) {
@@ -327,10 +335,10 @@ body.embed .bar { display: none; }
       var n = stepsFor(r).length;
       return '<button type="button" class="role-card" data-pick-role="' + r + '"><h2>' + esc(TOUR.roles[r].label) + '</h2><p>' + esc(TOUR.roles[r].blurb) + '</p><span class="meta">' + n + ' steps &middot; about ' + Math.max(2, Math.round(n * 20 / 60)) + ' minutes</span></button>';
     }).join('');
-    var all = (TOUR.whatsNew && TOUR.whatsNew[TOUR.version]) || [];
+    var all = newsFor(null);
     if (all.length) {
       $('intro-news').hidden = false;
-      $('intro-news').innerHTML = '<h2>New in ContentFlow ' + esc(TOUR.version) + '</h2><ul>' + all.map(function (n) { return '<li><span><b>' + esc(n.title) + '</b>' + esc(n.body) + '</span></li>'; }).join('') + '</ul>';
+      $('intro-news').innerHTML = '<h2>New in ContentFlow ' + esc((latestRelease() || {}).version || TOUR.version) + '</h2><ul>' + all.map(function (n) { return '<li><span><b>' + esc(n.title) + '</b>' + esc(n.body) + '</span></li>'; }).join('') + '</ul>';
     }
     show('intro');
   }
@@ -350,7 +358,7 @@ body.embed .bar { display: none; }
   function renderNews() {
     var items = newsFor(role);
     $('news-eyebrow').textContent = "What's new";
-    $('news-title').textContent = 'New in ContentFlow ' + TOUR.version;
+    $('news-title').textContent = 'New in ContentFlow ' + ((latestRelease() || {}).version || TOUR.version);
     $('news-list').innerHTML = '<ul>' + (items.length ? items : [{ title: 'Small fixes', body: 'This update tidies up a few things behind the scenes.' }]).map(function (n) {
       var target = n.step && indexOfStep(n.step) !== -1 ? '<button type="button" class="btn btn-outline" data-jump-step="' + esc(n.step) + '">Show me</button>' : '';
       return '<li><span><b>' + esc(n.title) + '</b>' + esc(n.body) + '</span>' + target + '</li>';
@@ -514,6 +522,11 @@ body.embed .bar { display: none; }
   if (embed && params.role === 'client') $('role-seg').hidden = true;
   if (!startRole) { renderIntro(); return; }
   setRole(startRole, { silent: !!params.role });
+  // Inside ContentFlow, "Show me" in What's new points an already-open tour at a step.
+  window.addEventListener('hashchange', function () {
+    var i = indexOfStep((location.hash || '').slice(1));
+    if (i >= 0 && role && (i !== index || $('slide').hidden)) go(i);
+  });
   var hashStep = indexOfStep((location.hash || '').slice(1));
   if (params.mode === 'whats-new') renderNews();
   else if (hashStep >= 0) go(hashStep);

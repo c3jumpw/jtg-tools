@@ -81,6 +81,10 @@ async function demoPage(browser, server, opts) {
     role,
     signedOut: !!opts.signedOut,
     noRhythm: !!opts.noRhythm,
+    freshUser: !!opts.freshUser,
+    // Last release this person has seen. Default: this one, so no What's new
+    // window gets in the way; pass an older version to see it, or freshUser.
+    seenVersion: opts.freshUser || opts.seenVersion === 'none' ? null : (opts.seenVersion || APP_VERSION),
   };
   // Freeze the clock BEFORE the demo data's init script is registered: init
   // scripts run in registration order, and demo-env.js dates everything
@@ -89,7 +93,7 @@ async function demoPage(browser, server, opts) {
   await ctx.addInitScript({ content: 'window.__CF_DEMO = ' + JSON.stringify(boot) + ';\n' + DEMO_ENV });
   await ctx.addInitScript({ content: `(function(){try{
     ${role !== 'client' && !opts.noCreds && !opts.signedOut ? "localStorage.setItem('contentflow.credentials', JSON.stringify({token:'demo-token', listId:'901715762648'}));" : ''}
-    ${opts.freshUser ? '' : "localStorage.setItem('contentflow.tour.seen.demo-' + " + JSON.stringify(role) + ", " + JSON.stringify(opts.seenVersion || APP_VERSION) + ");"}
+
   }catch(e){}})();` });
   const page = await ctx.newPage();
   page.__errors = [];

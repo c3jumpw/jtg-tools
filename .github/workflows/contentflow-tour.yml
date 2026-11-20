@@ -4,7 +4,7 @@
 #   1. re-captures every tour screenshot from the app as committed, running it
 #      on demo data (tests/tour/capture.js), and commits them if they changed;
 #   2. fails the run if the tour or guide is behind the app: a tab, menu item
-#      or panel no tour step covers, no What's new note for this version, or a
+#      or panel no tour step covers, no change-log entry for this version, or a
 #      guide footer still naming an older version (tests/tour/check.js);
 #   3. runs the Help layer and regression tests (tests/help.test.js).
 # A red run here means the help content needs attention before users see the
@@ -19,6 +19,7 @@ on:
       - 'content-strategy-workflow/guide.html'
       - 'content-strategy-workflow/tour.html'
       - 'content-strategy-workflow/tour/steps.js'
+      - 'content-strategy-workflow/changelog.js'
       - 'content-strategy-workflow/tests/**'
       - '.github/workflows/contentflow-tour.yml'
   workflow_dispatch:
