@@ -673,6 +673,59 @@ body.guide-open{overflow:hidden}
   .guide-text h2{font-size:18px}
   .guide-foot{padding:12px 14px calc(14px + env(safe-area-inset-bottom))}
 }
+/* What's new pop-up and Change Log page */
+.chg-dialog{width:min(720px,100%)}
+.chg-head{display:flex;align-items:flex-start;gap:12px;padding:20px 18px 12px 22px;border-bottom:1px solid var(--border)}
+.chg-head>div{flex:1}
+.chg-head h2{margin:4px 0 2px;font-size:21px;line-height:1.2;color:var(--text-primary)}
+.chg-sub{margin:0;font-size:13px;color:var(--text-muted)}
+.chg-list{overflow:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px;background:var(--bg-main);flex:1 1 auto;min-height:0}
+.chg-card{display:flex;gap:16px;background:var(--bg-card);border:1px solid var(--border);border-left:4px solid var(--chg);border-radius:12px;padding:14px;--chg:var(--accent)}
+.chg-pic{flex:0 0 200px;border-radius:8px;overflow:hidden;background:#E9EDF3;align-self:flex-start}
+.chg-pic img{display:block;width:100%;height:126px;object-fit:cover;object-position:top left}
+.chg-main{flex:1;min-width:0}
+.chg-main h3{margin:6px 0 4px;font-size:16px;line-height:1.3;color:var(--text-primary)}
+.chg-main p{margin:0;font-size:13.5px;line-height:1.5;color:var(--text-secondary)}
+.chg-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:12px;color:var(--text-muted)}
+.chg-type{display:inline-flex;align-items:center;gap:5px;font-weight:700;color:var(--chg);text-transform:uppercase;letter-spacing:.05em;font-size:11.5px}
+.chg-aud{background:#F1EAFE;color:#6D28D9;border-radius:999px;padding:2px 8px;font-weight:600}
+.chg-aud.all{background:var(--bg-main);color:var(--text-secondary)}
+.chg-show{margin-top:8px;border:none;background:none;padding:6px 0;font:inherit;font-size:13px;font-weight:700;color:var(--accent);cursor:pointer}
+.chg-show:hover{text-decoration:underline}
+.chg-new{--chg:#0A6DC9}.chg-improved{--chg:#15803D}.chg-fixed{--chg:#B45309}.chg-security{--chg:#6D28D9}.chg-baseline{--chg:#4F586B}
+.cl-wrap{max-width:900px}
+.cl-intro{font-size:13px;color:var(--text-secondary);line-height:1.55;margin:0 0 14px}
+.cl-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:18px}
+.cl-search{position:relative;flex:1 1 220px;max-width:320px}
+.cl-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
+.cl-search input{width:100%;height:34px;border:1px solid var(--border);border-radius:7px;padding:0 10px 0 30px;font:inherit;font-size:13px;background:var(--bg-card)}
+.cl-count{font-size:12px;color:var(--text-muted)}
+.cl-day{position:relative;padding-left:26px;padding-bottom:6px}
+.cl-day::before{content:"";position:absolute;left:7px;top:22px;bottom:-6px;width:2px;background:var(--border)}
+.cl-day:last-child::before{display:none}
+.cl-day-head{display:flex;align-items:baseline;gap:10px;margin:0 0 8px}
+.cl-dot{position:absolute;left:0;top:6px;width:16px;height:16px;border-radius:50%;background:var(--bg-card);border:3px solid var(--accent)}
+.cl-day-head h3{margin:0;font-size:15px;color:var(--text-primary)}
+.cl-ver{font-size:12px;color:var(--text-muted)}
+.cl-day-body{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.cl-entry{background:var(--bg-card);border:1px solid var(--border);border-left:4px solid var(--chg);border-radius:10px;padding:12px 14px;--chg:var(--accent)}
+.cl-entry h4{margin:6px 0 4px;font-size:14.5px;color:var(--text-primary)}
+.cl-entry p{margin:0;font-size:13px;line-height:1.5;color:var(--text-secondary)}
+.cl-ann{background:var(--accent-light);color:var(--accent);border-radius:999px;padding:2px 8px;font-weight:600}
+.cl-details{margin-top:6px;font-size:13px;color:var(--text-secondary)}
+.cl-details summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:12.5px;padding:4px 0}
+.cl-details ul{margin:4px 0 0;padding-left:18px;line-height:1.5}
+.cl-refs{margin-top:6px;font-size:11.5px;color:var(--text-muted)}
+.cl-refs a{color:var(--text-muted)}
+@media (max-width:768px){
+  .chg-card{flex-direction:column;gap:10px}
+  .chg-pic{flex:none;width:100%}
+  .chg-pic img{height:150px}
+  .chg-head{padding:16px 14px 10px 18px}
+  .chg-list{padding:12px}
+  .cl-search{max-width:none;flex-basis:100%}
+  .cl-tools .filter-select{flex:1 1 45%}
+}
 </style>
 </head>
 <body>
@@ -754,6 +807,9 @@ body.guide-open{overflow:hidden}
     <div class="sidebar-section-label">Admin</div>
     <div class="nav-item" data-view="settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings
+    </div>
+    <div class="nav-item" data-view="changelog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>Change Log
     </div>
   </div>
   <div class="sidebar-bottom" style="position:relative">
@@ -847,6 +903,22 @@ body.guide-open{overflow:hidden}
         <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:16px">A picture tour of every feature, plus short how-tos. Only showing what's relevant to your access level.</p>
         <div id="guide-cta"></div>
         <div id="resources-list"></div>
+      </div>
+    </div>
+    <div class="view" id="view-changelog">
+      <div class="cl-wrap">
+        <p class="cl-intro">Every change to the CRM, with the date it went live and who it applies to. Changes marked <b>Announced</b> were shown to those people in the What’s new pop-up the next time they signed in. History before 20 Sep 2026 isn’t on record; the first entry summarises what the CRM already did then.</p>
+        <div class="cl-tools">
+          <div class="cl-search"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="search" id="cl-q" placeholder="Search changes…" aria-label="Search changes" oninput="clSetFilter('q',this.value)"></div>
+          <select class="filter-select" id="cl-type" aria-label="Kind of change" onchange="clSetFilter('type',this.value)"><option value="">All kinds</option><option value="new">New</option><option value="improved">Improved</option><option value="fixed">Fixed</option><option value="security">Security</option><option value="baseline">Starting point</option></select>
+          <select class="filter-select" id="cl-aud" aria-label="Who it applies to" onchange="clSetFilter('audience',this.value)"><option value="">Everyone and admins</option><option value="everyone">For everyone</option><option value="admin">For admins</option><option value="super">For super admins</option></select>
+          <select class="filter-select" id="cl-order" aria-label="Order" onchange="clSetFilter('order',this.value)"><option value="oldest">Oldest first</option><option value="newest">Newest first</option></select>
+          <span class="cl-count" id="changelog-count"></span>
+          <span class="guide-spacer"></span>
+          <button class="btn btn-secondary btn-sm" onclick="clDownload('csv')">Download CSV</button>
+          <button class="btn btn-secondary btn-sm" onclick="clDownload('json')">Download JSON</button>
+        </div>
+        <div id="changelog-list" class="cl-list"></div>
       </div>
     </div>
     <div class="view" id="view-myday">
@@ -1689,6 +1761,26 @@ body.guide-open{overflow:hidden}
 
 <div id="sidebar-overlay" onclick="toggleMobileMenu()"></div>
 <div id="toast-container" role="status" aria-live="polite"></div>
+<!-- What's new pop-up (see CHANGE LOG AND WHAT'S NEW in the script) -->
+<div id="changes" class="guide-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="changes-title">
+  <div class="guide-card chg-dialog">
+    <div class="chg-head">
+      <div>
+        <div class="guide-kicker">What’s new</div>
+        <h2 id="changes-title">Updates to MKC CRM</h2>
+        <p id="changes-sub" class="chg-sub"></p>
+      </div>
+      <button class="guide-x" onclick="closeChanges()" aria-label="Close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="chg-list" id="changes-list"></div>
+    <div class="guide-foot">
+      <button class="btn btn-ghost btn-sm" id="changes-log-btn" onclick="closeChanges();switchView('changelog')">Full change log</button>
+      <span class="guide-spacer"></span>
+      <button class="btn btn-primary" id="changes-ok" onclick="closeChanges()">Got it</button>
+    </div>
+  </div>
+</div>
+
 <!-- Getting-started tour (see GETTING-STARTED TOUR in the script) -->
 <div id="guide" class="guide-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="guide-title" aria-describedby="guide-body">
   <div class="guide-card">
@@ -2626,15 +2718,16 @@ function switchView(view){
   // click path, not this. Silently redirects to Dashboard rather than
   // showing an error, since this is an appropriate-scope boundary, not
   // an attempted-breach scenario worth alarming someone over.
-  if(view==='settings'&&!isAdmin())view='dashboard';
+  if((view==='settings'||view==='changelog')&&!isAdmin())view='dashboard';
   if(view==='settings')renderTemplateEditor();
+  if(view==='changelog')renderChangelog();
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.querySelector(`.nav-item[data-view="${view}"]`)?.classList.add('active');
   syncBottomNav(view);
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const el=document.getElementById(`view-${view}`);
   if(el)el.classList.add('active');
-  const titles={dashboard:'Dashboard',myday:'My Day',resources:'Resources',mywork:'My Work',leads:'Leads',pipeline:'Pipeline',contacts:'Contacts',accounts:'Accounts',tasks:'Action Hub',qcinbox:'Activity Inbox','search-view':'Search',export:'Export',settings:'Settings'};
+  const titles={changelog:'Change Log',dashboard:'Dashboard',myday:'My Day',resources:'Resources',mywork:'My Work',leads:'Leads',pipeline:'Pipeline',contacts:'Contacts',accounts:'Accounts',tasks:'Action Hub',qcinbox:'Activity Inbox','search-view':'Search',export:'Export',settings:'Settings'};
   document.getElementById('page-title').textContent=titles[view]||view;
   if(['leads','pipeline','contacts','accounts'].includes(view)){
     setLastViewed(view);
@@ -9923,12 +10016,18 @@ const GUIDE_STEPS=[
   {id:'phone',deck:'start',since:'2026-11-18',only:'phone',covers:['bottom-nav','create-sheet'],go:()=>openCreateSheet(),
     title:'On your phone',
     body:'The bar at the bottom takes you to Today, Leads and Pipeline. The + in the middle adds a record, logs a job, opens the assistant or captures a note.'},
+  {id:'whats-new',deck:'start',since:'2026-11-20',covers:['whats-new'],go:()=>loadChangelog().then(()=>openChanges(null,'recent')),
+    title:'What changed, after each update',
+    body:'The first time you sign in after an update, a short summary shows what changed for you, with pictures. You can see it again from Resources.'},
   {id:'finish',deck:'start',since:'2026-11-18',covers:['view:export','view:resources','guide'],go:()=>switchView('resources'),
     title:'Export, help and this tour',
     body:'Export downloads your lists. Resources has short how-tos and this tour, which you can replay any time (also from the ? button at the top on a computer, or by searching “tour”).'},
   {id:'admin-team-view',deck:'admin',since:'2026-11-18',covers:['filter:owner'],go:()=>switchView('pipeline'),
     title:'You see the whole team',
     body:'Admins see every record, not only their own, and can filter lists, Action Hub and the Activity Inbox by owner.'},
+  {id:'changelog',deck:'admin',since:'2026-11-20',covers:['view:changelog'],go:()=>switchView('changelog'),
+    title:'Change log',
+    body:'Admin → Change Log lists every change to the CRM with the date it went live and who it applies to. Search it, filter it, or download it as CSV or JSON to keep a copy.'},
   {id:'settings-team',deck:'admin',since:'2026-11-18',covers:['view:settings','settings:team-management','modal:add-team-modal'],go:()=>switchView('settings'),
     title:'Team Management',
     body:'Settings → Team Management adds a team member: their ClickUp record and their sign-in, in one step. Each person can update their own passcode and public contact details from their profile.'},
@@ -9964,7 +10063,13 @@ function guideStepsForMe(){
 }
 function guideKey(){return'mkc_guide_'+(S.user?.mkcId||S.user?.name||'me');}
 function guideSeen(){try{return JSON.parse(localStorage.getItem(guideKey())||'null');}catch(e){return null;}}
-function guideMarkSeen(){try{localStorage.setItem(guideKey(),JSON.stringify({version:GUIDE_VERSION,at:Date.now()}));}catch(e){}}
+function guideMarkSeen(){
+  const prev=guideSeen()||{};
+  // Taking the tour covers everything up to now, so the change log starts
+  // from here rather than replaying old changes.
+  const changes=prev.changes||(typeof CL!=='undefined'&&CL.loaded?clLatestKey():undefined);
+  try{localStorage.setItem(guideKey(),JSON.stringify({...prev,version:GUIDE_VERSION,changes,at:Date.now()}));}catch(e){}
+}
 function guideNewSinceSeen(){
   const seen=guideSeen();
   if(!seen)return null;
@@ -9979,15 +10084,17 @@ function guideLatest(){
 // Called once per page load after the first sync. First sign-in on this
 // device: the whole tour. Afterwards: only slides added since the last
 // time, if any.
-function maybeOpenGuide(){
+async function maybeOpenGuide(){
   if(G.autoChecked||!S.user)return;
   G.autoChecked=true;
-  const fresh=guideNewSinceSeen();
-  const busy=()=>G.open||document.querySelector('.modal-overlay[style*="flex"]')||document.body.classList.contains('asst-open');
+  await loadChangelog();
+  const firstTime=guideSeen()===null;
+  const fresh=firstTime?null:clUnseenForMe();
+  const busy=()=>G.open||CL.open||document.querySelector('.modal-overlay[style*="flex"]')||document.body.classList.contains('asst-open');
   setTimeout(()=>{
     if(busy())return;
-    if(fresh===null)openGuide('tour');
-    else if(fresh.length)openGuide('new',fresh);
+    if(firstTime)openGuide('tour');
+    else if(fresh&&fresh.length)openChanges(fresh,'new');
   },700);
 }
 function openGuide(mode='tour',steps=null,startId=null){
@@ -10065,6 +10172,7 @@ function guideKey_(e){
 }
 function setupGuide(){
   document.addEventListener('keydown',guideKey_);
+  document.addEventListener('keydown',changesKey_);
   const fig=document.getElementById('guide-figure');
   let x0=null;
   fig.addEventListener('touchstart',e=>{x0=e.touches[0].clientX;},{passive:true});
@@ -10073,6 +10181,166 @@ function setupGuide(){
     const dx=e.changedTouches[0].clientX-x0;x0=null;
     if(Math.abs(dx)>50)guideGo(dx<0?1:-1);
   },{passive:true});
+}
+
+// ═══════════════════════════════════════════
+// CHANGE LOG AND WHAT'S NEW
+// ═══════════════════════════════════════════
+// changelog.json (next to this page) lists every change to the CRM, oldest
+// first, each with who it applies to (everyone / admin / super) and whether
+// to announce it. Admins read the whole log on the Change Log page. Anyone
+// signing in after announced changes that apply to their access level gets
+// a short What's new pop-up, once. The first-ever sign-in gets the tour
+// instead and starts the clock from there.
+const CL={entries:[],about:'',loaded:false,failed:false,filter:{q:'',type:'',audience:'',order:'oldest'},open:false,items:[],returnFocus:null};
+const CL_TYPES={new:'New',improved:'Improved',fixed:'Fixed',security:'Security',baseline:'Starting point'};
+const CL_AUDIENCE={everyone:'Everyone',admin:'Admins',super:'Super admins'};
+const CL_ICONS={
+  new:'<path d="M12 3l2.4 5.6L20 9.3l-4.4 3.9 1.3 5.8L12 16l-4.9 3 1.3-5.8L4 9.3l5.6-.7z"/>',
+  improved:'<polyline points="4 14 10 8 14 12 20 6"/><polyline points="15 6 20 6 20 11"/>',
+  fixed:'<polyline points="5 12 10 17 19 7"/>',
+  security:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',
+  baseline:'<circle cx="12" cy="12" r="8"/><polyline points="12 8 12 12 15 14"/>'
+};
+function clIcon(type){return`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CL_ICONS[type]||CL_ICONS.improved}</svg>`;}
+async function loadChangelog(){
+  if(CL.loaded)return CL;
+  try{
+    const r=await fetch('changelog.json',{cache:'no-cache'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const data=await r.json();
+    CL.entries=(data.entries||[]).map((e,i)=>({...e,_seq:i}));
+    CL.about=data.about||'';
+    CL.loaded=true;CL.failed=false;
+  }catch(e){CL.failed=true;console.warn('change log',e.message);}
+  return CL;
+}
+function clAppliesToMe(e){return(GUIDE_RANK[accessTier()]??0)>=({everyone:0,admin:1,super:2}[e.audience]??0);}
+function clKey(e){return`${e.date}|${String(e._seq).padStart(4,'0')}`;}
+function clLatestKey(){return CL.entries.reduce((m,e)=>clKey(e)>m?clKey(e):m,'');}
+// Announced changes for me that are newer than what I've seen. `seen` is
+// stored with the tour's record; people who only have a tour date (from
+// before the change log) count as having seen everything up to that day.
+function clUnseenForMe(){
+  const seen=guideSeen();
+  if(!seen)return null;
+  const mark=seen.changes||(seen.version?`${seen.version}|9999`:'');
+  return CL.entries.filter(e=>e.announce&&clAppliesToMe(e)&&clKey(e)>mark);
+}
+function clMarkSeen(){
+  const seen=guideSeen()||{};
+  try{localStorage.setItem(guideKey(),JSON.stringify({...seen,version:seen.version||GUIDE_VERSION,changes:clLatestKey(),at:Date.now()}));}catch(e){}
+}
+function clFmtDate(d){const[y,m,day]=d.split('-').map(Number);return new Date(y,m-1,day).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function clSlide(id){return GUIDE_STEPS.find(s=>s.id===id);}
+
+// ---------- What's new pop-up ----------
+function openChanges(items=null,mode='new'){
+  const list=items||CL.entries.filter(e=>e.announce&&clAppliesToMe(e)).slice(-6);
+  if(!list.length){showToast('Nothing new for you right now.','info');return;}
+  CL.items=list.slice().sort((a,b)=>clKey(b).localeCompare(clKey(a)));
+  CL.returnFocus=document.activeElement;
+  const el=document.getElementById('changes');
+  document.getElementById('changes-sub').textContent=mode==='new'
+    ?`Since you last signed in · ${CL.items.length} update${CL.items.length===1?'':'s'} for you`
+    :`The latest updates that apply to you`;
+  document.getElementById('changes-list').innerHTML=CL.items.map((e,i)=>{
+    const slide=(e.slides||[]).map(clSlide).find(Boolean);
+    const img=slide?`<img src="${guideImg(slide,guideIsPhone())}" alt="" loading="lazy" onerror="this.parentElement.remove()">`:'';
+    return`<article class="chg-card chg-${esc(e.type)}">
+      ${img?`<div class="chg-pic">${img}</div>`:''}
+      <div class="chg-main">
+        <div class="chg-meta"><span class="chg-type">${clIcon(e.type)}${esc(CL_TYPES[e.type]||e.type)}</span><span>${esc(clFmtDate(e.date))}</span>${e.audience!=='everyone'?`<span class="chg-aud">${esc(CL_AUDIENCE[e.audience]||e.audience)}</span>`:''}</div>
+        <h3>${esc(e.title)}</h3>
+        <p>${esc(e.summary)}</p>
+        ${slide&&slide.go?`<button class="chg-show" onclick="changesShowMe(${i})">Show me →</button>`:''}
+      </div>
+    </article>`;}).join('');
+  document.getElementById('changes-log-btn').style.display=isAdmin()?'':'none';
+  el.hidden=false;
+  CL.open=true;
+  document.body.classList.add('guide-open');
+  document.getElementById('changes-ok').focus();
+}
+function closeChanges(){
+  if(!CL.open)return;
+  CL.open=false;
+  clMarkSeen();
+  document.getElementById('changes').hidden=true;
+  document.body.classList.remove('guide-open');
+  if(CL.returnFocus&&CL.returnFocus.focus)try{CL.returnFocus.focus();}catch(e){}
+}
+function changesShowMe(i){
+  const e=CL.items[i];const slide=(e.slides||[]).map(clSlide).find(Boolean);
+  closeChanges();
+  try{if(document.getElementById('profile-panel')?.classList.contains('open'))closeProfile();}catch(x){}
+  try{slide&&slide.go&&slide.go();}catch(x){showToast('Couldn’t open that screen: '+x.message,'error');}
+}
+function changesKey_(e){
+  if(!CL.open)return;
+  if(e.key==='Escape'){e.preventDefault();closeChanges();}
+  else if(e.key==='Tab'){
+    const f=[...document.querySelectorAll('#changes button')].filter(b=>b.offsetParent!==null);
+    if(!f.length)return;
+    if(e.shiftKey&&document.activeElement===f[0]){e.preventDefault();f[f.length-1].focus();}
+    else if(!e.shiftKey&&document.activeElement===f[f.length-1]){e.preventDefault();f[0].focus();}
+  }
+}
+
+// ---------- Change Log page (admins) ----------
+function clFiltered(){
+  const f=CL.filter,q=f.q.trim().toLowerCase();
+  let list=CL.entries.filter(e=>(!f.type||e.type===f.type)&&(!f.audience||e.audience===f.audience)&&
+    (!q||[e.title,e.summary,e.version,e.date,...(e.details||[]),...(e.refs||[])].join(' ').toLowerCase().includes(q)));
+  list.sort((a,b)=>clKey(a).localeCompare(clKey(b)));
+  if(f.order==='newest')list.reverse();
+  return list;
+}
+async function renderChangelog(){
+  const box=document.getElementById('changelog-list');
+  if(!box)return;
+  if(!CL.loaded){box.innerHTML='<div class="empty-state"><p>Loading…</p></div>';await loadChangelog();}
+  if(CL.failed&&!CL.loaded){box.innerHTML='<div class="empty-state"><p>The change log couldn’t be loaded. Refresh to try again.</p></div>';return;}
+  const list=clFiltered();
+  const sync=(id,v)=>{const el=document.getElementById(id);if(el&&el.value!==v)el.value=v;};
+  sync('cl-q',CL.filter.q);sync('cl-type',CL.filter.type);sync('cl-aud',CL.filter.audience);sync('cl-order',CL.filter.order);
+  document.getElementById('changelog-count').textContent=`${list.length} of ${CL.entries.length} changes`;
+  let html='',lastDay='';
+  for(const e of list){
+    const day=`${e.date}|${e.version||''}`;
+    if(day!==lastDay){
+      if(lastDay)html+='</div></section>';
+      html+=`<section class="cl-day"><header class="cl-day-head"><span class="cl-dot" aria-hidden="true"></span><h3>${esc(clFmtDate(e.date))}</h3>${e.version?`<span class="cl-ver">Version ${esc(e.version)}</span>`:''}</header><div class="cl-day-body">`;
+      lastDay=day;
+    }
+    const details=(e.details||[]).length?`<details class="cl-details"><summary>Details</summary><ul>${e.details.map(d=>`<li>${esc(d)}</li>`).join('')}</ul></details>`:'';
+    html+=`<article class="cl-entry chg-${esc(e.type)}">
+      <div class="chg-meta"><span class="chg-type">${clIcon(e.type)}${esc(CL_TYPES[e.type]||e.type)}</span><span class="chg-aud${e.audience==='everyone'?' all':''}">${esc(CL_AUDIENCE[e.audience]||e.audience)}</span>${e.announce?'<span class="cl-ann" title="Shown in the What’s new pop-up">Announced</span>':''}</div>
+      <h4>${esc(e.title)}</h4>
+      <p>${esc(e.summary)}</p>
+      ${details}
+      ${(e.refs||[]).length?`<div class="cl-refs">${e.refs.map(r=>/^[0-9a-f]{7,}$/.test(r)?`<a href="https://github.com/c3jumpw/jtg-tools/commit/${esc(r)}" target="_blank" rel="noopener">${esc(r)}</a>`:/^PR #\d+$/.test(r)?`<a href="https://github.com/c3jumpw/jtg-tools/pull/${esc(r.slice(4))}" target="_blank" rel="noopener">${esc(r)}</a>`:esc(r)).join(' · ')}</div>`:''}
+    </article>`;
+  }
+  if(lastDay)html+='</div></section>';
+  box.innerHTML=html||'<div class="empty-state"><p>No changes match.</p></div>';
+}
+function clSetFilter(key,val){CL.filter[key]=val;renderChangelog();}
+function clDownload(kind){
+  const list=CL.entries.slice().sort((a,b)=>clKey(a).localeCompare(clKey(b)));
+  const clean=list.map(({_seq,...e})=>e);
+  let blob,name;
+  if(kind==='csv'){
+    const cols=['date','version','type','audience','announce','title','summary','details','refs'];
+    const cell=v=>`"${String(Array.isArray(v)?v.join(' | '):v??'').replace(/"/g,'""')}"`;
+    blob=new Blob(['﻿'+[cols.join(','),...clean.map(e=>cols.map(c=>cell(e[c])).join(','))].join('\r\n')],{type:'text/csv;charset=utf-8'});
+    name='mkc-crm-changelog.csv';
+  }else{
+    blob=new Blob([JSON.stringify({tool:'MKC CRM',about:CL.about,exported:new Date().toISOString(),entries:clean},null,2)],{type:'application/json'});
+    name='mkc-crm-changelog.json';
+  }
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
 }
 
 // Brief how-tos (text), alongside the tour above.
@@ -10117,12 +10385,11 @@ function renderGuideCta(){
   const el=document.getElementById('guide-cta');
   if(!el)return;
   const mine=guideStepsForMe();
-  const latest=guideLatest();
-  const newer=guideNewSinceSeen();
   el.innerHTML=`<div class="guide-card-cta">
     <div class="grow"><h4>Take the tour</h4><p>${mine.length} slides with screenshots, for ${esc({staff:'staff',admin:'admins',super:'super admins'}[accessTier()])}. About ${Math.max(2,Math.round(mine.length*0.25))} minutes.</p></div>
     <button class="btn btn-primary btn-sm" onclick="openGuide('tour')">Start the tour</button>
-    ${latest.length&&latest.length<mine.length?`<button class="btn btn-secondary btn-sm" onclick="openGuide('new')">What’s new${newer&&newer.length?` (${newer.length})`:''}</button>`:''}
+    <button class="btn btn-secondary btn-sm" onclick="loadChangelog().then(()=>openChanges(null,'recent'))">What’s new</button>
+    ${isAdmin()?`<button class="btn btn-ghost btn-sm" onclick="switchView('changelog')">Change log</button>`:''}
   </div>`;
 }
 function renderResources(){
@@ -10291,7 +10558,8 @@ async function renderToday(){
 const CMDK_IS_MAC=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent||'');
 const CMDK_COMMANDS=[
   {group:'Help',label:'Take the tour',kw:'help tour guide getting started how to',run:()=>openGuide('tour')},
-  {group:'Help',label:'What’s new',kw:'help new changes updates release',run:()=>openGuide('new')},
+  {group:'Help',label:'What’s new',kw:'help new changes updates release',run:()=>loadChangelog().then(()=>openChanges(null,'recent'))},
+  {group:'Help',label:'Change log',kw:'history changes updates admin versions',when:()=>isAdmin(),run:()=>switchView('changelog')},
   {group:'Create',label:'New lead',kw:'add create lead',run:()=>openNewEntryModal('Lead')},
   {group:'Create',label:'New contact',kw:'add create contact person',run:()=>openNewEntryModal('Contact')},
   {group:'Create',label:'New deal',kw:'add create deal opportunity pipeline',run:()=>openNewEntryModal('Deal')},
@@ -10325,10 +10593,11 @@ function cmdkRecent(){
 }
 function cmdkResults(q){
   const words=q.toLowerCase().split(/\s+/).filter(Boolean);
-  if(!words.length)return[...cmdkRecent(),...CMDK_COMMANDS];
+  const commands=CMDK_COMMANDS.filter(c=>!c.when||c.when());
+  if(!words.length)return[...cmdkRecent(),...commands];
   // Commands whose name matches beat ones that only match a keyword.
   const score=c=>{const l=c.label.toLowerCase();return words.every(w=>l.includes(w))?(l.startsWith(words[0])?3:2):1;};
-  const cmds=CMDK_COMMANDS.filter(c=>words.every(w=>(c.label+' '+c.kw+' '+c.group).toLowerCase().includes(w)))
+  const cmds=commands.filter(c=>words.every(w=>(c.label+' '+c.kw+' '+c.group).toLowerCase().includes(w)))
     .map(c=>({...c,_s:score(c)})).sort((a,b)=>b._s-a._s).map(c=>({...c,group:'Commands',sub:c.group}));
   const askAi=q.trim().length>=12?[{group:'Assistant',label:`Ask the assistant: “${q.trim().slice(0,80)}”`,run:()=>openAssistant(q.trim(),true)}]:[];
   const recs=(q.trim().length>=2?searchAll(q.trim().toLowerCase()):[]).slice(0,12).map(r=>({group:r.type+'s',label:r.name,sub:r.email||(r.id||'').toUpperCase(),badge:r.status||'',run:()=>openProfile(r.id,r.key)}));

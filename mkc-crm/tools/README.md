@@ -1,6 +1,6 @@
 # MKC CRM tools
 
-Browser tests and the getting-started tour's screenshots for `mkc-crm/index.html`.
+Browser tests, the getting-started tour's screenshots and the change log for `mkc-crm/index.html`.
 Everything runs on invented sample data (`harness/fixtures.js`); nothing touches ClickUp, the Worker or real records.
 
 ```
@@ -34,12 +34,24 @@ It opens by itself on someone's first sign-in. People who have already seen it a
 - a slide has no picture;
 - the pictures were made from an older version of `index.html`.
 
+## The change log
+
+`mkc-crm/changelog.json` records every change to the CRM, oldest first. Admins read it in the CRM under **Admin → Change Log**, where it can be searched, filtered and downloaded as CSV or JSON.
+
+Each entry says who it applies to (`audience`: everyone, admin or super) and whether to announce it (`announce`). The next time someone signs in, a **What's new** pop-up shows the announced entries that apply to their access level and that they haven't seen yet. Someone signing in for the first time gets the tour instead.
+
+Add an entry with every change (see `CLAUDE.md` at the repo root). `changelog/check.js` checks the entries, and it fails if `mkc-crm/index.html` or `api/` changed after the newest entry. Put `[no changelog]` in a commit message to skip a change nobody would notice.
+
+What has been seen is stored per browser, so someone using both a phone and a computer sees What's new on each.
+
 ## Tests
 
 | File | What it checks |
 | --- | --- |
 | `test/features.test.js` | filters, completed jobs and invoices, the assistant |
 | `test/statuses.test.js` | ClickUp's live statuses, new-deal status and links, amounts owed |
-| `test/guide.test.js` | the tour: who sees what, first sign-in, What's new, keyboard, phone, Show me |
+| `test/guide.test.js` | the tour: who sees what, first sign-in, keyboard, phone, Show me |
+| `test/changelog.test.js` | What's new per access level and only once, first sign-in gets the tour, the Change Log page, filters and downloads |
 | `test/sweep.js` | every screen on a computer and a phone: no script errors, nothing too wide, every icon button named |
 | `guide/check.js` | the tour covers every feature and its pictures are current |
+| `changelog/check.js` | the change log is well formed and has an entry for the latest CRM change |

@@ -60,7 +60,7 @@ async function audit(page) {
     await shot(page, 'dashboard');
     await page.evaluate(() => document.getElementById('content').scrollTo(0, 1e6)); await shot(page, 'dashboard_bottom');
     if (mobile) { await page.click('#menu-toggle'); await shot(page, 'sidebar_open'); await page.click('#sidebar-overlay', { position: { x: 370, y: 300 } }); }
-    for (const v of ['myday', 'mywork', 'leads', 'pipeline', 'contacts', 'accounts', 'tasks', 'qcinbox', 'export', 'settings', 'resources']) {
+    for (const v of ['myday', 'mywork', 'leads', 'pipeline', 'contacts', 'accounts', 'tasks', 'qcinbox', 'export', 'settings', 'resources', 'changelog']) {
       await go(v); await page.evaluate(() => document.getElementById('content').scrollTo(0, 0)); await shot(page, v, { wait: v === 'qcinbox' || v === 'myday' ? 700 : 350 });
     }
     await go('search-view'); await page.fill('#fsearch', 'sha'); await shot(page, 'search');
