@@ -1,0 +1,814 @@
+<!--HEAD-->
+<title>HaloDeck Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="How to mark up screenshots, build slides and export them with HaloDeck, and how to host it for a team.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: a field manual. Sticky contents rail on the left, reading column on the right; screenshots sit
+   on the app's own dark ground and carry amber numbered rings, the same mark HaloDeck draws on a picture. */
+:root{
+  --paper:#FBFAF8; --sheet:#F1EFEB; --ink:#1C1B1A; --ink-2:#56514A; --ink-3:#7E776C;
+  --rule:#E3DED6; --accent:#F2A93B; --accent-ink:#9A5A00; --accent-soft:rgba(242,169,59,.16);
+  --stage:#171615; --stage-rule:#2C2925; --on-accent:#1C1300; --danger:#C2412F;
+  --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Consolas,monospace;
+  --s-1:13px; --s0:16.5px; --s1:19px; --s2:24px; --s3:32px; --s4:44px;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#141312; --sheet:#1C1A18; --ink:#EDE7DD; --ink-2:#B6AD9F; --ink-3:#8C8478;
+  --rule:#2E2A25; --accent:#F2A93B; --accent-ink:#F4B860; --accent-soft:rgba(242,169,59,.14);
+  --stage:#0F0E0D; --stage-rule:#2A2622; --on-accent:#1C1300; --danger:#F07A66; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --paper:#141312; --sheet:#1C1A18; --ink:#EDE7DD; --ink-2:#B6AD9F; --ink-3:#8C8478;
+  --rule:#2E2A25; --accent:#F2A93B; --accent-ink:#F4B860; --accent-soft:rgba(242,169,59,.14);
+  --stage:#0F0E0D; --stage-rule:#2A2622; --on-accent:#1C1300; --danger:#F07A66; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:calc(76px + env(safe-area-inset-top, 0px))}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} }
+body{margin:0;background:var(--paper);color:var(--ink);font:400 var(--s0)/1.6 var(--f-body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:30;background:var(--paper)}
+a{color:var(--accent-ink);text-underline-offset:2px}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+code{font:500 .86em var(--f-mono);background:var(--sheet);border:1px solid var(--rule);padding:1px 5px;border-radius:5px}
+kbd{display:inline-block;min-width:1.7em;padding:1px 6px;text-align:center;font:600 .78em/1.5 var(--f-mono);color:var(--ink);
+  background:var(--paper);border:1px solid var(--rule);border-bottom-width:2px;border-radius:6px;white-space:nowrap}
+.ic{width:18px;height:18px;flex:0 0 auto}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top, 0px);z-index:20;background:var(--paper);background:color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+.bar-in{max-width:1240px;margin:0 auto;padding-block:12px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:flex;align-items:center;gap:14px;min-height:60px}
+.brand{display:flex;align-items:center;gap:10px;font:700 18px/1 var(--f-display);color:var(--ink);text-decoration:none;flex:0 0 auto}
+.brand svg{width:30px;height:30px}
+.brand small{font:600 12px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-left:2px}
+.bar nav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.bar nav a{padding:7px 12px;border-radius:999px;color:var(--ink-2);text-decoration:none;font-weight:600;font-size:15px}
+.bar nav a:hover{background:var(--sheet);color:var(--ink)}
+.open-app{display:inline-flex;align-items:center;gap:8px;padding:8px 15px;border-radius:999px;background:var(--accent);color:var(--on-accent);
+  font-weight:700;font-size:15px;text-decoration:none;flex:0 0 auto}
+.open-app:hover{filter:brightness(1.05)}
+
+/* page frame */
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.layout{display:grid;grid-template-columns:232px minmax(0,1fr);gap:56px;align-items:start;padding-block:8px 80px}
+.toc{position:sticky;top:calc(84px + env(safe-area-inset-top, 0px));max-height:calc(100vh - 100px);overflow:auto;padding-right:6px;font-size:14.5px}
+.toc h4{margin:18px 0 6px;font:700 11.5px/1.3 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
+.toc a{display:block;padding:5px 10px;border-radius:7px;color:var(--ink-2);text-decoration:none;line-height:1.35;border-left:2px solid transparent}
+.toc a:hover{color:var(--ink);background:var(--sheet)}
+.toc a.on{color:var(--ink);border-left-color:var(--accent);background:var(--accent-soft);border-radius:0 7px 7px 0}
+.toc-mobile{display:none}
+
+main{min-width:0}
+.prose{max-width:70ch}
+.prose p,.prose ul,.prose ol{margin:0 0 14px}
+.prose li{margin-bottom:6px}
+.prose li::marker{color:var(--ink-3)}
+
+/* hero */
+.hero{padding-block:44px 30px;border-bottom:1px solid var(--rule);margin-bottom:12px}
+.eyebrow{font:700 12.5px/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);margin:0 0 14px}
+h1{font:700 var(--s4)/1.05 var(--f-display);letter-spacing:-.015em;margin:0 0 14px;text-wrap:balance;max-width:20ch}
+.lede{font-size:var(--s1);line-height:1.5;color:var(--ink-2);max-width:56ch;margin:0 0 26px}
+.paths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:760px}
+.path{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;border:1px solid var(--rule);border-radius:var(--r);background:var(--paper);text-decoration:none;color:var(--ink)}
+.path:hover{border-color:var(--accent)}
+.path .ring{flex:0 0 auto}
+.path b{display:block;font:700 17px/1.3 var(--f-display)}
+.path span{color:var(--ink-2);font-size:15px;line-height:1.45}
+
+/* the four-step flow */
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin:34px 0 6px;counter-reset:fl}
+.step{position:relative;padding:16px 26px 16px 0}
+.step + .step{padding-left:26px;border-left:1px dashed var(--rule)}
+.step .num{display:flex;align-items:center;gap:10px;margin-bottom:8px;color:var(--accent-ink);font:700 13px/1 var(--f-body);letter-spacing:.06em;text-transform:uppercase}
+.step h3{font:700 var(--s1)/1.25 var(--f-display);margin:0 0 6px}
+.step p{margin:0;color:var(--ink-2);font-size:15px;line-height:1.5}
+.step a{font-weight:600;font-size:15px}
+.ring{width:34px;height:34px;border-radius:50%;border:3px solid var(--accent);display:grid;place-items:center;color:var(--accent-ink)}
+.ring .ic{width:17px;height:17px}
+
+/* parts and sections */
+.part{display:flex;align-items:baseline;gap:14px;margin:58px 0 8px;padding-top:26px;border-top:3px solid var(--ink)}
+.part h2{font:700 var(--s3)/1.1 var(--f-display);margin:0;letter-spacing:-.01em}
+.part .who{font:700 12px/1 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.part-intro{color:var(--ink-2);font-size:var(--s1);line-height:1.5;max-width:60ch;margin:6px 0 10px}
+section.sec{padding-top:40px}
+section.sec > h3{font:700 var(--s2)/1.2 var(--f-display);margin:0 0 12px;text-wrap:balance;display:flex;align-items:center;gap:12px}
+section.sec > h3 .ring{width:30px;height:30px;border-width:2.5px}
+h4.sub{font:700 var(--s1)/1.3 var(--f-display);margin:28px 0 8px}
+
+/* screenshots */
+.shot{margin:18px 0 26px}
+/* each screenshot is shown near the size it has in the app (it was captured at 2x, so it stays sharp) */
+.shot .frame{position:relative;width:min(100%, var(--cssw));background:var(--stage);border:1px solid var(--stage-rule);border-radius:14px;line-height:0;box-sizing:content-box;max-width:calc(100% - 2px)}
+.shot .frame img{display:block;width:100%;height:auto;border-radius:13px}
+.shot-full .frame{width:min(100%, calc(var(--cssw) * 1.3))}
+.shot-dialog .frame{width:min(100%, calc(var(--cssw) * 1.05))}
+.shot-strip .frame{border-radius:10px;margin-bottom:22px;width:min(100%, calc(var(--cssw) * 1.15))}
+.shot-strip .frame img{border-radius:9px}
+.shot figcaption{margin-top:10px;font-size:15px;color:var(--ink-2);line-height:1.45;max-width:70ch}
+.pin{position:absolute;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--on-accent);
+  font:700 13.5px/1 var(--f-body);display:grid;place-items:center;box-shadow:0 0 0 2.5px #fff,0 3px 10px rgba(0,0,0,.45);z-index:2;font-variant-numeric:tabular-nums}
+.pin.sm{position:static;transform:none;width:22px;height:22px;font-size:12px;box-shadow:none;flex:0 0 auto;margin-top:1px}
+.legend{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:9px;max-width:72ch}
+.legend li{display:flex;gap:11px;align-items:flex-start;font-size:15.5px;line-height:1.5;color:var(--ink-2)}
+.legend li b{color:var(--ink)}
+.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;align-items:start}
+.duo > .shot{margin:10px 0}
+
+.side{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:28px;align-items:start;margin:18px 0 10px}
+.side .shot{margin:0}
+
+.phones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:start;margin-top:16px}
+.phones .shot{margin:0}
+.phones .shot .frame{border-radius:22px}
+.phones .shot .frame img{border-radius:21px}
+.topbar-legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 28px;list-style:none;padding:0;margin:4px 0 0}
+.topbar-legend li{display:flex;gap:11px;align-items:flex-start;font-size:15.5px;line-height:1.45;color:var(--ink-2)}
+.topbar-legend b{color:var(--ink)}
+
+/* tables */
+.tbl{overflow-x:auto;margin:16px 0 22px;border:1px solid var(--rule);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;font-size:15.5px;line-height:1.45}
+th,td{text-align:left;vertical-align:top;padding:11px 14px;border-bottom:1px solid var(--rule)}
+tr:last-child td{border-bottom:0}
+th{font:700 12px/1.3 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);background:var(--sheet)}
+td.tool{white-space:nowrap;font-weight:600}
+td.tool span{display:inline-flex;align-items:center;gap:9px}
+.yes{color:var(--ink);font-weight:600}
+.no{color:var(--ink-3)}
+
+/* callouts */
+.note{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;padding:14px 16px;border-radius:var(--r);background:var(--sheet);border:1px solid var(--rule);margin:16px 0 20px;max-width:76ch}
+.note .ring{width:26px;height:26px;border-width:2.5px;font:700 13px/1 var(--f-body)}
+.note p{margin:0;color:var(--ink-2);font-size:15.5px}
+.note p b{color:var(--ink)}
+.note.warn .ring{border-color:var(--danger);color:var(--danger)}
+
+/* size diagram (match vs keep) */
+.sizes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:18px 0 8px}
+.size-card{border:1px solid var(--rule);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--paper)}
+.size-card .stagebox{height:150px;display:grid;place-items:center;background:var(--stage);border-radius:9px}
+.slide-shape{background:#fff;display:grid;place-items:center;position:relative;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+.page-shape{background:#E9EEF6;border:2px solid #6E8BB8;position:relative}
+.page-shape::before{content:"";position:absolute;left:14%;right:14%;top:12%;height:12%;background:#0E2A47;border-radius:2px}
+.page-shape::after{content:"";position:absolute;left:14%;right:30%;top:32%;height:28%;background:repeating-linear-gradient(#9AA8BC 0 3px,transparent 3px 9px)}
+.size-card b{font:700 16px/1.3 var(--f-display)}
+.size-card span{color:var(--ink-2);font-size:14.5px;line-height:1.45}
+.size-card.bad{opacity:.85}
+.tag{display:inline-block;font:700 11px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);align-self:flex-start}
+.tag.grey{background:var(--sheet);color:var(--ink-3)}
+
+/* admin map */
+.map{display:grid;grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr) 40px minmax(0,1.25fr);align-items:stretch;margin:20px 0 10px}
+.node{border:1px solid var(--rule);border-radius:var(--r);padding:14px 16px;background:var(--paper);display:flex;flex-direction:column;gap:6px}
+.node h5{margin:0;font:700 16px/1.25 var(--f-display);display:flex;align-items:center;gap:8px}
+.node p{margin:0;font-size:14.5px;line-height:1.45;color:var(--ink-2)}
+.node ul{margin:2px 0 0;padding-left:18px;font-size:14.5px;line-height:1.45;color:var(--ink-2)}
+.node.main{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.arrow-h{display:grid;place-items:center;color:var(--ink-3)}
+.arrow-h svg{width:26px;height:26px}
+.map-extra{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:12px 0 22px}
+.node.dashed{border-style:dashed}
+.tree{font:500 14px/1.7 var(--f-mono);background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);padding:14px 18px;margin:14px 0 20px;overflow-x:auto;white-space:pre}
+.tree em{font-style:normal;color:var(--ink-3)}
+.checks{list-style:none;padding:0;margin:12px 0 20px;display:grid;gap:10px;max-width:74ch}
+.checks li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;font-size:16px;line-height:1.5;color:var(--ink-2)}
+.checks li::before{content:"";width:16px;height:16px;border:2px solid var(--accent);border-radius:4px;margin-top:4px}
+.checks b{color:var(--ink)}
+dl.faq{margin:10px 0 0;display:grid;gap:4px;max-width:76ch}
+dl.faq dt{font:700 17px/1.35 var(--f-display);margin-top:16px}
+dl.faq dd{margin:4px 0 0;color:var(--ink-2)}
+.keys td:first-child{white-space:nowrap}
+footer{border-top:1px solid var(--rule);margin-top:40px;padding-block:26px 40px;color:var(--ink-3);font-size:14px}
+
+/* narrow screens */
+@media (max-width: 980px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:0}
+  .toc{display:none}
+  .toc-mobile{display:block;margin:18px 0 0;border:1px solid var(--rule);border-radius:var(--r);background:var(--paper)}
+  .toc-mobile summary{cursor:pointer;padding:12px 16px;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  .toc-mobile summary::-webkit-details-marker{display:none}
+  .toc-mobile summary::after{content:"+";font-size:20px;color:var(--ink-3)}
+  .toc-mobile[open] summary::after{content:"–"}
+  .toc-mobile .toc{display:block;position:static;max-height:none;padding:0 10px 12px}
+  .map{grid-template-columns:minmax(0,1fr)}
+  .arrow-h{height:30px}
+  .arrow-h svg{transform:rotate(90deg)}
+  .map-extra{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width: 760px){
+  :root{--s4:34px;--s3:27px;--s2:21px}
+  .bar nav{display:none}
+  .paths,.duo,.side,.topbar-legend,.sizes{grid-template-columns:minmax(0,1fr)}
+  .flow{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:6px}
+  .step,.step + .step{padding:14px 12px 14px 0;border-left:0}
+  .step:nth-child(even){padding-left:14px;border-left:1px dashed var(--rule)}
+  .phones{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pin{width:22px;height:22px;font-size:11.5px;box-shadow:0 0 0 2px #fff,0 2px 6px rgba(0,0,0,.45)}
+}
+@media (max-width: 420px){
+  .flow{grid-template-columns:minmax(0,1fr)}
+  .step:nth-child(even){padding-left:0;border-left:0}
+  .open-app span{display:none}
+}
+/* change log timeline: the same entries the app's change log shows */
+.chip{display:inline-flex;align-items:center;gap:5px;height:23px;padding:0 9px;border-radius:999px;font:700 12px/1 var(--f-body);letter-spacing:.02em;white-space:nowrap}
+.chip .ic{width:13px;height:13px;margin:0}
+.chip.c-new{color:#1E7A4C;background:rgba(46,160,103,.13)} .chip.c-improved{color:#2459A8;background:rgba(66,128,220,.13)}
+.chip.c-fixed{color:#6B3FB8;background:rgba(140,90,220,.13)} .chip.c-changed{color:#8A5300;background:rgba(242,169,59,.18)}
+.chip.c-removed{color:#A8321F;background:rgba(194,65,47,.12)} .chip.c-admin{color:var(--ink);box-shadow:inset 0 0 0 1px var(--rule)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .chip.c-new{color:#6BD3A0} :root:not([data-theme="light"]) .chip.c-improved{color:#8DB9F8}
+  :root:not([data-theme="light"]) .chip.c-fixed{color:#C3A6F5} :root:not([data-theme="light"]) .chip.c-changed{color:#F4B860} :root:not([data-theme="light"]) .chip.c-removed{color:#F07A66} }
+:root[data-theme="dark"] .chip.c-new{color:#6BD3A0} :root[data-theme="dark"] .chip.c-improved{color:#8DB9F8} :root[data-theme="dark"] .chip.c-fixed{color:#C3A6F5}
+:root[data-theme="dark"] .chip.c-changed{color:#F4B860} :root[data-theme="dark"] .chip.c-removed{color:#F07A66}
+.clog{list-style:none;margin:20px 0 8px;padding:0;position:relative;max-width:80ch}
+.clog::before{content:"";position:absolute;left:10px;top:14px;bottom:14px;width:2px;background:var(--rule)}
+.clog-v{position:relative;padding-left:38px;margin-bottom:16px}
+.clog-dot{position:absolute;left:3px;top:19px;width:16px;height:16px;border-radius:50%;background:var(--paper);border:2.5px solid var(--ink-3)}
+.clog-v.now .clog-dot{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 5px var(--accent-soft)}
+.clog-card{border:1px solid var(--rule);border-radius:var(--r);background:var(--sheet);padding:14px 16px}
+.clog-v.now .clog-card{border-color:var(--accent)}
+.clog-head{display:flex;gap:12px;align-items:flex-start}
+.clog-ver{font:700 13px/1 var(--f-mono);background:var(--paper);border:1px solid var(--rule);border-radius:7px;padding:6px 8px;flex:0 0 auto}
+.clog-v.now .clog-ver{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.clog-head > span:last-child{display:flex;flex-direction:column;gap:2px}
+.clog-head b{font:700 17px/1.3 var(--f-display)}
+.clog-head small{font-size:13.5px;color:var(--ink-3)}
+.clog-note{margin:8px 0 0;font-size:14px;color:var(--ink-3);font-style:italic}
+.clog ul{list-style:none;margin:10px 0 0;padding:0}
+.clog ul li{display:grid;grid-template-columns:160px minmax(0,1fr);gap:12px;padding:9px 0;border-top:1px solid var(--rule);font-size:15px;line-height:1.5;color:var(--ink-2)}
+.clog ul li b{color:var(--ink)}
+.clog-tags{display:flex;gap:6px;flex-wrap:wrap;align-content:flex-start}
+@media (max-width:640px){ .clog ul li{grid-template-columns:1fr;gap:5px} .clog-v{padding-left:30px} }
+</style>
+<!--BODY-->
+<header class="bar">
+  <div class="bar-in">
+    <a class="brand" href="#top" aria-label="HaloDeck Guide, back to top">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#1C1B1A"/><rect x="9" y="14" width="35" height="25" rx="3.5" fill="#EDE7DD"/><circle cx="43" cy="42" r="13" fill="none" stroke="#F2A93B" stroke-width="4.5"/><circle cx="43" cy="42" r="4" fill="#F2A93B"/></svg>
+      HaloDeck <small>Guide</small>
+    </a>
+    <nav aria-label="Guide parts">
+      <a href="#users">Using HaloDeck</a>
+      <a href="#admins">For admins</a>
+      <a href="#shortcuts">Shortcuts</a>
+      <a href="#help">Troubleshooting</a>
+    </nav>
+    <a class="open-app" id="openApp" href="./" hidden>{{icon:external}}<span>Open HaloDeck</span></a>
+  </div>
+</header>
+
+<div class="wrap" id="top">
+  <div class="layout">
+    <aside class="toc" id="toc" aria-label="Contents">
+      <h4>Using HaloDeck</h4>
+      <ol>
+        <li><a href="#tour">Getting-started tour</a></li>
+        <li><a href="#workspace">The workspace</a></li>
+        <li><a href="#topbar">The top bar</a></li>
+        <li><a href="#bring-in">Bringing things in</a></li>
+        <li><a href="#pdf">PDFs as slides</a></li>
+        <li><a href="#photos">Photos as slides</a></li>
+        <li><a href="#markup">Marking up</a></li>
+        <li><a href="#select">Selecting and editing</a></li>
+        <li><a href="#rightclick">The right-click menu</a></li>
+        <li><a href="#style">Styling</a></li>
+        <li><a href="#layers">Layers</a></li>
+        <li><a href="#slides">Slides and page settings</a></li>
+        <li><a href="#export">Exporting</a></li>
+        <li><a href="#viewer">The exported HTML deck</a></li>
+        <li><a href="#saving">Saving and projects</a></li>
+        <li><a href="#phones">Phones and tablets</a></li>
+        <li><a href="#shortcuts">Keyboard shortcuts</a></li>
+        <li><a href="#inapp">Help inside the app</a></li>
+        <li><a href="#help">Troubleshooting</a></li>
+      </ol>
+      <h4>For admins</h4>
+      <ol>
+        <li><a href="#admin-overview">How HaloDeck runs</a></li>
+        <li><a href="#deploy">Putting it online</a></li>
+        <li><a href="#updating">Releasing an update</a></li>
+        <li><a href="#changelog">Change log</a></li>
+        <li><a href="#data">Where decks are stored</a></li>
+        <li><a href="#network">Network and privacy</a></li>
+        <li><a href="#browsers">Browsers and limits</a></li>
+        <li><a href="#rollout">Rolling it out</a></li>
+        <li><a href="#admin-help">Admin troubleshooting</a></li>
+      </ol>
+    </aside>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">HaloDeck Guide · version {{build:version}}</p>
+        <h1>Mark up a screenshot, explain it, share it as one file</h1>
+        <p class="lede">HaloDeck is a slide tool for annotating pictures. Paste a screenshot or open a PDF, circle what matters, add your commentary, and export the deck as HTML, PNG or PDF. It runs entirely in the browser.</p>
+        <div class="paths">
+          <a class="path" href="#users"><span class="ring">{{icon:ellipse}}</span><span><b>I make decks</b><span>Tools, menus, settings and exporting, with screenshots of each.</span></span></a>
+          <a class="path" href="#admins"><span class="ring">{{icon:folder}}</span><span><b>I set HaloDeck up for others</b><span>Hosting, updates, where data lives, network needs and limits.</span></span></a>
+        </div>
+        <div class="flow" aria-label="How a deck comes together">
+          <div class="step"><div class="num"><span class="ring">{{icon:paste}}</span>Step 1</div><h3>Bring it in</h3><p>Paste a screenshot, drop files, or open a PDF or photos.</p><a href="#bring-in">How</a></div>
+          <div class="step"><div class="num"><span class="ring">{{icon:ellipse}}</span>Step 2</div><h3>Mark it up</h3><p>Circles, boxes and arrows, drawn right on top of the picture.</p><a href="#markup">How</a></div>
+          <div class="step"><div class="num"><span class="ring">{{icon:text}}</span>Step 3</div><h3>Explain it</h3><p>Labels on the slide, longer commentary in the slide's notes.</p><a href="#select">How</a></div>
+          <div class="step"><div class="num"><span class="ring">{{icon:download}}</span>Step 4</div><h3>Export it</h3><p>HTML, PNG or PDF, for all slides or just the ones you pick.</p><a href="#export">How</a></div>
+        </div>
+        <details class="toc-mobile"><summary>Contents</summary><div class="toc" id="tocMobile"></div></details>
+      </section>
+
+      <!-- ================================================================ USERS -->
+      <div class="part" id="users"><h2>Using HaloDeck</h2><span class="who">For everyone</span></div>
+      <p class="part-intro">Everything here applies to anyone who opens HaloDeck. There are no accounts or roles. Your decks stay in your own browser until you export or save them.</p>
+
+      <section class="sec" id="tour">
+        <h3>The getting-started tour</h3>
+        <div class="prose"><p>HaloDeck opens with a short tour the first time someone uses it. It walks through the app step by step with screenshots, in two versions: <b>I make decks</b>, and <b>I set HaloDeck up for others</b> for admins. Picking the admin version also tells HaloDeck you run it for others, so you'll see admin changes after updates. The tour is always in <b>Help</b> (the <b>?</b> button) and in the ⋯ menu on small screens.</p></div>
+        {{fig:tour_welcome}}
+        {{fig:tour_step}}
+        <div class="side">
+          {{fig:tour_showme}}
+          <div class="prose"><p><b>Show me</b> closes the tour for a moment and rings the real button on screen. Click anywhere, or press any key, to go back to the same step.</p><p>The tour's screenshots are built into HaloDeck itself, and they're retaken from the app every time a new version is built, so they always match what's on screen.</p></div>
+        </div>
+        <h4 class="sub" id="whats-new">What's new after an update</h4>
+        <div class="prose"><p><b>What's new</b> appears once, the first time each person opens a new version. It shows only the changes that apply to them, as cards with pictures, and <b>Show me</b> points at the real control. If nothing in an update applies to someone, they aren't interrupted. Someone who skipped a few updates sees all of them, newest first.</p></div>
+        {{fig:tour_whatsnew}}
+      </section>
+
+      <section class="sec" id="workspace">
+        <h3>The workspace</h3>
+        {{fig:workspace}}
+        <div class="note"><span class="ring">i</span><p>On a narrow window, a tablet or a phone the same parts rearrange: tools move to a bar along the bottom, and the panels slide in when you ask for them. See <a href="#phones">Phones and tablets</a>.</p></div>
+      </section>
+
+      <section class="sec" id="topbar">
+        <h3>The top bar</h3>
+        {{fig:topbar_left}}
+        {{fig:topbar_right}}
+        <ol class="topbar-legend">
+          <li><span class="pin sm">1</span><span><b>Undo / Redo.</b> Every change can be undone, including deletions.</span></li>
+          <li><span class="pin sm">9</span><span><b>Deck name.</b> Click to rename. Exported files are named after it.</span></li>
+          <li><span class="pin sm">2</span><span><b>Select</b> <kbd>V</kbd>. Click things to select, drag to move.</span></li>
+          <li><span class="pin sm">10</span><span><b>Save status.</b> "Saved" means the deck is stored in this browser.</span></li>
+          <li><span class="pin sm">3</span><span><b>Text box</b> <kbd>T</kbd>. Click on the slide and type.</span></li>
+          <li><span class="pin sm">11</span><span><b>Help.</b> Quick reference and a link to this guide. Also the <kbd>?</kbd> key.</span></li>
+          <li><span class="pin sm">4</span><span><b>Circle highlight</b> <kbd>O</kbd>.</span></li>
+          <li><span class="pin sm">12</span><span><b>Open ▾.</b> A PDF or photos as slides, or a saved project.</span></li>
+          <li><span class="pin sm">5</span><span><b>Rectangle</b> <kbd>R</kbd>.</span></li>
+          <li><span class="pin sm">13</span><span><b>Save project.</b> Downloads an editable copy of the deck.</span></li>
+          <li><span class="pin sm">6</span><span><b>Arrow</b> <kbd>A</kbd>.</span></li>
+          <li><span class="pin sm">14</span><span><b>Export ▾.</b> HTML, PNG or PDF.</span></li>
+          <li><span class="pin sm">7</span><span><b>Insert images</b> <kbd>I</kbd>. Pick image files from your computer.</span></li>
+          <li></li>
+          <li><span class="pin sm">8</span><span><b>Paste.</b> Pastes whatever is on the clipboard.</span></li>
+        </ol>
+      </section>
+
+      <section class="sec" id="bring-in">
+        <h3>Bringing things in</h3>
+        <div class="prose">
+          <p>Three ways, depending on where the picture is:</p>
+          <ul>
+            <li><b>Paste.</b> Copy a screenshot, an image on a website, some text, or a layer in HaloDeck, then press <kbd>Ctrl</kbd>+<kbd>V</kbd> (<kbd>⌘</kbd>+<kbd>V</kbd> on a Mac) or click <b>Paste</b>. Pictures arrive as image layers; text arrives as a text box.</li>
+            <li><b>Drag and drop.</b> Drag one file or many from your computer onto the slide; each picture becomes its own layer. Drop them on the <b>Slides</b> list instead and each picture gets a slide of its own. Drop a PDF anywhere to open it as slides.</li>
+            <li><b>Open ▾.</b> For a whole PDF, a batch of photos, or a deck saved earlier.</li>
+          </ul>
+        </div>
+        <div class="duo">
+          {{fig:menu_open}}
+          {{fig:dialog_paste}}
+        </div>
+        <div class="note"><span class="ring">i</span><p><b>Why the paste box appears.</b> Chrome and Edge let HaloDeck read the clipboard after you allow it once. Firefox and Safari usually don't, and nor does any browser when what you copied is a file. Then the paste box opens: press <kbd>Ctrl</kbd>+<kbd>V</kbd> there, or on a phone touch and hold it and tap <b>Paste</b>.</p></div>
+      </section>
+
+      <section class="sec" id="pdf">
+        <h3>PDFs as slides</h3>
+        <div class="prose"><p><b>Open ▾ → PDF…</b> turns every page of a PDF into a slide. It's the quickest way to take an existing PDF to HTML: open it, mark it up if you like, and export as HTML.</p></div>
+        {{fig:dialog_pdf}}
+        <h4 class="sub">Getting the size right</h4>
+        <div class="prose"><p>The slide size decides whether a page fills its slide or sits inside it with empty bands. Here is what each choice does to a US Letter page.</p></div>
+        <div class="sizes" aria-label="How a portrait page fits each slide size">
+          <div class="size-card"><span class="tag">Match the PDF</span>
+            <div class="stagebox"><div class="slide-shape" style="width:96px;height:124px"><div class="page-shape" style="width:96px;height:124px"></div></div></div>
+            <b>Slides take the page's shape</b><span>The page fills the slide edge to edge. Exporting to PDF gives Letter pages again.</span></div>
+          <div class="size-card"><span class="tag grey">Keep this deck's size</span>
+            <div class="stagebox"><div class="slide-shape" style="width:220px;height:124px"><div class="page-shape" style="width:96px;height:124px"></div></div></div>
+            <b>Page fitted inside a 16:9 slide</b><span>Nothing is cut off or stretched; the sides are left blank.</span></div>
+          <div class="size-card"><span class="tag grey">Mixed page sizes</span>
+            <div class="stagebox" style="gap:10px;display:flex;justify-content:center;align-items:center"><div class="slide-shape" style="width:72px;height:93px"><div class="page-shape" style="width:72px;height:93px"></div></div><div class="slide-shape" style="width:72px;height:93px"><div class="page-shape" style="width:72px;height:56px"></div></div></div>
+            <b>Each page fitted to its slide</b><span>The slide size follows the first page you import; other shapes are fitted, never cropped.</span></div>
+        </div>
+        <div class="prose">
+          <ul>
+            <li>Each page comes in as a sharp picture, <b>locked</b> so you can draw on it straight away without moving it. Unlock it from <a href="#layers">Layers</a> if you need to.</li>
+            <li>With <b>Copy each page's text into its slide notes</b> ticked, the PDF's words go into the notes, and from there into HTML exports as real text. Leave it on if the HTML is going to an AI tool or a search: they read text, not pictures of text.</li>
+            <li>Scanned PDFs have no text inside, so they come in as pictures only.</li>
+            <li>Password-protected PDFs can't be opened. Save a copy without the password first.</li>
+            <li>The first time you open a PDF, HaloDeck downloads its PDF reader, so you need to be online for that step.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="sec" id="photos">
+        <h3>Photos as slides</h3>
+        <div class="prose"><p><b>Open ▾ → Photos…</b> (or the stacked-pictures button under the slide list) takes as many photos as you pick and makes one slide for each.</p></div>
+        {{fig:dialog_photos}}
+        <div class="prose"><p>Adding photos to a deck you already have keeps the deck's size unless you choose <b>Match the photos</b>. That option resizes every slide in the deck, and the dialog says so before you confirm.</p></div>
+      </section>
+
+      <section class="sec" id="markup">
+        <h3>Marking up</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Tool</th><th>Key</th><th>How to use it</th></tr></thead>
+          <tbody>
+            <tr><td class="tool"><span>{{icon:select}}Select</span></td><td><kbd>V</kbd></td><td>Click to select, drag to move. Click a text box to type in it.</td></tr>
+            <tr><td class="tool"><span>{{icon:text}}Text box</span></td><td><kbd>T</kbd></td><td>Click where the text should start and type. Drag sideways first to set its width. Clicking existing text with this tool edits that text.</td></tr>
+            <tr><td class="tool"><span>{{icon:ellipse}}Circle</span></td><td><kbd>O</kbd></td><td>Drag over the spot to ring it. <kbd>Shift</kbd> makes a perfect circle. A single click drops a medium circle centred on that point.</td></tr>
+            <tr><td class="tool"><span>{{icon:rect}}Rectangle</span></td><td><kbd>R</kbd></td><td>Drag to box something in. <kbd>Shift</kbd> makes a square.</td></tr>
+            <tr><td class="tool"><span>{{icon:arrow}}Arrow</span></td><td><kbd>A</kbd></td><td>Drag from the tail to the point. <kbd>Shift</kbd> keeps it to 45° steps. A single click drops an arrow pointing at where you clicked.</td></tr>
+            <tr><td class="tool"><span>{{icon:image}}Insert images</span></td><td><kbd>I</kbd></td><td>Pick one or more image files; each becomes a layer.</td></tr>
+          </tbody>
+        </table></div>
+        {{fig:drawing}}
+        <div class="side">
+          {{fig:toolbar_active}}
+          <div class="prose"><p><b>Circle, Rectangle and Arrow stay on</b> after each shape, so you can mark up several things in a row. While a tool is on, you can still drag the shape you just drew to nudge it. Press <kbd>Esc</kbd> or <kbd>V</kbd>, or click Select, when you're done.</p><p>The Text tool switches back to Select by itself once you start typing.</p></div>
+        </div>
+      </section>
+
+      <section class="sec" id="select">
+        <h3>Selecting and editing</h3>
+        <div class="duo">
+          {{fig:selected}}
+          {{fig:editing}}
+        </div>
+        <div class="prose">
+          <ul>
+            <li><b>Hollow circles and boxes only catch clicks on their outline.</b> Click inside one and you reach whatever is underneath, such as the screenshot or a label inside the ring. Shapes with a fill, and small shapes, can be grabbed anywhere.</li>
+            <li><b>Text hidden under a picture?</b> Double-click where it is. It comes to the front while you type and goes back to its place afterwards.</li>
+            <li><b>Other ways into text:</b> press <kbd>Enter</kbd> with the text selected, use <b>Edit text</b> in the right-click menu, the ✎ button in Layers, or the <b>Text</b> box in the Properties panel.</li>
+            <li><b>Locked text</b> can still be edited. Lock only stops it moving.</li>
+            <li><b>Moving precisely:</b> arrow keys nudge by 1 pixel, with <kbd>Shift</kbd> by 10. Hold <kbd>Shift</kbd> while dragging to move in a straight line. Pink guide lines appear when you line up with the slide's edges or centre; hold <kbd>Alt</kbd> to turn that snapping off.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="sec" id="rightclick">
+        <h3>The right-click menu</h3>
+        <div class="prose"><p>Right-click on the slide, or touch and hold on a phone or tablet. On a layer you get everything you can do to it; on empty space you get <b>Paste here</b>, which drops what you copied exactly where you clicked.</p></div>
+        <div class="duo">
+          {{fig:ctxmenu_layer}}
+          {{fig:ctxmenu_blank}}
+        </div>
+      </section>
+
+      <section class="sec" id="style">
+        <h3>Styling</h3>
+        <div class="side">
+          {{fig:panel_style}}
+          <div class="prose">
+            <p>Select something and the Properties panel shows its settings. They change with what you've selected:</p>
+            <div class="tbl"><table>
+              <thead><tr><th>Selected</th><th>Settings</th></tr></thead>
+              <tbody>
+                <tr><td><b>Text</b></td><td>Text, font, size, color, bold, italic, alignment, background behind the text and its padding</td></tr>
+                <tr><td><b>Circle or rectangle</b></td><td>Circle ↔ rectangle, outline color and width, fill and fill color, corner radius</td></tr>
+                <tr><td><b>Arrow</b></td><td>Color, thickness, ends (arrow, double arrow, plain line)</td></tr>
+                <tr><td><b>Picture</b></td><td>Description (read by screen readers and AI tools in the HTML export), corner radius, frame, <b>Replace…</b>, <b>Fit to slide</b></td></tr>
+                <tr><td><b>Everything</b></td><td>Rotation, opacity, duplicate, delete, front, back, lock</td></tr>
+              </tbody>
+            </table></div>
+            <p>A new circle, box or arrow uses the last outline color you picked.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec" id="layers">
+        <h3>Layers</h3>
+        <div class="side">
+          {{fig:panel_layers}}
+          <div class="prose"><p>Every picture, shape and text box is a layer. The list shows the top layer first. Click a row to select that layer, which is the easiest way to reach something that's hard to click on the slide.</p><p>Hidden layers stay in the deck but are left out of every export.</p></div>
+        </div>
+      </section>
+
+      <section class="sec" id="slides">
+        <h3>Slides and page settings</h3>
+        <div class="duo">
+          {{fig:panel_slides}}
+          {{fig:panel_slide}}
+        </div>
+        <div class="tbl"><table>
+          <thead><tr><th>Page size</th><th>Pixels</th><th>Good for</th></tr></thead>
+          <tbody>
+            <tr><td>Widescreen 16:9</td><td>1280 × 720</td><td>Screens, presenting, most screenshots</td></tr>
+            <tr><td>Standard 4:3</td><td>1024 × 768</td><td>Older projectors, tablets</td></tr>
+            <tr><td>Square 1:1</td><td>1080 × 1080</td><td>Social posts</td></tr>
+            <tr><td>Vertical 9:16</td><td>720 × 1280</td><td>Phone screenshots, stories</td></tr>
+            <tr><td>Portrait 4:5</td><td>1080 × 1350</td><td>Phone-friendly portrait</td></tr>
+            <tr><td>A4 portrait / landscape</td><td>794 × 1123</td><td>Printing and PDFs outside the US</td></tr>
+            <tr><td>US Letter portrait / landscape</td><td>816 × 1056</td><td>Printing and PDFs in the US</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="sec" id="export">
+        <h3>Exporting</h3>
+        <div class="side">
+          {{fig:menu_export}}
+          <div class="prose"><p><b>Export ▾</b> → pick a format. A confirmation window opens where you can still switch format and choose exactly which slides go out. <kbd>Ctrl</kbd>+<kbd>E</kbd> opens it with the format you used last.</p></div>
+        </div>
+        {{fig:dialog_export}}
+        <div class="tbl"><table>
+          <thead><tr><th></th><th>HTML</th><th>PNG</th><th>PDF</th></tr></thead>
+          <tbody>
+            <tr><td><b>You get</b></td><td>One <code>.html</code> file</td><td>One image per slide, zipped when there's more than one</td><td>One <code>.pdf</code>, a page per slide</td></tr>
+            <tr><td><b>Best for</b></td><td>Sharing, reading in a browser, uploading to AI tools with no page limit</td><td>Pasting slides into chats, docs and other decks</td><td>Printing, email attachments, places that want PDF</td></tr>
+            <tr><td><b>Text stays text</b></td><td class="yes">Yes, plus the notes</td><td class="no">No (pictures; notes go in <code>notes.txt</code>)</td><td class="yes">Yes, selectable and searchable</td></tr>
+            <tr><td><b>Notes</b></td><td>Under each slide</td><td>In <code>notes.txt</code></td><td>On a page after each slide</td></tr>
+            <tr><td><b>Open again in HaloDeck</b></td><td class="yes">Yes, fully editable</td><td class="no">As pictures only</td><td class="no">As page pictures only</td></tr>
+            <tr><td><b>Options</b></td><td>Include notes</td><td>PNG or JPG, 1× or 2× size, notes.txt</td><td>Sharp or smaller pictures, 1× or 2×, notes pages</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="sec" id="viewer">
+        <h3>The exported HTML deck</h3>
+        <div class="prose"><p>The HTML file works on its own. Anyone can open it in a browser, with no HaloDeck and no internet needed (fonts fall back to the system's if offline). Pictures are stored inside the file.</p></div>
+        {{fig:viewer}}
+        <div class="note"><span class="ring">i</span><p><b>Editing it later.</b> An HTML deck exported from HaloDeck carries an editable copy of itself. Open it with <b>Open ▾ → HaloDeck project…</b> to keep working on it.</p></div>
+      </section>
+
+      <section class="sec" id="saving">
+        <h3>Saving and projects</h3>
+        <div class="prose">
+          <ul>
+            <li><b>Autosave.</b> Every change is saved in this browser as you go, pictures included. The top bar shows <b>Saving…</b> and then <b>Saved</b>. Reopen HaloDeck at the same address in the same browser and the deck is still there.</li>
+            <li><b>Save project</b> (<kbd>Ctrl</kbd>+<kbd>S</kbd>) downloads a <code>.halodeck.json</code> file with everything in it. Use it as a backup, to move a deck to another computer or browser, or to hand it to a colleague.</li>
+            <li><b>Open ▾ → HaloDeck project…</b> (<kbd>Ctrl</kbd>+<kbd>O</kbd>) opens a project file or an HTML deck exported from HaloDeck. It replaces the deck that's open, so save that first if you need it.</li>
+            <li>HaloDeck holds <b>one deck at a time</b> per browser. To keep several, save each one as a project file.</li>
+          </ul>
+        </div>
+        <div class="note warn"><span class="ring">!</span><p><b>Autosave isn't a backup.</b> Clearing your browsing data, using a private window, or switching browser or computer means the autosaved deck isn't there. Save a project file for anything you'd hate to lose.</p></div>
+      </section>
+
+      <section class="sec" id="phones">
+        <h3>Phones and tablets</h3>
+        <div class="prose"><p>HaloDeck is built for a desktop browser with a mouse, and works on phones and tablets too.</p>
+          <ul>
+            <li>Tap a tool in the bottom bar, then tap or drag on the slide.</li>
+            <li>Tap once to select; tap selected text again to type.</li>
+            <li>Pinch to zoom, drag with one finger on empty space to scroll around.</li>
+            <li>Touch and hold for the right-click menu, including <b>Paste here</b>.</li>
+          </ul>
+        </div>
+        <div class="phones">
+          {{fig:phone_editor}}
+          {{fig:phone_sheet}}
+          {{fig:phone_hold}}
+        </div>
+      </section>
+
+      <section class="sec" id="shortcuts">
+        <h3>Keyboard shortcuts</h3>
+        <div class="prose"><p>On a Mac, use <kbd>⌘</kbd> where this says <kbd>Ctrl</kbd>.</p></div>
+        <div class="tbl"><table class="keys">
+          <thead><tr><th>Keys</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td><kbd>V</kbd> <kbd>T</kbd> <kbd>O</kbd> <kbd>R</kbd> <kbd>A</kbd></td><td>Select, Text, Circle, Rectangle, Arrow</td></tr>
+            <tr><td><kbd>I</kbd></td><td>Insert images</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> or <kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Undo · redo</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd> · <kbd>X</kbd> · <kbd>V</kbd></td><td>Copy, cut, paste (layers work across slides)</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>Duplicate the selection</td></tr>
+            <tr><td><kbd>Delete</kbd> or <kbd>Backspace</kbd></td><td>Delete the selection</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>]</kbd> · <kbd>Ctrl</kbd>+<kbd>[</kbd></td><td>Bring forward · send backward one layer</td></tr>
+            <tr><td><kbd>Enter</kbd></td><td>Edit the selected text</td></tr>
+            <tr><td><kbd>Esc</kbd></td><td>Stop typing, close a menu, back to Select, then deselect</td></tr>
+            <tr><td>Arrow keys</td><td>Nudge the selection 1px (<kbd>Shift</kbd> for 10px). With nothing selected: previous / next slide</td></tr>
+            <tr><td><kbd>Page Up</kbd> · <kbd>Page Down</kbd></td><td>Previous · next slide</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>+</kbd> · <kbd>Ctrl</kbd>+<kbd>−</kbd> · <kbd>Ctrl</kbd>+<kbd>0</kbd></td><td>Zoom in · out · fit (also <kbd>Ctrl</kbd> + scroll or a trackpad pinch)</td></tr>
+            <tr><td><kbd>Space</kbd> + drag</td><td>Move around a zoomed-in slide (the middle mouse button works too)</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd> · <kbd>Ctrl</kbd>+<kbd>O</kbd> · <kbd>Ctrl</kbd>+<kbd>E</kbd></td><td>Save project · open a project · export</td></tr>
+            <tr><td><kbd>?</kbd></td><td>Help</td></tr>
+            <tr><td>While dragging: <kbd>Shift</kbd> · <kbd>Alt</kbd></td><td>Straight lines, perfect circles, 15° rotation · no snapping</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="sec" id="inapp">
+        <h3>Help inside the app</h3>
+        <div class="prose"><p>The <b>?</b> button in the top bar, <b>Help &amp; guide</b> in the ⋯ menu on small screens, or the <kbd>?</kbd> key opens a quick reference: every tool and its key, where things are, and the main shortcuts. It's part of HaloDeck itself, so it works offline. Its two buttons start the <a href="#tour">getting-started tour</a> and open this guide; the version you're using is shown at the bottom, next to the <a href="#changelog">change log</a>.</p></div>
+        {{fig:help_panel}}
+        <div class="side">
+          {{fig:help_role}}
+          <div class="prose"><p><b>Your role</b>, near the bottom of Help, decides which updates <b>What's new</b> shows you. <b>I make decks</b> covers changes to the tools. <b>I run HaloDeck for others</b> adds admin changes: hosting, releases, storage and moves.</p><p>There are no accounts, so the choice is stored in your browser. Change it any time.</p></div>
+        </div>
+      </section>
+
+      <section class="sec" id="help">
+        <h3>Troubleshooting</h3>
+        <dl class="faq">
+          <dt>Paste opens a box instead of pasting</dt>
+          <dd>Your browser only shares the clipboard when you paste yourself. Press <kbd>Ctrl</kbd>+<kbd>V</kbd> in the box (touch and hold on a phone). Pressing <kbd>Ctrl</kbd>+<kbd>V</kbd> on the slide works too.</dd>
+          <dt>"That website doesn't allow its image to be copied directly"</dt>
+          <dd>Some sites block copying their images into other pages. Save the image to your computer, then drag the file in.</dd>
+          <dt>I can't click a shape</dt>
+          <dd>Hollow shapes only respond on their outline. Click the line itself, or select the shape in <a href="#layers">Layers</a>. If it's locked, unlock it there.</dd>
+          <dt>Clicking makes a new circle instead of selecting</dt>
+          <dd>A drawing tool is still on. Press <kbd>Esc</kbd> or <kbd>V</kbd>.</dd>
+          <dt>I can't reach a text box under a picture</dt>
+          <dd>Double-click it, or use the ✎ button next to it in Layers.</dd>
+          <dt>The PDF won't open</dt>
+          <dd>The first PDF needs an internet connection to fetch the PDF reader. Password-protected PDFs can't be opened; save an unprotected copy. If your workplace blocks some websites, ask your admin (see <a href="#network">Network and privacy</a>).</dd>
+          <dt>My PDF came in without text in the notes</dt>
+          <dd>It's a scanned PDF: its pages are pictures of text. The pages still come in, as pictures.</dd>
+          <dt>My deck is gone</dt>
+          <dd>Autosave lives in one browser on one computer, at one web address. Check you're in the same browser, not a private window, and at the usual address. Otherwise open your last saved project file.</dd>
+          <dt>The top bar says "Not autosaved"</dt>
+          <dd>The browser is blocking storage (often a private window or a strict privacy setting). Keep working, and use <b>Save project</b> before you close the tab.</dd>
+        </dl>
+      </section>
+
+      <!-- ================================================================ ADMINS -->
+      <div class="part" id="admins"><h2>For admins</h2><span class="who">Whoever hosts HaloDeck</span></div>
+      <p class="part-intro">HaloDeck has no server, accounts or admin console. "Admin" here means the person who puts the files online, keeps them updated and helps others when something goes wrong.</p>
+
+      <section class="sec" id="admin-overview">
+        <h3>How HaloDeck runs</h3>
+        <div class="map" aria-label="Where HaloDeck's files and data live">
+          <div class="node"><h5>{{icon:folder}}Your GitHub repo</h5><ul><li><code>index.html</code> (the app)</li><li><code>guide.html</code> (this guide)</li></ul></div>
+          <div class="arrow-h">{{icon:chevR}}</div>
+          <div class="node"><h5>{{icon:grid}}GitHub Pages</h5><p>Serves the two files at your address, e.g. <code>you.github.io/halodeck/</code></p></div>
+          <div class="arrow-h">{{icon:chevR}}</div>
+          <div class="node main"><h5>{{icon:slides}}Each person's browser</h5><p>The app runs here. Decks autosave here, in that browser only. Exports download to that person's computer.</p></div>
+        </div>
+        <div class="map-extra">
+          <div class="node dashed"><h5>Google Fonts</h5><p>The app's fonts. Optional: without them, system fonts are used.</p></div>
+          <div class="node dashed"><h5>PDF reader (jsDelivr, unpkg)</h5><p>Fetched only when someone opens a PDF, from the first site that answers.</p></div>
+          <div class="node dashed"><h5>Nothing else</h5><p>No accounts, no analytics, no uploads. Decks never leave the browser unless someone exports or saves them.</p></div>
+        </div>
+      </section>
+
+      <section class="sec" id="deploy">
+        <h3>Putting it online</h3>
+        <div class="prose"><p>Any static web host works. These steps are for GitHub Pages:</p>
+          <ol>
+            <li>Create a repository on GitHub. Make it public, unless your GitHub plan allows Pages on private repositories.</li>
+            <li>Upload <code>index.html</code> and <code>guide.html</code> to the top level of the repository.</li>
+            <li>Go to <b>Settings → Pages</b>. Under <b>Build and deployment</b>, set <b>Source</b> to <b>Deploy from a branch</b>, choose <code>main</code> and <code>/ (root)</code>, and save.</li>
+            <li>After a minute or two, GitHub shows the site's address. Open it to check.</li>
+          </ol>
+        </div>
+        <div class="tree">your-repository/
+├─ index.html   <em>← the app (open the site's address to use it)</em>
+├─ guide.html   <em>← this guide; the app's Help panel links to it</em>
+├─ changelog.json, CHANGELOG.md   <em>← the change log</em>
+└─ README.md    <em>← optional</em></div>
+        <div class="note"><span class="ring">i</span><p><b>Keep the two files side by side.</b> The Help panel looks for <code>guide.html</code> next to <code>index.html</code>. If it isn't there, the panel says so and asks whoever set up HaloDeck to add it. In the same way, this guide shows an <b>Open HaloDeck</b> button only when it finds the app beside it.</p></div>
+      </section>
+
+      <section class="sec" id="updating">
+        <h3>Releasing an update</h3>
+        <div class="prose"><p>Each new version of HaloDeck comes as a matching pair, <code>index.html</code> and <code>guide.html</code>, stamped with the same build number, plus the updated change log (<code>changelog.json</code> and <code>CHANGELOG.md</code>). Upload all four, replacing the old ones.</p></div>
+        {{fig:tour_admin}}
+        <div class="prose"><ul>
+          <li>Both files are built together from the same source. The build photographs the new app and puts those screenshots into the tour and this guide, so neither can show an older version.</li>
+          <li><b>What's new</b> appears once for each person the first time they open the new version, showing only the changes that apply to their role (see <a href="#changelog">Change log</a>). Every version has to come with a change log entry before it can be built.</li>
+          <li>If the guide on your site doesn't match the app (say, only <code>index.html</code> was uploaded), the Help panel tells everyone, and names the build numbers, so it gets fixed.</li>
+          <li>The version and build number are at the bottom of the Help panel and at the top of this guide.</li>
+          <li>GitHub Pages republishes within a minute or two; people get the new version the next time they load the page, or after a refresh.</li>
+          <li>Updating doesn't touch anyone's decks. They're stored in each person's browser, not in the files you replace.</li>
+          <li>Decks from earlier HaloDeck versions are converted automatically when they're opened.</li>
+        </ul></div>
+      </section>
+
+      <section class="sec" id="changelog">
+        <h3>Change log</h3>
+        <div class="prose"><p>Every change to HaloDeck since the first version, oldest first: {{changelog:count}} versions since {{changelog:first}}. Each change is marked <b>New</b>, <b>Improved</b>, <b>Fixed</b>, <b>Changed</b> or <b>Removed</b>, and says who it affects: everyone, or admins only.</p></div>
+        {{fig:changelog}}
+        <div class="prose"><ul>
+          <li><b>In the app:</b> Help → <b>Change log</b>, the ⋯ menu on small screens, or the <b>Keep track of changes</b> step of the admin tour. Filter to admin changes, flip the order, or download it as JSON or CSV.</li>
+          <li><b>Next to the app:</b> <code>changelog.json</code> (for tools and records) and <code>CHANGELOG.md</code> (readable on GitHub) are published with every version.</li>
+          <li><b>What people see:</b> the same entries drive What's new. People who make decks see changes marked for everyone; people who run HaloDeck also see admin changes. To get admin changes, choose <b>I run HaloDeck for others</b> in Help, or open HaloDeck once with <code>?role=admin</code> at the end of its address.</li>
+          <li><b>It can't fall behind:</b> each version's number comes from its change log entry, so a new version can't be built without one. Dates before 1.4 come from the site's publishing history.</li>
+        </ul></div>
+        {{changelog}}
+      </section>
+
+      <section class="sec" id="data">
+        <h3>Where decks are stored</h3>
+        <div class="prose"><ul>
+          <li>The open deck autosaves in the browser's own storage (an IndexedDB database named <code>halodeck</code>) for that browser, on that computer, at that web address.</li>
+          <li>Nothing is shared between people or devices. Two people using the same link each have their own deck.</li>
+          <li>Clearing browsing data for the site, or using a private window, removes the autosaved deck.</li>
+        </ul></div>
+        <div class="note warn"><span class="ring">!</span><p><b>Changing the address strands autosaved decks.</b> Renaming the repository, moving to a custom domain or switching hosts gives HaloDeck a new address, and the browser treats it as a different site. Ask everyone to use <b>Save project</b> before you move, then open their files at the new address.</p></div>
+        <div class="prose"><p>For a planned move, HaloDeck warns people itself. Its <code>SITE_MOVE</code> setting lists the old address and the new one. Anyone who opens HaloDeck at the old address sees this notice, with a <b>Save project</b> button. At the new address, the welcome tells people how to open the file they saved.</p></div>
+        {{fig:move_banner}}
+        <div class="prose"><ul>
+          <li>Publish the version with the notice and give people time to save before you switch the domain.</li>
+          <li>If someone missed it, their deck is still in their browser under the old address. Serving any copy of HaloDeck at the old address again, even briefly, lets them open it and use Save project.</li>
+        </ul></div>
+      </section>
+
+      <section class="sec" id="network">
+        <h3>Network and privacy</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Address</th><th>Used for</th><th>If it's blocked</th></tr></thead>
+          <tbody>
+            <tr><td>Your GitHub Pages address</td><td>Loading the app and the guide</td><td>HaloDeck won't load</td></tr>
+            <tr><td><code>fonts.googleapis.com</code>, <code>fonts.gstatic.com</code></td><td>Fonts in the app and in exported HTML</td><td>System fonts are used; everything still works</td></tr>
+            <tr><td><code>cdn.jsdelivr.net</code>, <code>unpkg.com</code></td><td>The PDF reader, only when a PDF is opened</td><td>Opening PDFs fails; everything else works</td></tr>
+          </tbody>
+        </table></div>
+        <div class="prose"><ul>
+          <li>HaloDeck doesn't upload, track or log anything. Pictures pasted or opened stay in the browser.</li>
+          <li><b>Exported files carry their content.</b> An HTML export contains every picture on the chosen slides and an editable copy of those slides, so anyone with the file can open and edit it in HaloDeck. Hidden layers are left out of every export, and notes are left out of HTML when <b>Include slide notes</b> is off. Treat an export like any document you send.</li>
+          <li>Project files (<code>.halodeck.json</code>) contain the whole deck, notes and hidden layers included.</li>
+        </ul></div>
+      </section>
+
+      <section class="sec" id="browsers">
+        <h3>Browsers and limits</h3>
+        <div class="tbl"><table>
+          <thead><tr><th>Area</th><th>What to expect</th></tr></thead>
+          <tbody>
+            <tr><td><b>Browsers</b></td><td>Current Chrome, Edge, Firefox and Safari, on desktop and mobile. Opening PDFs needs a browser from roughly 2023 or later.</td></tr>
+            <tr><td><b>Clipboard</b></td><td>Chrome and Edge read the clipboard directly after a one-time permission; Firefox and Safari use the paste box. <kbd>Ctrl</kbd>+<kbd>V</kbd> works everywhere.</td></tr>
+            <tr><td><b>Pictures</b></td><td>Images larger than 2400 pixels on their long side are scaled down to 2400 when added, to keep decks fast and files reasonable.</td></tr>
+            <tr><td><b>PDF pages</b></td><td>Rendered up to 2400 pixels on the long side (1800 for imports over 40 pages).</td></tr>
+            <tr><td><b>File sizes</b></td><td>Pictures are embedded in HTML exports, which adds about a third to their size. A deck of 50 full-page screenshots typically exports to tens of megabytes.</td></tr>
+            <tr><td><b>Storage</b></td><td>Autosave uses the browser's site storage. Browsers allow a lot, but a full disk or strict settings can stop it; the top bar then shows "Not autosaved".</td></tr>
+          </tbody>
+        </table></div>
+      </section>
+
+      <section class="sec" id="rollout">
+        <h3>Rolling it out</h3>
+        <ul class="checks">
+          <li><span><b>Publish</b> both files and open the address once yourself.</span></li>
+          <li><span><b>Open a PDF on your work network</b> to confirm the PDF reader can be fetched there.</span></li>
+          <li><span><b>Share two links</b>: the app's address, and the guide (the same address with <code>guide.html</code> on the end).</span></li>
+          <li><span><b>Tell people to keep project files</b> in a shared folder. Autosave is per browser and isn't a backup.</span></li>
+          <li><span><b>Agree on a format</b> for what you hand around. HTML for reading and AI tools, PDF for printing and email, PNG for pasting into other documents.</span></li>
+          <li><span><b>Plan address changes.</b> If the site will move, collect project files first.</span></li>
+        </ul>
+      </section>
+
+      <section class="sec" id="admin-help">
+        <h3>Admin troubleshooting</h3>
+        <dl class="faq">
+          <dt>The site shows a 404</dt>
+          <dd>Check that Pages is turned on, that the branch and folder are right, and that the file is called exactly <code>index.html</code> at the top level. A first publish can take a few minutes.</dd>
+          <dt>An admin doesn't see admin changes in What's new</dt>
+          <dd>Their role is set to <b>I make decks</b>. In Help, under <b>Your role</b>, choose <b>I run HaloDeck for others</b>, or open HaloDeck once with <code>?role=admin</code> at the end of the address. Everything is always in the <a href="#changelog">change log</a> too.</dd>
+          <dt>The Help panel says the guide is from a different build</dt>
+          <dd>Only one of the two files was updated. Upload the <code>guide.html</code> that came with the same version as your <code>index.html</code>.</dd>
+          <dt>The Help panel says the guide isn't on this site</dt>
+          <dd>Upload <code>guide.html</code> next to <code>index.html</code>.</dd>
+          <dt>People see the old version after an update</dt>
+          <dd>Ask them to refresh the page. Browsers sometimes keep the previous copy for a short while.</dd>
+          <dt>PDFs open for some people but not others</dt>
+          <dd>Their network is blocking <code>cdn.jsdelivr.net</code> and <code>unpkg.com</code>. Allow either one, or have them open PDFs from another network once.</dd>
+          <dt>Someone lost a deck</dt>
+          <dd>Autosave can't be recovered from another browser or after data was cleared. Their last project file or HTML export can be opened again with <b>Open ▾ → HaloDeck project…</b>.</dd>
+        </dl>
+      </section>
+
+      <footer>HaloDeck Guide · screenshots taken from HaloDeck {{build:version}} (build {{build:id}}, {{build:date}}) · the dashboard in them is a made-up example</footer>
+    </main>
+  </div>
+</div>
+
+<script>
+(function(){
+  // copy the contents list into the phone menu
+  var toc = document.getElementById('toc'), mob = document.getElementById('tocMobile');
+  if(toc && mob){ mob.innerHTML = toc.innerHTML; mob.addEventListener('click', function(e){ if(e.target.closest('a')) mob.closest('details').open = false; }); }
+  // show "Open HaloDeck" only when the app sits next to this guide
+  var btn = document.getElementById('openApp');
+  if(btn && /^https?:$/.test(location.protocol) && window.fetch){
+    fetch('index.html', {method:'HEAD', cache:'no-store'}).then(function(r){
+      if(r.ok && (r.headers.get('content-type') || '').indexOf('html') >= 0){ btn.href = 'index.html'; btn.hidden = false; }
+    }).catch(function(){});
+  }
+  // highlight the section being read
+  var links = Array.prototype.slice.call(document.querySelectorAll('#toc a'));
+  var targets = links.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  if('IntersectionObserver' in window && targets.length){
+    var current = null;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){ if(en.isIntersecting) current = en.target.id; });
+      if(current) links.forEach(function(a){ a.classList.toggle('on', a.getAttribute('href') === '#' + current); });
+    }, {rootMargin:'-20% 0px -70% 0px'});
+    targets.forEach(function(t){ io.observe(t); });
+  }
+})();
+</script>

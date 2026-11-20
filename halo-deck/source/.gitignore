@@ -1,0 +1,6 @@
+# made by dev_setup.py and build.py
+.cache/
+dist/
+guide_src/shots/
+guide_src/artifact/
+__pycache__/

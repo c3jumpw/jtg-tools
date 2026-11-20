@@ -1,0 +1,457 @@
+<div id="app">
+  <header id="topbar">
+    <button class="tbtn compact-only" id="btnSlidesPanel" data-icon="slides" title="Slides" aria-label="Slides"></button>
+    <div class="brand" title="HaloDeck">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="14" width="36" height="26" rx="4" fill="#EDE7DD"/><circle cx="44" cy="43" r="14" fill="none" stroke="#F2A93B" stroke-width="4.5"/><circle cx="44" cy="43" r="4" fill="#F2A93B"/></svg>
+      <span class="brand-name">Halo<b>Deck</b></span>
+    </div>
+    <div class="tgroup" id="historyGroup">
+      <button class="tbtn" id="btnUndo" data-icon="undo" title="Undo (Ctrl/Cmd+Z)" aria-label="Undo"></button>
+      <button class="tbtn" id="btnRedo" data-icon="redo" title="Redo (Ctrl/Cmd+Shift+Z)" aria-label="Redo"></button>
+    </div>
+    <div class="tgroup" id="toolSlot">
+      <div class="tools" id="tools">
+        <button class="tbtn tool active" data-tool="select" data-icon="select" title="Select & move (V)" aria-label="Select"></button>
+        <button class="tbtn tool" data-tool="text" data-icon="text" title="Text box (T)" aria-label="Text box"></button>
+        <button class="tbtn tool" data-tool="ellipse" data-icon="ellipse" title="Circle highlight (O)" aria-label="Circle highlight"></button>
+        <button class="tbtn tool" data-tool="rect" data-icon="rect" title="Rectangle (R)" aria-label="Rectangle"></button>
+        <button class="tbtn tool" data-tool="arrow" data-icon="arrow" title="Arrow (A)" aria-label="Arrow"></button>
+        <span class="tsep"></span>
+        <button class="tbtn" id="btnImage" data-icon="image" title="Insert images" aria-label="Insert images"></button>
+        <button class="tbtn labeled" id="btnPaste" data-icon="paste" title="Paste whatever is on the clipboard — a picture, text or a copied layer (Ctrl/Cmd+V)" aria-label="Paste"><span class="lbl">Paste</span></button>
+        <span class="tsep dock-only"></span>
+        <button class="tbtn dock-only" id="btnPanel" data-icon="layers" title="Layers & style" aria-label="Layers and style"></button>
+      </div>
+    </div>
+    <input id="titleField" class="titlefield" value="Untitled deck" maxlength="80" aria-label="Deck title" spellcheck="false" autocomplete="off">
+    <div class="spacer"></div>
+    <span id="saveStatus" class="save-status" aria-live="polite"></span>
+    <button class="tbtn wide-only" id="btnHelp" data-icon="help" title="Help &amp; guide (?)" aria-label="Help and guide"></button>
+    <button class="pill wide-only" id="btnOpen" title="Open a PDF, photos or a HaloDeck project" aria-haspopup="menu">Open<i class="caret" data-icon="caret"></i></button>
+    <button class="pill wide-only" id="btnSave" title="Download an editable project file (Ctrl/Cmd+S)">Save project</button>
+    <button class="tbtn compact-only" id="btnMore" data-icon="more" title="More" aria-label="More" aria-haspopup="menu"></button>
+    <button class="pill primary" id="btnExport" title="Export as HTML, PNG or PDF (Ctrl/Cmd+E)" aria-haspopup="menu"><i data-icon="download"></i><span class="lbl">Export</span><i class="caret" data-icon="caret"></i></button>
+  </header>
+
+  <div class="menu" id="menuExport" role="menu" hidden>
+    <div class="menu-title">Export as…</div>
+    <button role="menuitem" data-format="html"><i data-icon="code"></i><span class="mi"><b>HTML</b><small>One self-contained .html deck</small></span></button>
+    <button role="menuitem" data-format="png"><i data-icon="image"></i><span class="mi"><b>PNG</b><small>One image per slide (zipped)</small></span></button>
+    <button role="menuitem" data-format="pdf"><i data-icon="pdf"></i><span class="mi"><b>PDF</b><small>One page per slide, searchable text</small></span></button>
+  </div>
+
+  <div class="menu" id="menuOpen" role="menu" hidden>
+    <div class="menu-title">Open as slides</div>
+    <button role="menuitem" data-act="pdf"><i data-icon="pdf"></i><span class="mi"><b>PDF…</b><small>Each page becomes a slide, sized to match</small></span></button>
+    <button role="menuitem" data-act="photos"><i data-icon="stack"></i><span class="mi"><b>Photos…</b><small>Pick several at once — one slide each</small></span></button>
+    <div class="menu-sep" role="separator"></div>
+    <button role="menuitem" data-act="project"><i data-icon="folder"></i><span class="mi"><b>HaloDeck project…</b><small>A saved .json, or an HTML deck made here</small></span></button>
+  </div>
+
+  <div class="menu ctx-menu" id="ctxMenu" role="menu" hidden></div>
+
+  <div class="menu" id="menuMore" role="menu" hidden>
+    <button role="menuitem" data-act="paste"><i data-icon="paste"></i>Paste</button>
+    <button role="menuitem" data-act="pdf"><i data-icon="pdf"></i>Open PDF as slides…</button>
+    <button role="menuitem" data-act="slidesFromImages"><i data-icon="stack"></i>Photos as slides…</button>
+    <button role="menuitem" data-act="open"><i data-icon="folder"></i>Open project…</button>
+    <button role="menuitem" data-act="save"><i data-icon="save"></i>Save project</button>
+    <div class="menu-sep" role="separator"></div>
+    <button role="menuitem" data-act="tour"><i data-icon="slides"></i>Getting started tour</button>
+    <button role="menuitem" data-act="help"><i data-icon="help"></i>Help &amp; guide</button>
+    <button role="menuitem" data-act="log"><i data-icon="history"></i>Change log</button>
+  </div>
+
+  <div id="workspace">
+    <aside id="slidesPanel" class="panel" aria-label="Slides">
+      <div class="panel-head"><span>Slides</span><span class="count" id="slideCount"></span><button class="tbtn sm compact-only" data-close data-icon="close" aria-label="Close"></button></div>
+      <div class="slide-list" id="slideList"></div>
+      <div class="slide-add">
+        <button class="add-btn" id="btnAddSlide"><i data-icon="plus"></i>Add slide</button>
+        <button class="add-btn icon" id="btnSlidesFromImages" title="Photos as slides — pick several, one slide each" aria-label="Photos as slides"><i data-icon="stack"></i></button>
+      </div>
+      <div class="panel-drop">Drop images here to create one new slide per image</div>
+    </aside>
+
+    <main id="stageArea">
+      <div id="stage">
+        <div id="stageInner">
+          <div id="canvasWrap">
+            <div id="canvas" class="slide-canvas tool-select"></div>
+            <div id="overlay"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ctxbar" id="ctxBar" hidden>
+        <button class="tbtn" data-act="edit" data-icon="text" title="Edit text" aria-label="Edit text"></button>
+        <button class="tbtn compact-only" data-act="style" data-icon="sliders" title="Style" aria-label="Style"></button>
+        <button class="tbtn" data-act="dup" data-icon="dup" title="Duplicate (Ctrl/Cmd+D)" aria-label="Duplicate"></button>
+        <button class="tbtn" data-act="front" data-icon="front" title="Bring to front" aria-label="Bring to front"></button>
+        <button class="tbtn" data-act="back" data-icon="back" title="Send to back" aria-label="Send to back"></button>
+        <button class="tbtn" data-act="lock" data-icon="unlock" title="Lock" aria-label="Lock"></button>
+        <span class="tsep"></span>
+        <button class="tbtn danger" data-act="del" data-icon="trash" title="Delete (Del)" aria-label="Delete"></button>
+      </div>
+
+      <div class="zoombar" id="zoomBar">
+        <button id="btnPrevSlide" data-icon="chevL" title="Previous slide" aria-label="Previous slide"></button>
+        <span class="val" id="slideNum">1 / 1</span>
+        <button id="btnNextSlide" data-icon="chevR" title="Next slide" aria-label="Next slide"></button>
+        <span class="sep zoom-part"></span>
+        <button class="zoom-part" id="btnZoomOut" data-icon="minus" title="Zoom out (Ctrl/Cmd −)" aria-label="Zoom out"></button>
+        <span class="val zoom-part" id="zoomPct">100%</span>
+        <button class="zoom-part" id="btnZoomIn" data-icon="plus" title="Zoom in (Ctrl/Cmd +)" aria-label="Zoom in"></button>
+        <button id="btnZoomFit" title="Fit slide to window (Ctrl/Cmd 0)">FIT</button>
+      </div>
+
+      <div class="drop-hint" id="dropHint">
+        <div class="drop-card"><i data-icon="upload"></i><b>Drop to add to this slide</b><span>Each image becomes its own layer · .json / .html opens a project</span></div>
+      </div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </main>
+
+    <aside id="rightPanel" class="panel" data-tab="style" aria-label="Layers and properties">
+      <div class="sheet-grab"></div>
+      <div class="sheet-tabs" role="tablist">
+        <button data-tab="style" role="tab">Style</button>
+        <button data-tab="layers" role="tab">Layers</button>
+        <button data-tab="slide" role="tab">Slide</button>
+        <button class="tbtn sm" data-close data-icon="close" aria-label="Close"></button>
+      </div>
+
+      <section class="section" id="secStyle">
+        <div class="panel-head"><span>Properties</span></div>
+        <div class="empty" id="propsEmpty">Select something on the slide to style it. <b>Click a text box</b> to type in it.</div>
+        <div id="props"></div>
+      </section>
+
+      <section class="section" id="secLayers">
+        <div class="panel-head"><span>Layers</span><span class="count" id="layerCount"></span></div>
+        <div class="layer-list" id="layerList"></div>
+        <div class="empty" id="layersEmpty">No layers yet. Use the tools, paste an image, or drag files onto the slide.</div>
+      </section>
+
+      <section class="section" id="secSlide">
+        <div class="panel-head"><span>Slide</span></div>
+        <div class="field">
+          <div class="flabel"><span>Page size</span><span class="hint">all slides</span></div>
+          <select id="pageSize" aria-label="Page size"></select>
+        </div>
+        <div class="field">
+          <div class="flabel"><span>Background</span></div>
+          <div class="colors" id="bgColors"></div>
+        </div>
+        <div class="btnrow" style="padding-top:2px">
+          <button class="sqbtn" id="btnBgImage"><i data-icon="image"></i>Background image…</button>
+          <button class="sqbtn" id="btnBgClear" hidden>Remove</button>
+        </div>
+        <div class="field" style="padding-top:10px">
+          <div class="flabel"><span>Notes &amp; commentary</span><span class="hint">exported as text</span></div>
+          <textarea id="slideNotes" rows="4" placeholder="Context, talking points or commentary for this slide…"></textarea>
+        </div>
+        <div class="btnrow" style="padding-top:0">
+          <button class="sqbtn" id="btnNotesToLayer"><i data-icon="plus"></i>Add notes to slide as a text layer</button>
+        </div>
+      </section>
+    </aside>
+
+    <div id="scrim"></div>
+  </div>
+
+  <nav id="dock" aria-label="Tools"></nav>
+</div>
+
+<div class="modal-backdrop" id="exportModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="exTitle">
+    <div class="modal-head">
+      <h2 id="exTitle">Export</h2>
+      <button class="tbtn sm" id="exClose" data-icon="close" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+      <div class="ex-formats" role="radiogroup" aria-label="Format">
+        <button class="ex-format" data-format="html" role="radio"><i data-icon="code"></i><b>HTML</b><span>One self-contained .html deck with slide navigation and notes. Reopens here for editing.</span></button>
+        <button class="ex-format" data-format="png" role="radio"><i data-icon="image"></i><b>PNG</b><span>One image per slide — zipped when there's more than one.</span></button>
+        <button class="ex-format" data-format="pdf" role="radio"><i data-icon="pdf"></i><b>PDF</b><span>One page per slide. Text stays selectable and searchable.</span></button>
+      </div>
+      <div class="ex-opts" id="exOptsHtml">
+        <label class="check"><input type="checkbox" id="exHtmlNotes" checked> Include slide notes</label>
+      </div>
+      <div class="ex-opts" id="exOptsImg" hidden>
+        <div class="opt"><span>File type</span><div class="seg" id="exImgType"><button data-v="png">PNG</button><button data-v="jpeg">JPG</button></div></div>
+        <div class="opt"><span>Size</span><div class="seg" id="exImgScale"><button data-v="1">1×</button><button data-v="2">2×</button></div><span class="dim" id="exImgDims"></span></div>
+        <label class="check"><input type="checkbox" id="exImgNotes" checked> Add notes.txt</label>
+      </div>
+      <div class="ex-opts" id="exOptsPdf" hidden>
+        <div class="opt"><span>Pictures</span><div class="seg" id="exPdfQual"><button data-v="sharp" title="Lossless — crisp screenshots and text">Sharp</button><button data-v="small" title="JPEG — much smaller files for photos">Smaller</button></div></div>
+        <div class="opt"><span>Resolution</span><div class="seg" id="exPdfScale"><button data-v="1">1×</button><button data-v="2">2×</button></div></div>
+        <label class="check"><input type="checkbox" id="exPdfNotes" checked> Add notes pages</label>
+      </div>
+      <div class="ex-pick-head">
+        <b>Slides</b><span class="dim" id="exPickCount"></span>
+        <div class="spacer"></div>
+        <button class="link" id="exAll">All</button>
+        <button class="link" id="exCur">Current</button>
+        <button class="link" id="exNone">Clear</button>
+      </div>
+      <div class="ex-range">
+        <label for="exRange">Custom</label>
+        <input type="text" id="exRange" placeholder="e.g. 1-3, 5, 8" autocomplete="off" spellcheck="false" inputmode="numeric">
+        <span class="dim">or click slides below · Shift-click picks a run</span>
+      </div>
+      <div class="ex-grid" id="exGrid"></div>
+      <div class="ex-progress" id="exProgress" hidden><div class="bar"><i></i></div><span></span></div>
+    </div>
+    <div class="modal-foot">
+      <span class="dim" id="exSummary"></span>
+      <div class="spacer"></div>
+      <button class="pill" id="exCancel">Cancel</button>
+      <button class="pill primary" id="exGo">Export</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="helpModal" hidden>
+  <div class="modal help-modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="modal-head">
+      <h2 id="helpTitle">Help &amp; guide</h2>
+      <button class="tbtn sm" id="helpClose" data-icon="close" aria-label="Close"></button>
+    </div>
+    <div class="modal-body help-body">
+      <button class="help-guide help-tour" id="helpTour" type="button">
+        <i data-icon="slides"></i>
+        <span><b>Take the getting-started tour</b><small>Step by step with screenshots — for making decks, or for admins</small></span>
+        <i class="ext" data-icon="chevR"></i>
+      </button>
+      <a class="help-guide" id="helpGuide" href="guide.html" target="_blank" rel="noopener">
+        <i data-icon="book"></i>
+        <span><b>Open the illustrated guide</b><small>Screenshots of every tool, menu and setting — for everyday users and for admins</small></span>
+        <i class="ext" data-icon="external"></i>
+      </a>
+      <p class="help-missing warn" id="helpStale" hidden></p>
+      <p class="help-missing" id="helpMissing" hidden>The illustrated guide isn't on this site yet. Whoever set up HaloDeck can add it by uploading <code>guide.html</code> next to <code>index.html</code>.</p>
+
+      <section class="help-sec">
+        <h3>Quick start</h3>
+        <ol class="help-steps">
+          <li><b>Bring something in.</b> Paste a screenshot, drop files on the slide, or use <span class="hk">Open ▾</span> for a PDF or a batch of photos.</li>
+          <li><b>Mark it up.</b> Pick Circle, Rectangle or Arrow and drag over the spot — even on top of a picture. The tool stays on until you press <kbd>Esc</kbd>.</li>
+          <li><b>Explain it.</b> Use the Text tool for labels on the slide, and the slide's notes for longer commentary.</li>
+          <li><b>Export.</b> <span class="hk">Export ▾</span> → HTML, PNG or PDF, then choose all slides or just some.</li>
+        </ol>
+      </section>
+
+      <section class="help-sec">
+        <h3>Tools</h3>
+        <ul class="help-tools">
+          <li><i data-icon="select"></i><span>Select &amp; move</span><kbd>V</kbd></li>
+          <li><i data-icon="text"></i><span>Text box</span><kbd>T</kbd></li>
+          <li><i data-icon="ellipse"></i><span>Circle highlight</span><kbd>O</kbd></li>
+          <li><i data-icon="rect"></i><span>Rectangle</span><kbd>R</kbd></li>
+          <li><i data-icon="arrow"></i><span>Arrow</span><kbd>A</kbd></li>
+          <li><i data-icon="image"></i><span>Insert images</span><kbd>I</kbd></li>
+          <li><i data-icon="paste"></i><span>Paste</span><kbd class="mod">V</kbd></li>
+        </ul>
+      </section>
+
+      <section class="help-sec">
+        <h3>Where things are</h3>
+        <dl class="help-map">
+          <dt>Open ▾</dt><dd>A PDF or photos as slides, or a saved HaloDeck project.</dd>
+          <dt>Save project</dt><dd>Downloads an editable copy — your backup, and how you move a deck to another device.</dd>
+          <dt>Export ▾</dt><dd>HTML, PNG or PDF, with a slide picker (All, Current or a list like 1-3, 5).</dd>
+          <dt>Right-click</dt><dd>On the slide (touch and hold on a phone): cut, copy, paste here, duplicate, arrange, lock, delete.</dd>
+          <dt>Right panel</dt><dd><b>Style</b> for the selected item, <b>Layers</b> to reorder, hide or lock, <b>Slide</b> for page size, background and notes.</dd>
+          <dt>Slides panel</dt><dd>Add, duplicate, delete and drag slides into order.</dd>
+        </dl>
+      </section>
+
+      <section class="help-sec">
+        <h3>Shortcuts</h3>
+        <table class="help-keys">
+          <tr><td><kbd class="mod">Z</kbd> / <kbd class="mod">⇧Z</kbd></td><td>Undo / redo</td></tr>
+          <tr><td><kbd class="mod">C</kbd> <kbd class="mod">X</kbd> <kbd class="mod">V</kbd></td><td>Copy, cut, paste</td></tr>
+          <tr><td><kbd class="mod">D</kbd></td><td>Duplicate</td></tr>
+          <tr><td><kbd>Del</kbd></td><td>Delete the selection</td></tr>
+          <tr><td><kbd>Enter</kbd></td><td>Edit the selected text</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>Stop typing · back to Select</td></tr>
+          <tr><td><kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd></td><td>Nudge (hold Shift for 10px) · or change slide</td></tr>
+          <tr><td><kbd class="mod">E</kbd> / <kbd class="mod">S</kbd></td><td>Export / save project</td></tr>
+          <tr><td><kbd class="mod">0</kbd></td><td>Fit the slide to the window</td></tr>
+          <tr><td><kbd>?</kbd></td><td>This help</td></tr>
+        </table>
+      </section>
+
+      <section class="help-sec help-role" id="helpRole">
+        <h3>Your role</h3>
+        <div class="role-pick" role="radiogroup" aria-label="Your role">
+          <button type="button" role="radio" data-role="user"><i data-icon="user"></i><span><b>I make decks</b><small>What's new shows changes to the tools</small></span></button>
+          <button type="button" role="radio" data-role="admin"><i data-icon="shield"></i><span><b>I run HaloDeck for others</b><small>Also admin changes: hosting, updates, data</small></span></button>
+        </div>
+      </section>
+
+      <section class="help-sec">
+        <h3>Good to know</h3>
+        <ul class="help-notes">
+          <li>Your deck saves itself in this browser. Use <b>Save project</b> for a backup or to work on another device.</li>
+          <li>Hollow circles and boxes only catch clicks on their outline, so what's inside stays clickable.</li>
+          <li>Text hidden under a picture? Double-click it to edit.</li>
+          <li>Opening a PDF needs an internet connection the first time.</li>
+        </ul>
+      </section>
+      <div class="help-foot"><p class="help-version" id="helpVersion"></p><button class="linkbtn" id="helpLog" type="button"><i data-icon="history"></i>Change log</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop tour-backdrop" id="tourModal" hidden>
+  <div class="modal tour" role="dialog" aria-modal="true" aria-labelledby="tourTitle">
+    <div class="tour-head">
+      <span class="tour-track" id="tourTrack">Getting started</span>
+      <span class="tour-count" id="tourCount"></span>
+      <button class="tbtn sm" id="tourClose" data-icon="close" aria-label="Close the tour"></button>
+    </div>
+    <div class="tour-body">
+      <div class="tour-visual" id="tourVisual"></div>
+      <div class="tour-side">
+        <div class="tour-text" id="tourText" aria-live="polite"></div>
+        <div class="tour-show" id="tourShowWrap"><button class="pill" id="tourShow" type="button"><i data-icon="select"></i><span>Show me</span></button></div>
+      </div>
+    </div>
+    <div class="tour-foot">
+      <div class="tour-dots" id="tourDots"></div>
+      <div class="spacer"></div>
+      <button class="pill" id="tourBack" type="button">Back</button>
+      <button class="pill primary" id="tourNext" type="button">Next</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop news-backdrop" id="newsModal" hidden>
+  <div class="modal news" role="dialog" aria-modal="true" aria-labelledby="newsTitle">
+    <div class="news-hero">
+      <div class="news-hero-text">
+        <span class="news-kicker"><i data-icon="spark"></i>What's new</span>
+        <h2 id="newsTitle"></h2>
+        <p id="newsSub"></p>
+      </div>
+      <button class="tbtn sm" id="newsClose" data-icon="close" aria-label="Close"></button>
+    </div>
+    <div class="news-body" id="newsBody"></div>
+    <div class="news-foot">
+      <p class="news-role" id="newsRole"></p>
+      <div class="spacer"></div>
+      <button class="pill" id="newsLog" type="button"><i data-icon="history"></i>Change log</button>
+      <button class="pill" id="newsTour" type="button">Take the tour</button>
+      <button class="pill primary" id="newsOk" type="button">Got it</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="logModal" hidden>
+  <div class="modal log-modal" role="dialog" aria-modal="true" aria-labelledby="logTitle">
+    <div class="modal-head log-head">
+      <i class="log-mark" data-icon="history"></i>
+      <div class="log-titles"><h2 id="logTitle">Change log</h2><p id="logSub"></p></div>
+      <button class="tbtn sm" id="logClose" data-icon="close" aria-label="Close"></button>
+    </div>
+    <div class="log-bar">
+      <div class="seg" id="logFor" role="group" aria-label="Show changes for">
+        <button type="button" data-for="all" class="on">Everything</button>
+        <button type="button" data-for="everyone">For everyone</button>
+        <button type="button" data-for="admins">Admins only</button>
+      </div>
+      <div class="seg" id="logOrder" role="group" aria-label="Order">
+        <button type="button" data-order="asc" class="on">Oldest first</button>
+        <button type="button" data-order="desc">Newest first</button>
+      </div>
+      <div class="spacer"></div>
+      <button class="pill sm" id="logJson" type="button" title="Download the whole change log as JSON"><i data-icon="download"></i>JSON</button>
+      <button class="pill sm" id="logCsv" type="button" title="Download the whole change log as a spreadsheet (CSV)"><i data-icon="download"></i>CSV</button>
+    </div>
+    <div class="modal-body log-body" id="logBody"></div>
+  </div>
+</div>
+
+<div class="move-banner" id="moveBanner" role="region" aria-label="HaloDeck is moving" hidden>
+  <i class="move-ic" data-icon="info"></i>
+  <div class="move-text"><b id="moveTitle"></b><span id="moveText"></span></div>
+  <div class="move-acts">
+    <button class="pill primary sm" id="moveSave" type="button"><i data-icon="save"></i>Save project</button>
+    <a class="pill sm" id="moveGo" target="_blank" rel="noopener"><i data-icon="external"></i>New address</a>
+  </div>
+  <button class="tbtn sm" id="moveClose" data-icon="close" aria-label="Hide for now"></button>
+</div>
+
+<div id="spotlight" hidden>
+  <div class="spot-ring"></div>
+  <div class="spot-tip" role="dialog" aria-label="Showing where this is"><b></b><span></span><button class="pill primary" type="button">Back to the tour</button></div>
+</div>
+
+<div class="modal-backdrop" id="pasteModal" hidden>
+  <div class="modal paste-modal" role="dialog" aria-modal="true" aria-labelledby="pasteTitle">
+    <div class="modal-head">
+      <h2 id="pasteTitle">Paste</h2>
+      <button class="tbtn sm" id="pasteClose" data-icon="close" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+      <p class="paste-why" id="pasteWhy"></p>
+      <div class="paste-target" id="pasteTarget" contenteditable="true" role="textbox" aria-label="Paste here" spellcheck="false"></div>
+      <p class="dim paste-how" id="pasteHow"></p>
+      <button class="link" id="pasteInternal" hidden>Paste the layer you copied in HaloDeck instead</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="importModal" hidden>
+  <div class="modal import-modal" role="dialog" aria-modal="true" aria-labelledby="imTitle">
+    <div class="modal-head">
+      <h2 id="imTitle">Open as slides</h2>
+      <button class="tbtn sm" id="imClose" data-icon="close" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+      <div class="im-file"><i id="imIcon" data-icon="pdf"></i><div><b id="imName"></b><span class="dim" id="imMeta"></span></div></div>
+      <div class="im-strip" id="imStrip"></div>
+      <div class="im-loading" id="imLoading" hidden><span class="spin"></span><span id="imLoadingText">Reading…</span></div>
+      <div class="im-opts" id="imOpts">
+        <div class="im-row" id="imRowPages">
+          <span class="im-label">Pages</span>
+          <div class="im-ctl"><div class="seg" id="imPagesMode"><button data-v="all">All</button><button data-v="range">Choose…</button></div>
+          <input type="text" id="imRange" placeholder="e.g. 1-3, 7" autocomplete="off" spellcheck="false" inputmode="numeric" hidden></div>
+        </div>
+        <div class="im-row">
+          <span class="im-label">Slide size</span>
+          <div class="im-ctl im-choices" id="imSize" role="radiogroup" aria-label="Slide size"></div>
+        </div>
+        <div class="im-row" id="imRowFit">
+          <span class="im-label">Each photo</span>
+          <div class="im-ctl"><div class="seg" id="imFit"><button data-v="contain">Show it whole</button><button data-v="cover">Fill the slide</button></div></div>
+        </div>
+        <div class="im-row" id="imRowOrder">
+          <span class="im-label">Order</span>
+          <div class="im-ctl"><div class="seg" id="imOrder"><button data-v="name">By file name</button><button data-v="picked">As picked</button></div></div>
+        </div>
+        <div class="im-row">
+          <span class="im-label">Put them in</span>
+          <div class="im-ctl"><div class="seg" id="imWhere"><button data-v="new">A new deck</button><button data-v="add">This deck</button></div></div>
+        </div>
+        <label class="check im-check" id="imTextRow"><input type="checkbox" id="imText" checked><span>Copy each page's text into its slide notes <span class="dim">— keeps the words readable in HTML exports</span></span></label>
+      </div>
+      <p class="im-note" id="imNote" hidden></p>
+      <div class="ex-progress" id="imProgress" hidden><div class="bar"><i></i></div><span></span></div>
+    </div>
+    <div class="modal-foot">
+      <span class="dim" id="imSummary"></span>
+      <div class="spacer"></div>
+      <button class="pill" id="imCancel">Cancel</button>
+      <button class="pill primary" id="imGo">Create slides</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileImages" accept="image/*" multiple hidden>
+<input type="file" id="filePdf" accept=".pdf,application/pdf" hidden>
+<input type="file" id="fileSlides" accept="image/*" multiple hidden>
+<input type="file" id="fileReplace" accept="image/*" hidden>
+<input type="file" id="fileBg" accept="image/*" hidden>
+<input type="file" id="fileProject" accept=".json,.html,.htm,.pdf,application/json,text/html,application/pdf" hidden>

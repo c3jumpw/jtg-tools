@@ -1,0 +1,3396 @@
+(function(){
+"use strict";
+
+/* =========================================================================
+   HaloDeck — slide & annotation designer. Single file, no build step.
+
+   Model: element geometry is stored in logical page pixels (e.g. 1280×720).
+   The DOM renderer converts to % and cqw, so the editor canvas, thumbnails
+   and the exported HTML all scale identically. The PNG/JPG exporter draws
+   the same model onto a <canvas>.
+   ========================================================================= */
+
+const SVGNS = "http://www.w3.org/2000/svg";
+const LINE_H = 1.28;
+const TEXT_RADIUS = 8;
+const MAX_IMG_DIM = 2400;
+const LEGACY_KEY = "halodeck_project_v1";
+const VIEWER_CSS = /*@VIEWER_CSS@*/"";
+const VIEWER_JS = /*@VIEWER_JS@*/"";
+
+const PAGE_PRESETS = [
+  {id:"16:9", label:"Widescreen 16:9", w:1280, h:720},
+  {id:"4:3",  label:"Standard 4:3",   w:1024, h:768},
+  {id:"1:1",  label:"Square 1:1",     w:1080, h:1080},
+  {id:"9:16", label:"Vertical 9:16 (phone)", w:720, h:1280},
+  {id:"4:5",  label:"Portrait 4:5",   w:1080, h:1350},
+  {id:"a4p",  label:"A4 portrait",    w:794,  h:1123},
+  {id:"a4l",  label:"A4 landscape",   w:1123, h:794},
+  {id:"ltrp", label:"US Letter portrait",  w:816,  h:1056},
+  {id:"ltrl", label:"US Letter landscape", w:1056, h:816},
+];
+const FONTS = [
+  {id:"inter",   label:"Inter",           css:"Inter, system-ui, -apple-system, 'Segoe UI', sans-serif"},
+  {id:"georgia", label:"Georgia (serif)", css:"Georgia, 'Times New Roman', serif"},
+  {id:"arial",   label:"Arial",           css:"Arial, Helvetica, sans-serif"},
+  {id:"caveat",  label:"Caveat (handwritten)", css:"Caveat, 'Segoe Print', 'Comic Sans MS', cursive"},
+  {id:"mono",    label:"JetBrains Mono",  css:"'JetBrains Mono', 'Courier New', monospace"},
+];
+const FONT_IDS = new Set(FONTS.map(f => f.id));
+const FONT_WEB = {
+  inter:"Inter:ital,wght@0,400;0,700;1,400;1,700",
+  caveat:"Caveat:wght@400;700",
+  mono:"JetBrains+Mono:ital,wght@0,400;0,700;1,400;1,700",
+};
+const SWATCHES = ["#E5484D","#F2A93B","#FFD60A","#30A46C","#3E8EF7","#8E4EC6","#FFFFFF","#1C1B1A"];
+const BG_SWATCHES = ["#FFFFFF","#F6F2EA","#E9EDF1","#1C1B1A","#000000","#0E2A47"];
+const PLACEHOLDER = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 30"><rect width="40" height="30" fill="#d9d5ce"/><path d="M8 22l8-9 6 6 4-4 6 7z" fill="#bdb7ad"/></svg>');
+
+const ICONS = {
+  select:'<path d="M5.5 3.5l12.5 7.4-5.6 1.5L10 18z"/>',
+  text:'<path d="M5 7V5h14v2M12 5v14M9 19h6"/>',
+  ellipse:'<circle cx="12" cy="12" r="8"/>',
+  rect:'<rect x="4" y="5" width="16" height="14" rx="2"/>',
+  arrow:'<path d="M5 19L19 5M19 5h-8.5M19 5v8.5"/>',
+  image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 15.5l-5-5L5 20"/>',
+  paste:'<rect x="8" y="2.5" width="8" height="4" rx="1"/><path d="M16 4.5h2a2 2 0 0 1 2 2V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2h2"/>',
+  undo:'<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  redo:'<path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/>',
+  slides:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/>',
+  layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>',
+  sliders:'<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+  more:'<circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/>',
+  download:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  upload:'<path d="M12 16V4M7 9l5-5 5 5M5 20h14"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  minus:'<path d="M5 12h14"/>',
+  dup:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  front:'<path d="M12 20V9M7.5 13.5L12 9l4.5 4.5M5 4.5h14"/>',
+  back:'<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/>',
+  eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  eyeOff:'<path d="M3 3l18 18M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-2.7 3.6M6.6 6.6C3.9 8.3 2 12 2 12s3.6 7 10 7c1.7 0 3.2-.4 4.5-1.1M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  unlock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.6-1.7"/>',
+  grip:'<g fill="currentColor" stroke="none"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></g>',
+  close:'<path d="M6 6l12 12M18 6L6 18"/>',
+  chevL:'<path d="M15 6l-6 6 6 6"/>',
+  chevR:'<path d="M9 6l6 6-6 6"/>',
+  stack:'<rect x="7" y="3" width="14" height="11" rx="2"/><path d="M3 8v10a2 2 0 0 0 2 2h12"/>',
+  folder:'<path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H9l2 2h7.5A2.5 2.5 0 0 1 21 9.5v8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5z"/>',
+  save:'<path d="M5 3h11l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M7 3v5h8V3M7 21v-7h10v7"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  code:'<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/>',
+  alignL:'<path d="M4 6h16M4 12h10M4 18h13"/>',
+  alignC:'<path d="M4 6h16M7 12h10M5.5 18h13"/>',
+  alignR:'<path d="M4 6h16M10 12h10M7 18h13"/>',
+  fit:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+  grid:'<rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/>',
+  replace:'<path d="M4 9a8 8 0 0 1 14-3.5L20 7.5M20 3.5v4h-4M20 15a8 8 0 0 1-14 3.5L4 16.5M4 20.5v-4h4"/>',
+  pdf:'<path d="M6 3h8l5 5v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M8.5 13h7M8.5 16.5h5"/>',
+  caret:'<path d="M7 10l5 5 5-5"/>',
+  cut:'<circle cx="6" cy="7" r="2.6"/><circle cx="6" cy="17" r="2.6"/><path d="M8.2 8.6L20 18M8.2 15.4L20 6"/>',
+  copy:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3"/>',
+  pencil:'<path d="M4 20l1-4.5L16 4.5a2.1 2.1 0 0 1 3 3L8 18.5z"/><path d="M14 6.5l3 3"/>',
+  help:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.9.7c0 1.7-2.5 2.1-2.5 3.6"/><circle cx="12" cy="17" r=".9" fill="currentColor" stroke="none"/>',
+  book:'<path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v14H6.5A1.5 1.5 0 0 0 5 18.5z"/><path d="M5 18.5A1.5 1.5 0 0 0 6.5 20H19"/><path d="M9 7h6"/>',
+  external:'<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  history:'<path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1L3.5 8.5"/><path d="M3.5 3.5v5h5"/><path d="M12 7.5V12l3 2"/>',
+  spark:'<path d="M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9-1.9 5.1-1.9-5.1L5 10.5l5.1-1.9z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>',
+  trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  wrench:'<path d="M14.6 6.4a4 4 0 0 0-5.3 5.3L3.5 17.5l3 3 5.8-5.8a4 4 0 0 0 5.3-5.3l-2.5 2.5-2.3-.7-.7-2.3z"/>',
+  swap:'<path d="M7 4L3 8l4 4"/><path d="M3 8h13"/><path d="M17 20l4-4-4-4"/><path d="M21 16H8"/>',
+  minusCircle:'<circle cx="12" cy="12" r="9"/><path d="M8 12h8"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.8" r=".9" fill="currentColor" stroke="none"/>',
+  shield:'<path d="M12 3l7.5 3v5.5c0 4.6-3.2 7.9-7.5 9.5-4.3-1.6-7.5-4.9-7.5-9.5V6z"/>',
+  user:'<circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5c1.4-3.6 4.2-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/>',
+};
+function icon(name){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || "") + "</svg>";
+}
+
+/* ------------------------------------------------------------------ helpers */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const fmt = v => String(+(+v).toFixed(3));
+const num = (v, d, lo, hi) => { const n = (v === null || v === undefined || v === "") ? NaN : +v; return Number.isFinite(n) ? clamp(n, lo, hi) : d; };
+let seq = 0;
+function uid(p){ seq = (seq + 1) % 1679616; return p + Date.now().toString(36).slice(-6) + seq.toString(36) + Math.random().toString(36).slice(2, 5); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function hex6(c){
+  c = String(c || "").trim();
+  if(/^#[0-9a-f]{3}$/i.test(c)) c = "#" + c.slice(1).split("").map(x => x + x).join("");
+  return /^#[0-9a-f]{6}$/i.test(c) ? c.toLowerCase() : null;
+}
+const color = (c, d) => hex6(c) || d;
+function rgba(hex, a){
+  const n = parseInt((hex6(hex) || "#000000").slice(1), 16);
+  return "rgba(" + (n >> 16 & 255) + "," + (n >> 8 & 255) + "," + (n & 255) + "," + fmt(a) + ")";
+}
+function slugify(s){
+  return (String(s || "").toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60)) || "deck";
+}
+const nextFrame = () => new Promise(r => requestAnimationFrame(() => r()));
+function fontCss(id){ return (FONTS.find(f => f.id === id) || FONTS[0]).css; }
+function hydrateIcons(root){
+  $$("[data-icon]", root).forEach(n => { if(!n.querySelector("svg")) n.insertAdjacentHTML("afterbegin", icon(n.dataset.icon)); });
+}
+function readAsDataURL(blob){
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(blob); });
+}
+function loadImg(src){
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => res(img);
+    img.onerror = () => rej(new Error("Image could not be decoded"));
+    img.src = src;
+  });
+}
+function dataUrlToBlob(d){
+  const m = /^data:([^;,]*)(;base64)?,([\s\S]*)$/.exec(d);
+  if(!m) throw new Error("Not a data URL");
+  const mime = m[1] || "application/octet-stream";
+  if(m[2]){
+    const bin = atob(m[3]); const u8 = new Uint8Array(bin.length);
+    for(let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    return new Blob([u8], {type:mime});
+  }
+  return new Blob([decodeURIComponent(m[3])], {type:mime});
+}
+function downloadBlob(blob, name){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name; a.rel = "noopener"; a.style.display = "none";
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 60000);
+}
+
+/* -------------------------------------------------------------------- state */
+const doc = {title:"Untitled deck", page:{w:1280, h:720}, slides:[]};
+const assets = new Map();          // asset id -> data URL (portable, saved)
+const assetIdByData = new Map();   // data URL -> asset id (dedupe)
+const blobUrls = new Map();        // asset id -> object URL (fast display)
+const ui = {cur:0, sel:null, tool:"select", zoom:1, autoFit:true, editing:null, tab:"style", guides:[]};
+const lastStyle = {stroke:"#E5484D"};
+let internalClip = null, internalClipText = "";
+let openMenuEl = null, openMenuBtn = null;        // the popover menu that's open, if any
+const PW = () => doc.page.w, PH = () => doc.page.h;
+const K = () => doc.page.w / 1280;          // scale defaults to the page size
+
+const canvas = $("#canvas"), overlay = $("#overlay"), wrap = $("#canvasWrap");
+const stage = $("#stage"), stageInner = $("#stageInner"), area = $("#stageArea");
+const ctxBar = $("#ctxBar"), slideList = $("#slideList"), layerList = $("#layerList");
+const propsEl = $("#props"), rightPanel = $("#rightPanel"), titleField = $("#titleField");
+
+function curSlide(){ return doc.slides[ui.cur]; }
+function findEl(id, s){ s = s || curSlide(); return (s && id) ? s.elements.find(e => e.id === id) || null : null; }
+function selEl(){ return findEl(ui.sel); }
+function nodeOf(id){ return id ? canvas.querySelector('[data-id="' + id + '"]') : null; }
+
+/* ------------------------------------------------------------------- assets */
+function addAsset(dataUrl){
+  if(assetIdByData.has(dataUrl)) return assetIdByData.get(dataUrl);
+  const id = uid("a");
+  assets.set(id, dataUrl); assetIdByData.set(dataUrl, id);
+  pendingAssets.add(id);
+  return id;
+}
+function assetUrl(id){
+  if(!id || !assets.has(id)) return PLACEHOLDER;
+  let u = blobUrls.get(id);
+  if(!u){
+    try{ u = URL.createObjectURL(dataUrlToBlob(assets.get(id))); }catch(e){ u = assets.get(id); }
+    blobUrls.set(id, u);
+  }
+  return u;
+}
+function resetAssets(){
+  blobUrls.forEach(u => { if(u.startsWith("blob:")) URL.revokeObjectURL(u); });
+  blobUrls.clear(); assets.clear(); assetIdByData.clear(); pendingAssets.clear(); imgCache.clear();
+}
+function collectAssetIds(slides){
+  const set = new Set();
+  slides.forEach(s => {
+    if(s.bgAsset) set.add(s.bgAsset);
+    s.elements.forEach(e => { if(e.type === "image" && e.asset) set.add(e.asset); });
+  });
+  return set;
+}
+
+/* ---------------------------------------------------------------- factories */
+function newSlide(){ return {id:uid("s"), bg:"#ffffff", bgAsset:null, notes:"", elements:[]}; }
+function base(){ return {id:uid("e"), rot:0, opacity:1, locked:false, hidden:false}; }
+function newText(x, y, w){
+  return Object.assign(base(), {type:"text", x, y, w:w || Math.round(420 * K()), h:60 * K(),
+    text:"", font:"inter", size:Math.round(40 * K()), color:"#1C1B1A", bold:false, italic:false, align:"left",
+    hl:"#FFD60A", hlOpacity:0, pad:Math.round(10 * K())});
+}
+function newShape(shape, x, y, w, h){
+  return Object.assign(base(), {type:"shape", shape, x, y, w, h, stroke:lastStyle.stroke,
+    strokeW:Math.max(2, Math.round(6 * K())), fill:lastStyle.stroke, fillOpacity:0, radius:Math.round(12 * K())});
+}
+function newArrow(x1, y1, x2, y2){
+  return Object.assign(base(), {type:"arrow", x1, y1, x2, y2, stroke:lastStyle.stroke,
+    strokeW:Math.max(2, Math.round(6 * K())), head:"end"});
+}
+function newImage(asset, x, y, w, h){
+  return Object.assign(base(), {type:"image", asset, x, y, w, h, alt:"", radius:0, borderW:0, borderColor:"#F2A93B"});
+}
+function cloneEl(el){ const c = JSON.parse(JSON.stringify(el)); c.id = uid("e"); return c; }
+function offsetEl(el, dx, dy){
+  if(el.type === "arrow"){ el.x1 += dx; el.x2 += dx; el.y1 += dy; el.y2 += dy; }
+  else { el.x += dx; el.y += dy; }
+}
+function scaleEl(el, s, ox, oy){
+  if(el.type === "arrow"){
+    el.x1 = el.x1 * s + ox; el.y1 = el.y1 * s + oy; el.x2 = el.x2 * s + ox; el.y2 = el.y2 * s + oy;
+    el.strokeW *= s; return;
+  }
+  el.x = el.x * s + ox; el.y = el.y * s + oy; el.w *= s; el.h *= s;
+  if(el.type === "text"){ el.size *= s; el.pad *= s; }
+  if(el.type === "image"){ el.radius *= s; el.borderW *= s; }
+  if(el.type === "shape"){ el.strokeW *= s; el.radius *= s; }
+}
+
+/* ------------------------------------------------------- normalise / import */
+function normEl(e, ids){
+  if(!e || typeof e !== "object") return null;
+  let id = (typeof e.id === "string" && /^[\w-]{1,48}$/.test(e.id)) ? e.id : "";
+  if(!id || (ids && ids.has(id))) id = uid("e");
+  if(ids) ids.add(id);
+  const b = {id, rot:num(e.rot, 0, -3600, 3600), opacity:num(e.opacity, 1, 0, 1), locked:!!e.locked, hidden:!!e.hidden};
+  const P = (v, d) => num(v, d, -100000, 100000);
+  const box = {x:P(e.x, 0), y:P(e.y, 0), w:num(e.w, 100, 1, 100000), h:num(e.h, 100, 1, 100000)};
+  switch(e.type){
+    case "text": return Object.assign(b, box, {type:"text", text:String(e.text == null ? "" : e.text).slice(0, 50000),
+      font:FONT_IDS.has(e.font) ? e.font : "inter", size:num(e.size, 40, 4, 2000), color:color(e.color, "#1c1b1a"),
+      bold:!!e.bold, italic:!!e.italic, align:["left","center","right"].includes(e.align) ? e.align : "left",
+      hl:color(e.hl, "#ffd60a"), hlOpacity:num(e.hlOpacity, 0, 0, 1), pad:num(e.pad, 10, 0, 1000)});
+    case "image": return Object.assign(b, box, {type:"image", asset:String(e.asset || ""), alt:String(e.alt || "").slice(0, 2000),
+      radius:num(e.radius, 0, 0, 10000), borderW:num(e.borderW, 0, 0, 1000), borderColor:color(e.borderColor, "#f2a93b")});
+    case "shape": return Object.assign(b, box, {type:"shape", shape:e.shape === "rect" ? "rect" : "ellipse",
+      stroke:color(e.stroke, "#e5484d"), strokeW:num(e.strokeW, 6, 0, 1000), fill:color(e.fill, "#e5484d"),
+      fillOpacity:num(e.fillOpacity, 0, 0, 1), radius:num(e.radius, 12, 0, 10000)});
+    case "arrow": return Object.assign(b, {type:"arrow", x1:P(e.x1, 0), y1:P(e.y1, 0), x2:P(e.x2, 100), y2:P(e.y2, 0),
+      stroke:color(e.stroke, "#e5484d"), strokeW:num(e.strokeW, 6, 0.5, 1000),
+      head:["end","both","none"].includes(e.head) ? e.head : "end"});
+  }
+  return null;
+}
+function normSlide(s, ids){
+  if(!s || typeof s !== "object") return null;
+  let id = (typeof s.id === "string" && /^[\w-]{1,48}$/.test(s.id)) ? s.id : "";
+  if(!id || ids.has(id)) id = uid("s");
+  ids.add(id);
+  return {id, bg:color(s.bg, "#ffffff"), bgAsset:(typeof s.bgAsset === "string" && s.bgAsset) ? s.bgAsset : null,
+    notes:String(s.notes || "").slice(0, 200000),
+    elements:(Array.isArray(s.elements) ? s.elements : []).map(e => normEl(e, ids)).filter(Boolean)};
+}
+function normalize(d){
+  const page = (d && d.page && +d.page.w >= 100 && +d.page.h >= 100 && +d.page.w <= 8000 && +d.page.h <= 8000)
+    ? {w:Math.round(+d.page.w), h:Math.round(+d.page.h)} : {w:1280, h:720};
+  const ids = new Set();
+  const slides = (Array.isArray(d && d.slides) ? d.slides : []).map(s => normSlide(s, ids)).filter(Boolean);
+  if(!slides.length) slides.push(newSlide());
+  return {title:String((d && d.title) || "Untitled deck").slice(0, 80), page, slides};
+}
+/* Version-1 decks stored geometry as % of a 1280×720 slide and sizes in cqw. */
+function migrateV1(d){
+  const W = 1280, H = 720, X = v => (+v || 0) / 100 * W, Y = v => (+v || 0) / 100 * H, C = v => (+v || 0) / 100 * W;
+  const out = {title:d.title || "Untitled deck", page:{w:W, h:H}, slides:[], assets:{}};
+  const byData = new Map();
+  const assetFor = src => {
+    if(typeof src !== "string" || !src.startsWith("data:")) return "";
+    if(byData.has(src)) return byData.get(src);
+    const id = uid("a"); byData.set(src, id); out.assets[id] = src; return id;
+  };
+  const fontFrom = css => {
+    css = String(css || "");
+    if(/georgia|times/i.test(css)) return "georgia";
+    if(/arial|helvetica/i.test(css)) return "arial";
+    if(/mono|courier/i.test(css)) return "mono";
+    return "inter";
+  };
+  (d.slides || []).forEach(s => {
+    const ns = {id:uid("s"), bg:s.bg || "#ffffff", bgAsset:s.bgImage ? assetFor(s.bgImage) : null, notes:s.notes || "", elements:[]};
+    (s.elements || []).forEach(e => {
+      const b = {id:uid("e"), rot:e.rot || 0, opacity:e.opacity == null ? 1 : e.opacity, locked:!!e.locked, hidden:!!e.hidden};
+      if(e.type === "text"){
+        ns.elements.push(Object.assign(b, {type:"text", x:X(e.x), y:Y(e.y), w:X(e.w), h:Y(e.h), text:e.text || "",
+          font:fontFrom(e.fontFamily), size:C(e.fontSize || 3.4), color:e.color, bold:!!e.bold, italic:!!e.italic, align:e.align,
+          hl:(e.bg && e.bg !== "transparent") ? e.bg : "#F2A93B", hlOpacity:e.bgOpacity || 0, pad:C(e.padding == null ? 0.8 : e.padding)}));
+      } else if(e.type === "image"){
+        ns.elements.push(Object.assign(b, {type:"image", x:X(e.x), y:Y(e.y), w:X(e.w), h:Y(e.h), asset:assetFor(e.src), alt:"",
+          radius:C(e.radius), borderW:C(e.borderW), borderColor:e.borderColor}));
+      } else if(e.type === "shape" && e.shape === "arrow"){
+        ns.elements.push(Object.assign(b, {type:"arrow", x1:X(e.x1), y1:Y(e.y1), x2:X(e.x2), y2:Y(e.y2), stroke:e.stroke,
+          strokeW:C(e.strokeWidth || 0.55), head:"end"}));
+      } else if(e.type === "shape"){
+        ns.elements.push(Object.assign(b, {type:"shape", shape:e.shape === "ellipse" ? "ellipse" : "rect", x:X(e.x), y:Y(e.y), w:X(e.w), h:Y(e.h),
+          stroke:e.stroke, strokeW:C(e.strokeWidth || 0.6), fill:(e.fill && e.fill !== "transparent") ? e.fill : "#F2A93B",
+          fillOpacity:e.fillOpacity || 0, radius:C(e.radius)}));
+      }
+    });
+    out.slides.push(ns);
+  });
+  return out;
+}
+
+/* ===================================================================== render
+   One element renderer shared by the editor, thumbnails and HTML export.     */
+function elStyle(el, page){
+  const P = (v, t) => fmt(v / t * 100) + "%";
+  const C = v => fmt(v / page.w * 100) + "cqw";
+  if(el.type === "arrow") return (el.opacity < 1 ? "opacity:" + fmt(el.opacity) + ";" : "");
+  let s = "left:" + P(el.x, page.w) + ";top:" + P(el.y, page.h) + ";width:" + P(el.w, page.w) + ";";
+  if(el.type !== "text") s += "height:" + P(el.h, page.h) + ";";
+  if(el.opacity < 1) s += "opacity:" + fmt(el.opacity) + ";";
+  if(el.rot) s += "transform:rotate(" + fmt(el.rot) + "deg);";
+  if(el.type === "text"){
+    s += "font-family:" + fontCss(el.font) + ";font-size:" + C(el.size) + ";color:" + el.color + ";"
+      + "font-weight:" + (el.bold ? 700 : 400) + ";font-style:" + (el.italic ? "italic" : "normal") + ";"
+      + "text-align:" + el.align + ";padding:" + C(el.pad) + ";";
+    if(el.hlOpacity > 0) s += "background:" + rgba(el.hl, el.hlOpacity) + ";border-radius:" + C(TEXT_RADIUS * page.w / 1280) + ";";
+  } else if(el.type === "image"){
+    if(el.radius > 0) s += "border-radius:" + C(el.radius) + ";";
+    if(el.borderW > 0) s += "box-shadow:0 0 0 " + C(el.borderW) + " " + el.borderColor + ";";
+  } else if(el.type === "shape"){
+    if(el.strokeW > 0) s += "border:" + C(el.strokeW) + " solid " + el.stroke + ";";
+    if(el.fillOpacity > 0) s += "background:" + rgba(el.fill, el.fillOpacity) + ";";
+    s += "border-radius:" + (el.shape === "ellipse" ? "50%" : C(el.radius)) + ";";
+  }
+  return s;
+}
+function arrowGeom(el){
+  const dx = el.x2 - el.x1, dy = el.y2 - el.y1, len = Math.hypot(dx, dy) || 1, ux = dx / len, uy = dy / len;
+  const sw = el.strokeW;
+  const hl = Math.min(len * 0.45, sw * 3.4 + 6), hw = sw * 2.6 + 6;
+  const head = (tx, ty, dirx, diry) => {
+    const bx = tx - dirx * hl, by = ty - diry * hl, px = -diry * hw / 2, py = dirx * hw / 2;
+    return [[tx, ty], [bx + px, by + py], [bx - px, by - py]];
+  };
+  let sx1 = el.x1, sy1 = el.y1, sx2 = el.x2, sy2 = el.y2;
+  const heads = [];
+  if(el.head === "end" || el.head === "both"){ heads.push(head(el.x2, el.y2, ux, uy)); sx2 -= ux * hl * 0.75; sy2 -= uy * hl * 0.75; }
+  if(el.head === "both"){ heads.push(head(el.x1, el.y1, -ux, -uy)); sx1 += ux * hl * 0.75; sy1 += uy * hl * 0.75; }
+  return {sx1, sy1, sx2, sy2, heads};
+}
+function arrowSvgInner(el, hit){
+  const g = arrowGeom(el);
+  let s = '<line x1="' + fmt(g.sx1) + '" y1="' + fmt(g.sy1) + '" x2="' + fmt(g.sx2) + '" y2="' + fmt(g.sy2) + '" stroke="' + el.stroke
+    + '" stroke-width="' + fmt(el.strokeW) + '" stroke-linecap="round"/>';
+  g.heads.forEach(h => {
+    s += '<polygon points="' + h.map(p => fmt(p[0]) + "," + fmt(p[1])).join(" ") + '" fill="' + el.stroke + '" stroke="' + el.stroke
+      + '" stroke-width="' + fmt(el.strokeW * 0.35) + '" stroke-linejoin="round"/>';
+  });
+  if(hit) s += '<line class="hit" x1="' + fmt(el.x1) + '" y1="' + fmt(el.y1) + '" x2="' + fmt(el.x2) + '" y2="' + fmt(el.y2)
+    + '" stroke="transparent" stroke-width="' + fmt(hit) + '" stroke-linecap="round"/>';
+  return s;
+}
+const hitWidth = el => Math.max(el.strokeW + 10, 26 / ui.zoom);
+
+function buildEl(el, ctx){
+  let n;
+  if(el.type === "arrow"){
+    n = document.createElementNS(SVGNS, "svg");
+    n.setAttribute("class", "el el-arrow");
+    n.setAttribute("viewBox", "0 0 " + ctx.page.w + " " + ctx.page.h);
+    n.setAttribute("preserveAspectRatio", "none");
+    n.setAttribute("aria-hidden", "true");
+    n.innerHTML = arrowSvgInner(el, ctx.mode === "edit" ? hitWidth(el) : 0);
+  } else if(el.type === "image"){
+    n = document.createElement("div");
+    n.className = "el el-image";
+    const img = document.createElement("img");
+    img.alt = el.alt || ""; img.draggable = false;
+    img.src = ctx.url(el.asset);
+    if(ctx.mode === "export") img.setAttribute("data-asset", el.asset);
+    n.appendChild(img);
+  } else if(el.type === "shape"){
+    n = document.createElement("div");
+    n.className = "el el-shape";
+  } else {
+    n = document.createElement("div");
+    n.className = "el el-text";
+    n.textContent = el.text;
+    if(ctx.mode === "edit") n.setAttribute("data-ph", "Type something…");
+  }
+  n.setAttribute("data-id", el.id);
+  n.setAttribute("style", elStyle(el, ctx.page) + (el.hidden && ctx.mode === "edit" ? "display:none;" : ""));
+  if(ctx.mode === "edit" && el.locked) n.classList.add("locked");
+  return n;
+}
+const editCtx = () => ({page:doc.page, mode:"edit", url:assetUrl});
+
+function renderCanvas(){
+  if(ui.editing) endEdit();
+  const s = curSlide();
+  canvas.innerHTML = "";
+  canvas.style.width = PW() + "px";
+  canvas.style.height = PH() + "px";
+  canvas.style.background = s.bg;
+  if(s.bgAsset){
+    const bg = document.createElement("img");
+    bg.className = "slide-bg"; bg.alt = ""; bg.draggable = false; bg.src = assetUrl(s.bgAsset);
+    canvas.appendChild(bg);
+  }
+  const ctx = editCtx();
+  s.elements.forEach(el => canvas.appendChild(buildEl(el, ctx)));
+  canvas.className = "slide-canvas tool-" + ui.tool;
+  if(ui.sel && !findEl(ui.sel)) ui.sel = null;
+  applyZoom();
+  renderOverlay();
+}
+function refreshEl(el){
+  const n = nodeOf(el.id);
+  if(!n) return;
+  const st = elStyle(el, doc.page) + (el.hidden ? "display:none;" : "");
+  if(el.type === "arrow"){
+    n.innerHTML = arrowSvgInner(el, hitWidth(el));
+    n.setAttribute("style", st);
+  } else {
+    n.setAttribute("style", st);
+    if(el.type === "image"){
+      const img = n.querySelector("img"), u = assetUrl(el.asset);
+      if(img.getAttribute("src") !== u) img.src = u;
+      img.alt = el.alt || "";
+    } else if(el.type === "text" && ui.editing !== el.id && n.textContent !== el.text){
+      n.textContent = el.text;
+    }
+  }
+  n.classList.toggle("locked", !!el.locked);
+  markDirty();
+}
+function elBox(el){
+  if(el.type === "text"){
+    const n = nodeOf(el.id);
+    if(n && n.offsetHeight) el.h = n.offsetHeight;
+  }
+  return {x:el.x, y:el.y, w:el.w, h:el.h};
+}
+
+/* ----------------------------------------------------------- hit testing
+   Done on geometry rather than DOM boxes: a hollow circle or rectangle only
+   catches clicks on its outline, so text, images and other layers inside it
+   stay clickable. Locked text still accepts clicks (to edit, not to move). */
+function toLocal(el, p){
+  const b = elBox(el), cx = b.x + b.w / 2, cy = b.y + b.h / 2, th = -(el.rot || 0) * Math.PI / 180;
+  const dx = p.x - cx, dy = p.y - cy, c = Math.cos(th), s = Math.sin(th);
+  return {x:dx * c - dy * s, y:dx * s + dy * c, w:b.w, h:b.h};
+}
+function segDist(px, py, x1, y1, x2, y2){
+  const dx = x2 - x1, dy = y2 - y1, L = dx * dx + dy * dy;
+  const t = L ? clamp(((px - x1) * dx + (py - y1) * dy) / L, 0, 1) : 0;
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+function hitsEl(el, p){
+  if(el.type === "arrow") return segDist(p.x, p.y, el.x1, el.y1, el.x2, el.y2) <= hitWidth(el) / 2;
+  const l = toLocal(el, p), hw = l.w / 2, hh = l.h / 2;
+  const inside = Math.abs(l.x) <= hw && Math.abs(l.y) <= hh;
+  if(el.type !== "shape") return inside;
+  // Small shapes (on screen) stay grabbable anywhere; fingers get a wider outline than a mouse.
+  const small = coarsePointer ? 96 : 40;
+  const solid = el.fillOpacity >= 0.04 || l.w * ui.zoom < small || l.h * ui.zoom < small;
+  const sw = Math.min(el.strokeW, hw, hh), band = sw / 2 + (coarsePointer ? 16 : 7) / ui.zoom;
+  if(el.shape === "ellipse"){
+    // distance to the outline measured along the ray from the centre (exact at the centre, close near the edge)
+    const a = Math.max(0.5, hw - sw / 2), b = Math.max(0.5, hh - sw / 2), len = Math.hypot(l.x, l.y);
+    const R = len < 1e-6 ? Math.min(a, b) : len / Math.sqrt((l.x * l.x) / (a * a) + (l.y * l.y) / (b * b));
+    if(len <= R && solid) return true;
+    return Math.abs(len - R) <= band;
+  }
+  if(inside && solid) return true;
+  const ix = Math.max(0, hw - sw / 2), iy = Math.max(0, hh - sw / 2), ax = Math.abs(l.x), ay = Math.abs(l.y);
+  const d = (ax <= ix && ay <= iy) ? Math.min(ix - ax, iy - ay) : Math.hypot(Math.max(0, ax - ix), Math.max(0, ay - iy));
+  return d <= band;
+}
+let coarsePointer = matchMedia("(pointer:coarse)").matches;
+function hitTest(p, opts){
+  opts = opts || {};
+  const list = curSlide().elements;
+  for(let i = list.length - 1; i >= 0; i--){
+    const el = list[i];
+    if(el.hidden || (opts.type && el.type !== opts.type)) continue;
+    if(el.locked && !(opts.lockedText !== false && el.type === "text")) continue;
+    if(hitsEl(el, p)) return el;
+  }
+  return null;
+}
+
+/* ------------------------------------------------------- selection overlay */
+function renderOverlay(){
+  const z = ui.zoom, el = selEl();
+  let html = "";
+  if(el && !el.hidden){
+    if(el.type === "arrow"){
+      if(!el.locked){
+        html += '<div class="handle pt" data-h="p1" style="left:' + el.x1 * z + "px;top:" + el.y1 * z + 'px"></div>'
+          + '<div class="handle pt" data-h="p2" style="left:' + el.x2 * z + "px;top:" + el.y2 * z + 'px"></div>';
+      }
+    } else {
+      const b = elBox(el), editing = ui.editing === el.id;
+      const small = b.w * z < 46 || b.h * z < 46;
+      let inner = "";
+      if(!el.locked && !editing){
+        const dirs = el.type === "text" ? ["w", "e"] : ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
+        inner = dirs.map(d => '<div class="handle h-' + d + '" data-h="' + d + '"></div>').join("")
+          + '<div class="rot-line"></div><div class="handle rot" data-h="rot" title="Rotate (Shift snaps 15°)"></div>';
+      }
+      html += '<div class="selbox' + (el.locked ? " locked" : "") + (editing ? " editing" : "") + (small ? " small" : "")
+        + (el.type === "text" ? " text" : "") + '" style="left:' + b.x * z + "px;top:" + b.y * z + "px;width:" + b.w * z
+        + "px;height:" + b.h * z + "px;transform:rotate(" + (el.rot || 0) + 'deg)">' + inner + "</div>";
+    }
+  }
+  ui.guides.forEach(gd => {
+    html += gd.v ? '<div class="guide v" style="left:' + gd.at * z + 'px"></div>' : '<div class="guide h" style="top:' + gd.at * z + 'px"></div>';
+  });
+  overlay.innerHTML = html;
+  renderCtxBar();
+}
+function renderCtxBar(){
+  const el = selEl();
+  if(!el || el.hidden || ui.editing || gest || ui.tool !== "select" || (openMenuEl && openMenuEl.id === "ctxMenu")
+    || (isPhone() && rightPanel.classList.contains("open"))){ ctxBar.hidden = true; return; }
+  ctxBar.hidden = false;
+  ctxBar.querySelector('[data-act="edit"]').hidden = el.type !== "text";
+  const lk = ctxBar.querySelector('[data-act="lock"]');
+  lk.innerHTML = icon(el.locked ? "lock" : "unlock");
+  lk.title = el.locked ? "Unlock" : "Lock (stops accidental moves)";
+  lk.classList.toggle("active", !!el.locked);
+  positionCtxBar(el);
+}
+function elBounds(el){
+  if(el.type === "arrow"){
+    return {x:Math.min(el.x1, el.x2), y:Math.min(el.y1, el.y2), w:Math.abs(el.x2 - el.x1), h:Math.abs(el.y2 - el.y1)};
+  }
+  const b = elBox(el), th = (el.rot || 0) * Math.PI / 180;
+  if(!th) return b;
+  const cx = b.x + b.w / 2, cy = b.y + b.h / 2, c = Math.abs(Math.cos(th)), s = Math.abs(Math.sin(th));
+  const w = b.w * c + b.h * s, h = b.w * s + b.h * c;
+  return {x:cx - w / 2, y:cy - h / 2, w, h};
+}
+function positionCtxBar(el){
+  if(ctxBar.hidden || !el) return;
+  const z = ui.zoom, wr = wrap.getBoundingClientRect(), ar = area.getBoundingClientRect();
+  const bb = elBounds(el);
+  const top = wr.top - ar.top + bb.y * z, bottom = wr.top - ar.top + (bb.y + bb.h) * z;
+  const cx = wr.left - ar.left + (bb.x + bb.w / 2) * z;
+  const bw = ctxBar.offsetWidth, bh = ctxBar.offsetHeight;
+  const gap = el.type === "arrow" ? 16 : (matchMedia("(pointer:coarse)").matches ? 54 : 44);
+  let y = top - bh - gap;
+  if(y < 8) y = bottom + 16;
+  y = clamp(y, 8, Math.max(8, ar.height - bh - 60));
+  const x = clamp(cx - bw / 2, 8, Math.max(8, ar.width - bw - 8));
+  ctxBar.style.transform = "translate(" + Math.round(x) + "px," + Math.round(y) + "px)";
+}
+
+/* ==================================================================== zoom */
+function applyZoom(){
+  const z = ui.zoom;
+  wrap.style.width = PW() * z + "px";
+  wrap.style.height = PH() * z + "px";
+  canvas.style.transform = "scale(" + z + ")";
+  $("#zoomPct").textContent = Math.round(z * 100) + "%";
+  $$(".el-arrow", canvas).forEach(svg => {
+    const el = findEl(svg.getAttribute("data-id")), hit = svg.querySelector(".hit");
+    if(el && hit) hit.setAttribute("stroke-width", fmt(hitWidth(el)));
+  });
+}
+function stagePads(){
+  const cs = getComputedStyle(stageInner);
+  return {x:parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight), y:parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom)};
+}
+function fitZoom(){
+  const p = stagePads();
+  const aw = stage.clientWidth - p.x - 2, ah = stage.clientHeight - p.y - 2;
+  if(aw <= 20 || ah <= 20) return;
+  ui.zoom = clamp(Math.min(aw / PW(), ah / PH()), 0.05, 5);
+  ui.autoFit = true;
+  applyZoom();
+  stage.scrollLeft = 0; stage.scrollTop = 0;
+  renderOverlay();
+}
+function setZoom(z, anchor){
+  ui.zoom = clamp(z, 0.05, 5);
+  ui.autoFit = false;
+  applyZoom();
+  if(anchor){
+    const r = wrap.getBoundingClientRect();
+    stage.scrollLeft += (r.left + anchor.lx * ui.zoom) - anchor.cx;
+    stage.scrollTop += (r.top + anchor.ly * ui.zoom) - anchor.cy;
+  }
+  renderOverlay();
+}
+function zoomBy(f){
+  const r = stage.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, lp = logical(cx, cy);
+  setZoom(ui.zoom * f, {lx:lp.x, ly:lp.y, cx, cy});
+}
+function logical(cx, cy){
+  const r = wrap.getBoundingClientRect();
+  return {x:(cx - r.left) / ui.zoom, y:(cy - r.top) / ui.zoom};
+}
+const inPage = (p, m) => { m = m || 0; return p.x >= -m && p.y >= -m && p.x <= PW() + m && p.y <= PH() + m; };
+
+let lastStageSize = "";
+new ResizeObserver(() => {
+  const key = stage.clientWidth + "x" + stage.clientHeight;
+  if(key === lastStageSize) return;
+  lastStageSize = key;
+  if(ui.autoFit && !ui.editing) fitZoom(); else renderOverlay();
+}).observe(stage);
+stage.addEventListener("scroll", () => { const el = selEl(); if(el && !ctxBar.hidden) positionCtxBar(el); }, {passive:true});
+stage.addEventListener("wheel", e => {
+  if(!(e.ctrlKey || e.metaKey)) return;
+  e.preventDefault();
+  const lp = logical(e.clientX, e.clientY);
+  const f = Math.exp(-e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0022));
+  setZoom(ui.zoom * f, {lx:lp.x, ly:lp.y, cx:e.clientX, cy:e.clientY});
+}, {passive:false});
+let gestureZ0 = 1;
+document.addEventListener("gesturestart", e => { e.preventDefault(); gestureZ0 = ui.zoom; }, {passive:false});
+document.addEventListener("gesturechange", e => {
+  e.preventDefault();
+  if(touchPts.size || !(e.target && e.target.closest && e.target.closest("#stage"))) return;
+  const cx = e.clientX || 0, cy = e.clientY || 0, lp = logical(cx, cy);
+  setZoom(gestureZ0 * e.scale, {lx:lp.x, ly:lp.y, cx, cy});
+}, {passive:false});
+
+/* ========================================================= pointer gestures */
+let gest = null;
+const touchPts = new Map();
+let spaceDown = false;
+const MOVE = {}, UP = {};
+
+function capture(e){ try{ stage.setPointerCapture(e.pointerId); }catch(_){} }
+function geomOf(el){
+  return el.type === "arrow" ? {x1:el.x1, y1:el.y1, x2:el.x2, y2:el.y2} : {x:el.x, y:el.y, w:el.w, h:el.h, rot:el.rot || 0};
+}
+
+let lpTimer = null, lpFiredAt = 0;
+stage.addEventListener("pointerdown", e => {
+  clearTimeout(lpTimer);
+  coarsePointer = e.pointerType !== "mouse";
+  if(e.pointerType === "touch"){
+    touchPts.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if(touchPts.size === 2){ startPinch(); return; }
+    if(touchPts.size > 2) return;
+  }
+  if(gest && gest.type === "pinch") return;
+  if(e.pointerType === "mouse" && e.button === 1){ e.preventDefault(); startPan(e); return; }
+  if(e.pointerType === "mouse" && e.button !== 0) return;
+  if(ui.editing){
+    const en = nodeOf(ui.editing);
+    if(en && en.contains(e.target)) return;        // caret / text selection stays native
+    endEdit();
+    if(document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+  }
+  closeMenu();
+  if(spaceDown){ startPan(e); return; }
+  const handle = e.target.closest && e.target.closest(".handle");
+  if(handle){ startHandle(e, handle.dataset.h); return; }
+  const p = logical(e.clientX, e.clientY);
+  if(ui.tool === "text"){
+    // The text tool over an existing text layer edits that layer instead of stacking a new box on it.
+    const t = hitTest(p, {type:"text"});
+    if(t){ setTool("select"); startPress(e, t, {edit:true}); return; }
+  }
+  if(ui.tool !== "select"){
+    // Drawing tools start a new shape anywhere on the page — on top of images, text or other shapes.
+    // Only the shape you just drew can be grabbed (to nudge it) while the tool is still on.
+    const cur = selEl();
+    if(cur && !cur.locked && hitTest(p, {lockedText:false}) === cur){ startPress(e, cur); return; }
+    if(inPage(p, 4)){ startCreate(e, p); return; }
+  } else {
+    const el = hitTest(p);
+    if(el){ startPress(e, el); armLongPress(e); return; }
+  }
+  if(ui.sel) select(null);
+  if(e.pointerType !== "mouse"){ startPan(e); if(ui.tool === "select") armLongPress(e); }
+});
+/* Touch: press and hold (without moving) opens the same menu a right-click does. */
+function armLongPress(e){
+  if(e.pointerType !== "touch") return;
+  const pid = e.pointerId, sx = e.clientX, sy = e.clientY;
+  lpTimer = setTimeout(() => {
+    const pt = touchPts.get(pid);
+    if(!gest || gest.pid !== pid || gest.moved || touchPts.size !== 1 || !pt || Math.hypot(pt.x - sx, pt.y - sy) > 10) return;
+    gest = null;
+    try{ stage.releasePointerCapture(pid); }catch(_){}
+    stage.classList.remove("panning");
+    lpFiredAt = Date.now();
+    openCtxMenu(sx, sy);
+  }, 560);
+}
+stage.addEventListener("pointermove", e => {
+  if(e.pointerType === "touch" && touchPts.has(e.pointerId)) touchPts.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if(!gest){ if(e.pointerType === "mouse") hoverCursor(e); return; }
+  if(gest.type === "pinch"){ movePinch(); return; }
+  if(e.pointerId !== gest.pid) return;
+  e.preventDefault();
+  MOVE[gest.type](e);
+});
+function hoverCursor(e){
+  let c = "";
+  if(ui.tool === "select" && !spaceDown && !(e.target.closest && e.target.closest(".handle"))){
+    const el = hitTest(logical(e.clientX, e.clientY));
+    if(el) c = el.type === "text" ? "text" : "move";
+  }
+  if((stage.dataset.hover || "") !== c) stage.dataset.hover = c;
+}
+function endPointer(e){
+  clearTimeout(lpTimer);
+  if(e.pointerType === "touch") touchPts.delete(e.pointerId);
+  if(!gest) return;
+  if(gest.type === "pinch"){
+    if(touchPts.size < 2){ gest = null; renderOverlay(); }
+    return;
+  }
+  if(e.pointerId !== gest.pid) return;
+  const g = gest;
+  gest = null;
+  try{ stage.releasePointerCapture(e.pointerId); }catch(_){}
+  stage.classList.remove("panning");
+  ui.guides = [];
+  if(UP[g.type]) UP[g.type](g, e, e.type === "pointercancel");
+  renderOverlay();
+}
+stage.addEventListener("pointerup", endPointer);
+stage.addEventListener("pointercancel", endPointer);
+
+/* --- move / click-to-edit */
+function startPress(e, el, opts){
+  const wasSel = ui.sel === el.id;
+  if(!wasSel) select(el.id);
+  gest = {type:"move", pid:e.pointerId, id:el.id, sx:e.clientX, sy:e.clientY, moved:false, wasSel, edit:!!(opts && opts.edit),
+    touch:e.pointerType !== "mouse", orig:geomOf(el), box:el.type === "arrow" ? null : elBox(el)};
+  capture(e);
+}
+function snapPos(x, y, w, h, rotated){
+  const t = 7 / ui.zoom, guides = [];
+  const pick = (pos, size, total) => {
+    let best = null;
+    (rotated ? [size / 2] : [0, size / 2, size]).forEach(off => {
+      [0, total / 2, total].forEach(tg => {
+        const d = tg - (pos + off);
+        if(Math.abs(d) <= t && (!best || Math.abs(d) < Math.abs(best.d))) best = {d, tg};
+      });
+    });
+    return best;
+  };
+  const bx = pick(x, w, PW()), by = pick(y, h, PH());
+  if(bx){ x += bx.d; guides.push({v:true, at:bx.tg}); }
+  if(by){ y += by.d; guides.push({v:false, at:by.tg}); }
+  return {x, y, guides};
+}
+MOVE.move = e => {
+  const el = findEl(gest.id); if(!el) return;
+  const dxs = e.clientX - gest.sx, dys = e.clientY - gest.sy;
+  if(!gest.moved){
+    if(Math.hypot(dxs, dys) < (gest.touch ? 8 : 3)) return;
+    gest.moved = true; ctxBar.hidden = true;
+  }
+  if(el.locked) return;                       // locked text can be clicked into, never dragged
+  let dx = dxs / ui.zoom, dy = dys / ui.zoom;
+  if(e.shiftKey){ if(Math.abs(dx) > Math.abs(dy)) dy = 0; else dx = 0; }
+  const o = gest.orig;
+  if(el.type === "arrow"){
+    el.x1 = o.x1 + dx; el.y1 = o.y1 + dy; el.x2 = o.x2 + dx; el.y2 = o.y2 + dy;
+  } else {
+    const s = e.altKey ? {x:o.x + dx, y:o.y + dy, guides:[]} : snapPos(o.x + dx, o.y + dy, gest.box.w, gest.box.h, !!el.rot);
+    el.x = s.x; el.y = s.y; ui.guides = s.guides;
+  }
+  refreshEl(el); renderOverlay();
+};
+UP.move = (g, e, cancelled) => {
+  const el = findEl(g.id);
+  if(!el) return;
+  if(g.moved){ if(!el.locked) commit(); return; }
+  if(cancelled) return;
+  // Mouse: a single click goes straight into typing. Touch: first tap selects, second tap types.
+  if(el.type === "text"){
+    if(!g.touch || g.wasSel || g.edit) startEdit(el.id, {x:e.clientX, y:e.clientY});
+  } else if(g.touch && g.wasSel && ui.tool === "select"){
+    // Second tap on a selected picture or shape reaches a text layer underneath it.
+    const t = hitTest(logical(e.clientX, e.clientY), {type:"text"});
+    if(t) startEdit(t.id, {x:e.clientX, y:e.clientY});
+  }
+};
+
+/* --- resize / rotate / arrow endpoints */
+function startHandle(e, h){
+  const el = selEl(); if(!el || el.locked) return;
+  e.preventDefault();
+  const p0 = logical(e.clientX, e.clientY);
+  if(h === "rot") gest = {type:"rotate", id:el.id};
+  else if(h === "p1" || h === "p2") gest = {type:"endpoint", id:el.id, k:h[1]};
+  else { const b = elBox(el); gest = {type:"resize", id:el.id, dir:h, orig:{x:el.x, y:el.y, w:el.w, h:b.h, rot:el.rot || 0}}; }
+  gest.pid = e.pointerId; gest.p0 = p0; gest.moved = false;
+  capture(e);
+  ctxBar.hidden = true;
+}
+MOVE.resize = e => {
+  const el = findEl(gest.id); if(!el) return;
+  gest.moved = true;
+  const p = logical(e.clientX, e.clientY), o = gest.orig;
+  const th = o.rot * Math.PI / 180, cos = Math.cos(th), sin = Math.sin(th);
+  const dx = p.x - gest.p0.x, dy = p.y - gest.p0.y;
+  const lx = dx * cos + dy * sin, ly = -dx * sin + dy * cos;
+  const d = gest.dir;
+  const sx = d.includes("e") ? 1 : d.includes("w") ? -1 : 0;
+  const sy = d.includes("s") ? 1 : d.includes("n") ? -1 : 0;
+  const minW = el.type === "text" ? 40 : 6;
+  let w = sx ? Math.max(minW, o.w + sx * lx) : o.w;
+  let h = sy ? Math.max(6, o.h + sy * ly) : o.h;
+  const lock = sx && sy && ((el.type === "image") !== !!e.shiftKey);
+  if(lock){ const r = o.w / o.h; if(w / o.w > h / o.h) h = w / r; else w = h * r; }
+  // keep the opposite edge / corner pinned (works for rotated elements too)
+  const ax = -sx * o.w / 2, ay = -sy * o.h / 2;
+  const Px = o.x + o.w / 2 + ax * cos - ay * sin, Py = o.y + o.h / 2 + ax * sin + ay * cos;
+  const bx = -sx * w / 2, by = -sy * h / 2;
+  const cx = Px - (bx * cos - by * sin), cy = Py - (bx * sin + by * cos);
+  el.w = w; el.x = cx - w / 2;
+  if(el.type === "text"){ el.y = cy - o.h / 2; } else { el.h = h; el.y = cy - h / 2; }
+  refreshEl(el); renderOverlay();
+};
+MOVE.rotate = e => {
+  const el = findEl(gest.id); if(!el) return;
+  gest.moved = true;
+  const b = elBox(el), r = wrap.getBoundingClientRect();
+  const cx = r.left + (el.x + b.w / 2) * ui.zoom, cy = r.top + (el.y + b.h / 2) * ui.zoom;
+  let a = Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI + 90;
+  a = ((a % 360) + 360) % 360;
+  if(e.shiftKey) a = (Math.round(a / 15) * 15) % 360;
+  else [0, 90, 180, 270, 360].forEach(s => { if(Math.abs(a - s) < 4) a = s % 360; });
+  el.rot = Math.round(a * 10) / 10;
+  refreshEl(el); renderOverlay();
+};
+function snapAngle(x0, y0, x, y){
+  const a = Math.atan2(y - y0, x - x0), len = Math.hypot(x - x0, y - y0), s = Math.round(a / (Math.PI / 4)) * (Math.PI / 4);
+  return [x0 + Math.cos(s) * len, y0 + Math.sin(s) * len];
+}
+MOVE.endpoint = e => {
+  const el = findEl(gest.id); if(!el) return;
+  gest.moved = true;
+  const p = logical(e.clientX, e.clientY), k = gest.k, o = k === "1" ? "2" : "1";
+  let x = p.x, y = p.y;
+  if(e.shiftKey) [x, y] = snapAngle(el["x" + o], el["y" + o], x, y);
+  el["x" + k] = x; el["y" + k] = y;
+  refreshEl(el); renderOverlay();
+};
+UP.resize = UP.rotate = UP.endpoint = g => { if(g.moved) commit(); };
+
+/* --- drawing new shapes / text */
+function startCreate(e, p){
+  if(ui.sel) select(null);
+  gest = {type:"create", pid:e.pointerId, tool:ui.tool, p0:p, sx:e.clientX, sy:e.clientY, moved:false, id:null, touch:e.pointerType !== "mouse"};
+  capture(e);
+}
+MOVE.create = e => {
+  const g = gest;
+  if(!g.moved){
+    if(Math.hypot(e.clientX - g.sx, e.clientY - g.sy) < (g.touch ? 6 : 3)) return;
+    g.moved = true;
+  }
+  const p = logical(e.clientX, e.clientY), s = curSlide();
+  let el = g.id && findEl(g.id);
+  if(!el){
+    el = g.tool === "arrow" ? newArrow(g.p0.x, g.p0.y, p.x, p.y)
+      : g.tool === "text" ? newText(g.p0.x, g.p0.y)
+      : newShape(g.tool, g.p0.x, g.p0.y, 1, 1);
+    if(el.type === "text") el.text = "";
+    s.elements.push(el); g.id = el.id; ui.sel = el.id;
+    canvas.appendChild(buildEl(el, editCtx()));
+  }
+  if(g.tool === "arrow"){
+    let x2 = p.x, y2 = p.y;
+    if(e.shiftKey) [x2, y2] = snapAngle(g.p0.x, g.p0.y, x2, y2);
+    el.x2 = x2; el.y2 = y2;
+  } else if(g.tool === "text"){
+    el.x = Math.min(g.p0.x, p.x); el.w = Math.max(60, Math.abs(p.x - g.p0.x));
+  } else {
+    let w = Math.abs(p.x - g.p0.x), h = Math.abs(p.y - g.p0.y);
+    if(e.shiftKey) w = h = Math.max(w, h);
+    el.x = p.x < g.p0.x ? g.p0.x - w : g.p0.x;
+    el.y = p.y < g.p0.y ? g.p0.y - h : g.p0.y;
+    el.w = Math.max(1, w); el.h = Math.max(1, h);
+  }
+  refreshEl(el); renderOverlay();
+};
+UP.create = (g, e, cancelled) => {
+  const s = curSlide(), k = K(), p0 = g.p0;
+  let el = g.id && findEl(g.id);
+  if(!el){
+    if(cancelled) return;
+    if(g.tool === "arrow"){
+      // A tap drops an arrow pointing AT the tapped spot.
+      let x1 = p0.x - 190 * k, y1 = p0.y + 130 * k;
+      if(x1 < 0) x1 = p0.x + 190 * k;
+      if(y1 > PH()) y1 = p0.y - 130 * k;
+      el = newArrow(x1, y1, p0.x, p0.y);
+    } else if(g.tool === "text"){
+      el = newText(0, 0);
+      el.x = clamp(p0.x, 0, Math.max(0, PW() - el.w));
+      el.y = clamp(p0.y - el.size * 0.64 - el.pad, 0, Math.max(0, PH() - el.size * 2));
+    } else {
+      const d = g.tool === "ellipse" ? {w:200 * k, h:200 * k} : {w:280 * k, h:170 * k};
+      el = newShape(g.tool, p0.x - d.w / 2, p0.y - d.h / 2, d.w, d.h);
+    }
+    s.elements.push(el);
+    canvas.appendChild(buildEl(el, editCtx()));
+  } else if(el.type === "shape" && el.w < 8 && el.h < 8){
+    el.w = 200 * k; el.h = 200 * k; el.x = p0.x - el.w / 2; el.y = p0.y - el.h / 2; refreshEl(el);
+  } else if(el.type === "arrow" && Math.hypot(el.x2 - el.x1, el.y2 - el.y1) < 12){
+    el.x2 = el.x1 + 200 * k; refreshEl(el);
+  }
+  if(el.type === "text"){
+    setTool("select");
+    ui.sel = el.id;
+    renderLayers(); renderProps();
+    startEdit(el.id, {selectAll:true});           // history entry is written when typing ends
+  } else {
+    // Circle / rectangle / arrow stay on so you can keep marking up; Esc or V goes back to Select.
+    ui.sel = null; select(el.id); commit();
+    stickyTip();
+  }
+};
+function stickyTip(){
+  let seen = 0;
+  try{ seen = +localStorage.getItem("halodeck_tip_sticky") || 0; }catch(_){}
+  if(seen >= 2 || ui.tipShown) return;
+  ui.tipShown = true;
+  try{ localStorage.setItem("halodeck_tip_sticky", String(seen + 1)); }catch(_){}
+  toast("The tool stays on — keep drawing, even over pictures. Esc or V goes back to Select.");
+}
+
+/* --- panning & pinch zoom */
+function startPan(e){
+  gest = {type:"pan", pid:e.pointerId, sx:e.clientX, sy:e.clientY, sl:stage.scrollLeft, st:stage.scrollTop};
+  capture(e);
+  stage.classList.add("panning");
+}
+MOVE.pan = e => {
+  stage.scrollLeft = gest.sl - (e.clientX - gest.sx);
+  stage.scrollTop = gest.st - (e.clientY - gest.sy);
+};
+function startPinch(){
+  if(gest && gest.type !== "pinch"){
+    const g = gest; gest = null;
+    try{ stage.releasePointerCapture(g.pid); }catch(_){}
+    stage.classList.remove("panning");
+    if(g.moved && g.type !== "pan") commit();
+    ui.guides = [];
+  }
+  const [a, b] = Array.from(touchPts.values());
+  const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2, lp = logical(mx, my);
+  gest = {type:"pinch", d0:Math.hypot(a.x - b.x, a.y - b.y) || 1, z0:ui.zoom, lx:lp.x, ly:lp.y};
+  ctxBar.hidden = true;
+}
+function movePinch(){
+  const pts = Array.from(touchPts.values());
+  if(pts.length < 2) return;
+  const [a, b] = pts, d = Math.hypot(a.x - b.x, a.y - b.y);
+  setZoom(gest.z0 * d / gest.d0, {lx:gest.lx, ly:gest.ly, cx:(a.x + b.x) / 2, cy:(a.y + b.y) / 2});
+}
+
+/* ============================================================ text editing */
+const plaintextOnly = (() => {
+  const d = document.createElement("div");
+  try{ d.contentEditable = "plaintext-only"; return d.contentEditable === "plaintext-only"; }catch(_){ return false; }
+})();
+function readText(n){ return (n.innerText || "").replace(/\r/g, "").replace(/\n$/, ""); }
+function placeCaret(n, x, y){
+  let range = null;
+  const ovDisplay = overlay.style.display;
+  overlay.style.display = "none";        // selection handles must not win the hit test
+  canvas.classList.add("caret-probe");   // …nor any layer stacked above the text being edited
+  try{
+    if(document.caretPositionFromPoint){
+      const pos = document.caretPositionFromPoint(x, y);
+      if(pos && n.contains(pos.offsetNode)){ range = document.createRange(); range.setStart(pos.offsetNode, pos.offset); }
+    }
+    if(!range && document.caretRangeFromPoint){
+      const r = document.caretRangeFromPoint(x, y);
+      if(r && n.contains(r.startContainer)) range = r;
+    }
+  }catch(_){ range = null; }
+  canvas.classList.remove("caret-probe");
+  overlay.style.display = ovDisplay;
+  if(!range){ range = document.createRange(); range.selectNodeContents(n); range.collapse(false); }
+  range.collapse(true);
+  const s = window.getSelection(); s.removeAllRanges(); s.addRange(range);
+}
+function selectContents(n){
+  const r = document.createRange(); r.selectNodeContents(n);
+  const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+function startEdit(id, opts){
+  opts = opts || {};
+  const el = findEl(id), n = nodeOf(id);
+  if(!el || !n || el.hidden || el.type !== "text") return;
+  if(ui.editing && ui.editing !== id) endEdit();
+  if(ui.tool !== "select") setTool("select");
+  if(ui.sel !== id){ ui.sel = id; renderLayers(); renderProps(); }
+  ui.editing = id;
+  n.contentEditable = plaintextOnly ? "plaintext-only" : "true";
+  n.spellcheck = true;
+  n.classList.add("editing");
+  n.focus({preventScroll:true});
+  if(opts.selectAll) selectContents(n);
+  else if(opts.x != null) placeCaret(n, opts.x, opts.y);
+  else { const r = document.createRange(); r.selectNodeContents(n); r.collapse(false); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+  if(isPhone()) closePanels();
+  renderOverlay();
+}
+function endEdit(){
+  const id = ui.editing;
+  if(!id) return;
+  ui.editing = null;
+  const n = nodeOf(id), el = findEl(id);
+  if(n){
+    if(el) el.text = readText(n);
+    n.removeAttribute("contenteditable");
+    n.classList.remove("editing");
+    if(document.activeElement === n) n.blur();
+  }
+  try{ const s = window.getSelection(); if(s && n && s.anchorNode && n.contains(s.anchorNode)) s.removeAllRanges(); }catch(_){}
+  if(el){
+    if(!el.text.trim()){
+      removeEl(id);              // an empty text box disappears instead of lingering invisibly
+    } else {
+      if(n) n.textContent = el.text;
+      updateLayerRow(el);        // update in place: rebuilding here would swallow the click that ended editing
+    }
+  }
+  commit();
+  renderOverlay();
+}
+canvas.addEventListener("input", e => {
+  if(!ui.editing) return;
+  const n = nodeOf(ui.editing);
+  if(e.target !== n) return;
+  const el = findEl(ui.editing);
+  if(el){
+    el.text = readText(n); renderOverlay();
+    const ta = propsEl.querySelector('textarea[data-k="text"]');
+    if(ta && document.activeElement !== ta) ta.value = el.text;
+  }
+});
+canvas.addEventListener("focusout", e => { if(ui.editing && e.target === nodeOf(ui.editing)) endEdit(); });
+stage.addEventListener("click", e => {
+  if(!ui.editing) return;
+  const n = nodeOf(ui.editing);
+  if(n && document.activeElement !== n){ n.focus({preventScroll:true}); placeCaret(n, e.clientX, e.clientY); }
+});
+/* Double-click edits the top text layer under the pointer, even one covered by a picture or a filled box. */
+stage.addEventListener("dblclick", e => {
+  if(ui.tool !== "select" || (e.target.closest && e.target.closest(".handle"))) return;
+  const t = hitTest(logical(e.clientX, e.clientY), {type:"text"});
+  if(t && ui.editing !== t.id){ e.preventDefault(); startEdit(t.id, {x:e.clientX, y:e.clientY}); }
+});
+stage.addEventListener("contextmenu", e => {
+  if(ui.editing){
+    const en = nodeOf(ui.editing);
+    if(en && en.contains(e.target)) return;       // the browser's own menu (spelling, copy/paste) while typing
+    endEdit();
+  }
+  e.preventDefault();
+  if(Date.now() - lpFiredAt < 900) return;        // a touch long-press already opened it
+  openCtxMenu(e.clientX, e.clientY);
+});
+canvas.addEventListener("paste", e => {
+  if(!ui.editing || plaintextOnly) return;
+  e.preventDefault(); e.stopPropagation();
+  const t = (e.clipboardData && e.clipboardData.getData("text/plain")) || "";
+  document.execCommand("insertText", false, t);
+});
+
+/* ======================================================= selection & edits */
+function select(id){
+  if(ui.editing && ui.editing !== id) endEdit();
+  if(ui.sel === id){ renderOverlay(); return; }
+  ui.sel = id;
+  renderOverlay(); renderLayers(); renderProps();
+}
+function removeEl(id){
+  const s = curSlide(), i = s.elements.findIndex(e => e.id === id);
+  if(i < 0) return;
+  s.elements.splice(i, 1);
+  const n = nodeOf(id); if(n) n.remove();
+  if(ui.sel === id) ui.sel = null;
+  if(ui.editing === id) ui.editing = null;
+  renderOverlay(); renderLayers(); renderProps();
+}
+function deleteSel(){ const el = selEl(); if(!el) return; removeEl(el.id); commit(); }
+function duplicateSel(){
+  const el = selEl(); if(!el) return;
+  const c = cloneEl(el); offsetEl(c, 24 * K(), 24 * K());
+  const s = curSlide(); s.elements.splice(s.elements.indexOf(el) + 1, 0, c);
+  renderCanvas(); ui.sel = null; select(c.id); commit();
+}
+function reorder(where){
+  const s = curSlide(), el = selEl(); if(!el) return;
+  const i = s.elements.indexOf(el);
+  s.elements.splice(i, 1);
+  const j = where === "front" ? s.elements.length : where === "back" ? 0
+    : where === "forward" ? Math.min(s.elements.length, i + 1) : Math.max(0, i - 1);
+  s.elements.splice(j, 0, el);
+  renderCanvas(); renderLayers(); commit();
+}
+function toggleLock(el){
+  el = el || selEl(); if(!el) return;
+  el.locked = !el.locked;
+  refreshEl(el); renderOverlay(); renderLayers(); commit();
+  if(el.locked) toast("Locked — it can't be moved by accident. Unlock it from Layers.");
+}
+function setTool(t){
+  if(ui.editing) endEdit();
+  ui.tool = t;
+  $$(".tool").forEach(b => b.classList.toggle("active", b.dataset.tool === t));
+  canvas.className = "slide-canvas tool-" + t;
+  if(t !== "select" && ui.sel) select(null);
+  renderCtxBar();
+}
+
+/* ================================================================= history */
+const hist = {stack:[], idx:-1};
+function serialize(){ return JSON.stringify({page:doc.page, slides:doc.slides}); }
+function pushHistory(){
+  const data = serialize();
+  if(hist.idx >= 0 && hist.stack[hist.idx].data === data) return false;
+  hist.stack.length = hist.idx + 1;
+  hist.stack.push({data, cur:ui.cur});
+  if(hist.stack.length > 150) hist.stack.shift();
+  hist.idx = hist.stack.length - 1;
+  updateUndoButtons();
+  return true;
+}
+function commit(){
+  if(pushHistory()){ markDirty(); scheduleSave(); }
+}
+function restoreHistory(entry, cur){
+  const d = JSON.parse(entry.data);
+  const pageChanged = d.page.w !== doc.page.w || d.page.h !== doc.page.h;
+  doc.page = d.page; doc.slides = d.slides;
+  ui.cur = clamp(cur, 0, doc.slides.length - 1);
+  if(ui.sel && !findEl(ui.sel)) ui.sel = null;
+  renderAll();
+  if(pageChanged) fitZoom();
+  updateUndoButtons(); scheduleSave();
+}
+function undo(){
+  if(ui.editing) endEdit();
+  if(hist.idx <= 0) return;
+  const undone = hist.stack[hist.idx];
+  hist.idx--;
+  restoreHistory(hist.stack[hist.idx], undone.cur);
+}
+function redo(){
+  if(ui.editing) endEdit();
+  if(hist.idx >= hist.stack.length - 1) return;
+  hist.idx++;
+  restoreHistory(hist.stack[hist.idx], hist.stack[hist.idx].cur);
+}
+function updateUndoButtons(){
+  $("#btnUndo").disabled = hist.idx <= 0;
+  $("#btnRedo").disabled = hist.idx >= hist.stack.length - 1;
+}
+
+/* ============================================================ slides panel */
+const dirtyThumbs = new Set();
+let thumbTimer = null;
+function markDirty(){
+  const s = curSlide(); if(!s) return;
+  dirtyThumbs.add(s.id);
+  clearTimeout(thumbTimer);
+  thumbTimer = setTimeout(flushThumbs, 160);
+}
+function flushThumbs(){
+  dirtyThumbs.forEach(id => {
+    const item = slideList.querySelector('.thumb[data-key="' + id + '"]');
+    const s = doc.slides.find(x => x.id === id);
+    if(item && s) fillThumb(item.querySelector(".thumb-page"), s);
+  });
+  dirtyThumbs.clear();
+}
+function fillThumb(box, slide){
+  box.innerHTML = "";
+  box.style.aspectRatio = PW() + " / " + PH();
+  box.style.backgroundColor = slide.bg;
+  if(slide.bgAsset){
+    const bg = document.createElement("img"); bg.className = "slide-bg"; bg.alt = ""; bg.src = assetUrl(slide.bgAsset);
+    box.appendChild(bg);
+  }
+  const ctx = {page:doc.page, mode:"thumb", url:assetUrl};
+  slide.elements.forEach(el => { if(!el.hidden) box.appendChild(buildEl(el, ctx)); });
+}
+function renderSlides(){
+  slideList.innerHTML = "";
+  doc.slides.forEach((s, i) => {
+    const it = document.createElement("div");
+    it.className = "thumb" + (i === ui.cur ? " active" : "");
+    it.dataset.key = s.id;
+    it.tabIndex = 0;
+    it.setAttribute("role", "button");
+    it.setAttribute("aria-label", "Slide " + (i + 1));
+    it.innerHTML = '<span class="num">' + (i + 1) + '</span><div class="thumb-page"></div>'
+      + '<div class="thumb-actions"><button data-act="dup" title="Duplicate slide" aria-label="Duplicate slide">' + icon("dup") + "</button>"
+      + '<button data-act="del" title="Delete slide" aria-label="Delete slide">' + icon("trash") + "</button></div>"
+      + '<span class="grip" title="Drag to reorder" aria-hidden="true">' + icon("grip") + "</span>";
+    fillThumb(it.querySelector(".thumb-page"), s);
+    slideList.appendChild(it);
+  });
+  dirtyThumbs.clear();
+  $("#slideCount").textContent = doc.slides.length;
+  updateSlideNav();
+}
+function markActiveThumb(){
+  $$(".thumb", slideList).forEach(t => t.classList.toggle("active", t.dataset.key === curSlide().id));
+  const a = slideList.querySelector(".thumb.active");
+  if(a) a.scrollIntoView({block:"nearest"});
+}
+function updateSlideNav(){
+  $("#slideNum").textContent = (ui.cur + 1) + " / " + doc.slides.length;
+  $("#btnPrevSlide").disabled = ui.cur <= 0;
+  $("#btnNextSlide").disabled = ui.cur >= doc.slides.length - 1;
+}
+function gotoSlide(i){
+  i = clamp(i, 0, doc.slides.length - 1);
+  if(ui.editing) endEdit();
+  if(i === ui.cur) return;
+  flushThumbs();
+  ui.cur = i; ui.sel = null;
+  renderCanvas(); renderLayers(); renderProps(); renderSlideFields();
+  markActiveThumb(); updateSlideNav();
+}
+function addSlide(){
+  if(ui.editing) endEdit();
+  const s = newSlide(); s.bg = curSlide() ? curSlide().bg : "#ffffff";
+  doc.slides.splice(ui.cur + 1, 0, s);
+  ui.cur++; ui.sel = null;
+  renderAll(); commit();
+}
+function duplicateSlide(i){
+  if(ui.editing) endEdit();
+  const c = JSON.parse(JSON.stringify(doc.slides[i]));
+  c.id = uid("s"); c.elements.forEach(e => { e.id = uid("e"); });
+  doc.slides.splice(i + 1, 0, c);
+  ui.cur = i + 1; ui.sel = null;
+  renderAll(); commit();
+}
+function deleteSlide(i){
+  if(ui.editing) endEdit();
+  if(doc.slides.length === 1){ toast("A deck needs at least one slide."); return; }
+  doc.slides.splice(i, 1);
+  if(ui.cur > i || ui.cur >= doc.slides.length) ui.cur = Math.max(0, ui.cur - 1);
+  ui.sel = null;
+  renderAll(); commit();
+  toast("Slide " + (i + 1) + " deleted", {action:{label:"Undo", fn:undo}});
+}
+slideList.addEventListener("click", e => {
+  const it = e.target.closest(".thumb"); if(!it) return;
+  const i = doc.slides.findIndex(s => s.id === it.dataset.key); if(i < 0) return;
+  const act = e.target.closest("[data-act]");
+  if(act){ if(act.dataset.act === "dup") duplicateSlide(i); else deleteSlide(i); return; }
+  gotoSlide(i);
+  if(isCompact()) closePanels();
+});
+slideList.addEventListener("keydown", e => {
+  const it = e.target.closest(".thumb"); if(!it || e.target !== it) return;
+  const i = doc.slides.findIndex(s => s.id === it.dataset.key);
+  if(e.key === "Enter" || e.key === " "){ e.preventDefault(); e.stopPropagation(); gotoSlide(i); }
+  else if(e.key === "Delete" || e.key === "Backspace"){ e.preventDefault(); e.stopPropagation(); deleteSlide(i); }
+});
+
+/* Pointer-based reordering: works for mouse (drag anywhere) and touch (drag the grip). */
+function makeSortable(list, itemSel, onEnd){
+  let justSorted = false;
+  list.addEventListener("click", e => { if(justSorted){ e.stopPropagation(); e.preventDefault(); justSorted = false; } }, true);
+  list.addEventListener("pointerdown", e => {
+    const it = e.target.closest(itemSel);
+    if(!it || (e.pointerType === "mouse" && e.button !== 0)) return;
+    const viaGrip = !!e.target.closest(".grip");
+    if(e.target.closest("button,input,select,textarea") && !viaGrip) return;
+    if(e.pointerType !== "mouse" && !viaGrip) return;
+    if(viaGrip) e.preventDefault();
+    const pid = e.pointerId, startY = e.clientY;
+    let dragging = false;
+    const move = ev => {
+      if(ev.pointerId !== pid) return;
+      if(!dragging){
+        if(Math.abs(ev.clientY - startY) < 5) return;
+        dragging = true; it.classList.add("sorting"); list.classList.add("is-sorting");
+      }
+      ev.preventDefault();
+      const others = $$(itemSel, list).filter(n => n !== it);
+      let before = null;
+      for(const o of others){ const r = o.getBoundingClientRect(); if(ev.clientY < r.top + r.height / 2){ before = o; break; } }
+      if(before){ if(it.nextElementSibling !== before) list.insertBefore(it, before); }
+      else if(others.length && others[others.length - 1].nextElementSibling !== it) others[others.length - 1].after(it);
+      const lr = list.getBoundingClientRect();
+      if(ev.clientY < lr.top + 30) list.scrollTop -= 12; else if(ev.clientY > lr.bottom - 30) list.scrollTop += 12;
+    };
+    const up = ev => {
+      if(ev.pointerId !== pid) return;
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+      if(!dragging) return;
+      it.classList.remove("sorting"); list.classList.remove("is-sorting");
+      justSorted = true; setTimeout(() => { justSorted = false; }, 0);
+      onEnd($$(itemSel, list).map(n => n.dataset.key));
+    };
+    window.addEventListener("pointermove", move, {passive:false});
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+  });
+}
+makeSortable(slideList, ".thumb", keys => {
+  const active = curSlide().id;
+  doc.slides.sort((a, b) => keys.indexOf(a.id) - keys.indexOf(b.id));
+  ui.cur = doc.slides.findIndex(s => s.id === active);
+  renderSlides(); commit();
+});
+
+/* ============================================================ layers panel */
+function typeIcon(el){ return el.type === "shape" ? el.shape : el.type; }
+function layerLabel(el){
+  if(el.type === "text") return (el.text || "").replace(/\s+/g, " ").trim().slice(0, 40) || "Empty text";
+  if(el.type === "image") return el.alt ? el.alt.slice(0, 40) : "Image";
+  if(el.type === "arrow") return "Arrow";
+  return el.shape === "ellipse" ? "Circle" : "Rectangle";
+}
+function renderLayers(){
+  const s = curSlide();
+  layerList.innerHTML = "";
+  const list = s.elements.slice().reverse();
+  $("#layersEmpty").hidden = list.length > 0;
+  $("#layerCount").textContent = list.length ? list.length : "";
+  list.forEach(el => {
+    const row = document.createElement("div");
+    row.className = "layer" + (el.id === ui.sel ? " sel" : "") + (el.hidden ? " is-hidden" : "") + (el.locked ? " is-locked" : "");
+    row.dataset.key = el.id;
+    row.innerHTML = '<span class="grip" title="Drag to reorder">' + icon("grip") + "</span>"
+      + '<span class="ltype">' + icon(typeIcon(el)) + '</span><span class="lname"></span>'
+      + (el.type === "text" && !el.hidden ? '<button class="lbtn" data-act="edit" title="Edit text" aria-label="Edit text">' + icon("pencil") + "</button>" : "")
+      + '<button class="lbtn" data-act="vis" title="' + (el.hidden ? "Show" : "Hide") + '" aria-label="' + (el.hidden ? "Show" : "Hide") + '">' + icon(el.hidden ? "eyeOff" : "eye") + "</button>"
+      + '<button class="lbtn" data-act="lock" title="' + (el.locked ? "Unlock" : "Lock") + '" aria-label="' + (el.locked ? "Unlock" : "Lock") + '">' + icon(el.locked ? "lock" : "unlock") + "</button>"
+      + '<button class="lbtn danger" data-act="del" title="Delete" aria-label="Delete">' + icon("trash") + "</button>";
+    row.querySelector(".lname").textContent = layerLabel(el);
+    layerList.appendChild(row);
+  });
+}
+function updateLayerRow(el){
+  const row = layerList.querySelector('.layer[data-key="' + el.id + '"]');
+  if(row) row.querySelector(".lname").textContent = layerLabel(el);
+}
+layerList.addEventListener("click", e => {
+  const row = e.target.closest(".layer"); if(!row) return;
+  const el = findEl(row.dataset.key); if(!el) return;
+  const act = e.target.closest("[data-act]");
+  if(!act){ select(el.id); return; }
+  if(act.dataset.act === "edit"){
+    if(isCompact()) closePanels();
+    startEdit(el.id);
+  } else if(act.dataset.act === "vis"){
+    el.hidden = !el.hidden; refreshEl(el);
+    if(el.hidden && ui.sel === el.id) ui.sel = null;
+    renderOverlay(); renderLayers(); renderProps(); commit();
+  } else if(act.dataset.act === "lock"){
+    toggleLock(el);
+  } else if(act.dataset.act === "del"){
+    removeEl(el.id); commit();
+  }
+});
+layerList.addEventListener("dblclick", e => {
+  const row = e.target.closest(".layer"); if(!row || e.target.closest("[data-act]")) return;
+  const el = findEl(row.dataset.key);
+  if(el && el.type === "text"){ if(isCompact()) closePanels(); startEdit(el.id); }
+});
+makeSortable(layerList, ".layer", keys => {
+  const s = curSlide(), order = keys.slice().reverse();
+  s.elements.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+  renderCanvas(); renderLayers(); commit();
+});
+
+/* ========================================================= properties panel */
+function field(label, inner, hint){
+  return '<div class="field"><div class="flabel"><span>' + label + "</span>" + (hint ? '<span class="hint">' + hint + "</span>" : "") + "</div>" + inner + "</div>";
+}
+function rangeCtl(k, v, min, max, step, scale){
+  scale = scale || 1;
+  const dv = fmt(v * scale);
+  const a = ' data-k="' + k + '" data-scale="' + scale + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + dv + '"';
+  return '<div class="rng"><input type="range"' + a + ' aria-label="' + k + '"><input type="number"' + a + ' aria-label="' + k + '"></div>';
+}
+function colorCtl(k, v, list){
+  list = list || SWATCHES;
+  const cur = hex6(v), known = list.some(c => hex6(c) === cur);
+  return '<div class="colors">' + list.map(c => '<button class="sw' + (hex6(c) === cur ? " on" : "") + '" style="--c:' + c + '" data-set="' + k
+    + '" data-v="' + c + '" title="' + c + '" aria-label="Color ' + c + '"></button>').join("")
+    + '<span class="sw custom' + (known ? "" : " on") + '" title="Custom color"><input type="color" data-k="' + k + '" value="' + (cur || "#000000") + '" aria-label="Custom color"></span></div>';
+}
+function segCtl(k, v, opts){
+  return '<div class="seg">' + opts.map(o => '<button data-set="' + k + '" data-v="' + o.v + '" class="' + (String(v) === String(o.v) ? "on" : "")
+    + '" title="' + (o.title || "") + '" aria-label="' + (o.title || o.label || o.v) + '">' + (o.icon ? icon(o.icon) : "") + (o.label || "") + "</button>").join("") + "</div>";
+}
+const NUM_KEYS = new Set(["size","pad","hlOpacity","radius","borderW","strokeW","fillOpacity","opacity","rot"]);
+const REBUILD_KEYS = new Set(["hlOpacity","borderW","fillOpacity","shape"]);
+function renderProps(){
+  const el = selEl();
+  $("#propsEmpty").hidden = !!el;
+  if(!el){ propsEl.innerHTML = ""; return; }
+  const k = K();
+  let h = "";
+  if(el.type === "text"){
+    h += field("Text", '<textarea data-k="text" rows="3" spellcheck="true" aria-label="Text">' + esc(el.text) + "</textarea>", "or click it on the slide");
+    h += field("Font", '<select data-k="font" aria-label="Font">' + FONTS.map(f => '<option value="' + f.id + '"' + (f.id === el.font ? " selected" : "") + ">" + f.label + "</option>").join("") + "</select>");
+    h += field("Size", rangeCtl("size", el.size, 8, Math.round(240 * k), 1));
+    h += field("Color", colorCtl("color", el.color));
+    h += '<div class="field"><div class="segs">'
+      + '<div class="seg"><button data-toggle="bold" class="' + (el.bold ? "on" : "") + '" title="Bold" aria-label="Bold"><b>B</b></button>'
+      + '<button data-toggle="italic" class="' + (el.italic ? "on" : "") + '" title="Italic" aria-label="Italic"><i style="font-family:Georgia,serif">I</i></button></div>'
+      + segCtl("align", el.align, [{v:"left", icon:"alignL", title:"Align left"}, {v:"center", icon:"alignC", title:"Center"}, {v:"right", icon:"alignR", title:"Align right"}])
+      + "</div></div>";
+    h += field("Background behind text", rangeCtl("hlOpacity", el.hlOpacity, 0, 100, 1, 100), "%");
+    if(el.hlOpacity > 0){
+      h += field("Background color", colorCtl("hl", el.hl));
+      h += field("Padding", rangeCtl("pad", el.pad, 0, Math.round(60 * k), 1));
+    }
+  } else if(el.type === "image"){
+    h += field("Description", '<input type="text" data-k="alt" value="' + esc(el.alt || "") + '" placeholder="What does this image show?" aria-label="Image description">', "readable in the HTML export");
+    h += field("Corner radius", rangeCtl("radius", el.radius, 0, Math.round(200 * k), 1));
+    h += field("Frame", rangeCtl("borderW", el.borderW, 0, Math.round(30 * k), 1));
+    if(el.borderW > 0) h += field("Frame color", colorCtl("borderColor", el.borderColor));
+    h += '<div class="btnrow"><button class="sqbtn" data-act="replace">' + icon("replace") + "Replace…</button>"
+      + '<button class="sqbtn" data-act="fit">' + icon("fit") + "Fit to slide</button></div>";
+  } else if(el.type === "shape"){
+    h += field("Shape", segCtl("shape", el.shape, [{v:"ellipse", icon:"ellipse", label:"Circle"}, {v:"rect", icon:"rect", label:"Rectangle"}]));
+    h += field("Outline color", colorCtl("stroke", el.stroke));
+    h += field("Outline width", rangeCtl("strokeW", el.strokeW, 0, Math.round(40 * k), 1));
+    h += field("Fill", rangeCtl("fillOpacity", el.fillOpacity, 0, 100, 1, 100), "%");
+    if(el.fillOpacity > 0) h += field("Fill color", colorCtl("fill", el.fill));
+    if(el.shape === "rect") h += field("Corner radius", rangeCtl("radius", el.radius, 0, Math.round(200 * k), 1));
+  } else if(el.type === "arrow"){
+    h += field("Color", colorCtl("stroke", el.stroke));
+    h += field("Thickness", rangeCtl("strokeW", el.strokeW, 1, Math.round(30 * k), 0.5));
+    h += field("Ends", segCtl("head", el.head, [{v:"end", label:"→", title:"Arrow"}, {v:"both", label:"↔", title:"Double arrow"}, {v:"none", label:"—", title:"Line"}]));
+  }
+  if(el.type !== "arrow") h += field("Rotation", rangeCtl("rot", (el.rot || 0) > 180 ? el.rot - 360 : (el.rot || 0), -180, 180, 1), "°");
+  h += field("Opacity", rangeCtl("opacity", el.opacity, 5, 100, 1, 100), "%");
+  h += '<div class="btnrow"><button class="sqbtn" data-act="dup">' + icon("dup") + "Duplicate</button>"
+    + '<button class="sqbtn danger" data-act="del">' + icon("trash") + "Delete</button></div>";
+  h += '<div class="btnrow"><button class="sqbtn" data-act="front">' + icon("front") + "Front</button>"
+    + '<button class="sqbtn" data-act="back">' + icon("back") + "Back</button>"
+    + '<button class="sqbtn' + (el.locked ? " on" : "") + '" data-act="lock">' + icon(el.locked ? "lock" : "unlock") + (el.locked ? "Locked" : "Lock") + "</button></div>";
+  propsEl.innerHTML = h;
+  propsEl.dataset.id = el.id;
+}
+function setProp(el, k, v){
+  if(k === "rot") v = ((v % 360) + 360) % 360;
+  el[k] = v;
+  if(k === "stroke") lastStyle.stroke = v;
+  if(k === "shape" && v === "ellipse" && el.fillOpacity === 0) el.fill = el.stroke;
+  refreshEl(el);
+  renderOverlay();
+  if(k === "alt" || k === "text") updateLayerRow(el);
+  if(k === "shape"){ renderLayers(); }
+}
+propsEl.addEventListener("input", e => {
+  const t = e.target, k = t.dataset.k, el = selEl();
+  if(!k || !el) return;
+  let v = t.value;
+  if(t.type === "range" || t.type === "number"){
+    const scale = +t.dataset.scale || 1;
+    v = parseFloat(v);
+    if(!Number.isFinite(v)) return;
+    const sib = $$('input[data-k="' + k + '"]', t.parentElement).find(n => n !== t);
+    if(sib) sib.value = fmt(v);
+    v = clamp(v, +t.min, +t.max) / scale;
+  } else if(t.type === "color"){
+    v = hex6(v) || "#000000";
+  }
+  setProp(el, k, v);
+});
+propsEl.addEventListener("change", e => {
+  const k = e.target.dataset.k;
+  if(!k || !selEl()) return;
+  commit();
+  if(REBUILD_KEYS.has(k) || e.target.type === "color") renderProps();
+});
+propsEl.addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return;
+  const el = selEl(); if(!el) return;
+  if(b.dataset.set){
+    const k = b.dataset.set;
+    setProp(el, k, NUM_KEYS.has(k) ? +b.dataset.v : b.dataset.v);
+    commit(); renderProps(); return;
+  }
+  if(b.dataset.toggle){ setProp(el, b.dataset.toggle, !el[b.dataset.toggle]); commit(); renderProps(); return; }
+  switch(b.dataset.act){
+    case "dup": duplicateSel(); break;
+    case "del": deleteSel(); break;
+    case "front": reorder("front"); break;
+    case "back": reorder("back"); break;
+    case "lock": toggleLock(el); renderProps(); break;
+    case "replace": replaceTarget = el.id; $("#fileReplace").click(); break;
+    case "fit": fitImageToSlide(el); break;
+  }
+});
+function fitImageToSlide(el){
+  const ar = el.w / el.h, s = Math.min(PW() / el.w, PH() / el.h);
+  el.w *= s; el.h = el.w / ar; el.x = (PW() - el.w) / 2; el.y = (PH() - el.h) / 2; el.rot = 0;
+  refreshEl(el); renderOverlay(); commit(); renderProps();
+}
+
+/* ---------------------------------------------------------- slide section */
+function renderSlideFields(){
+  const s = curSlide();
+  const sel = $("#pageSize");
+  const match = PAGE_PRESETS.find(p => p.w === PW() && p.h === PH());
+  sel.innerHTML = PAGE_PRESETS.map(p => '<option value="' + p.id + '"' + (match === p ? " selected" : "") + ">" + p.label + "</option>").join("")
+    + (match ? "" : '<option value="custom" selected>Custom ' + PW() + "×" + PH() + "</option>");
+  $("#bgColors").innerHTML = colorCtl("bg", s.bg, BG_SWATCHES);
+  $("#btnBgClear").hidden = !s.bgAsset;
+  const notes = $("#slideNotes");
+  if(document.activeElement !== notes) notes.value = s.notes || "";
+}
+function setPageSize(w, h){
+  if(ui.editing) endEdit();
+  const W0 = PW(), H0 = PH();
+  if(w === W0 && h === H0) return;
+  const s = Math.min(w / W0, h / H0), ox = (w - W0 * s) / 2, oy = (h - H0 * s) / 2;
+  doc.slides.forEach(sl => sl.elements.forEach(el => scaleEl(el, s, ox, oy)));
+  doc.page = {w, h};
+  renderAll(); fitZoom(); commit();
+  toast("Page size changed — content was scaled to fit.");
+}
+$("#pageSize").addEventListener("change", e => {
+  const p = PAGE_PRESETS.find(x => x.id === e.target.value);
+  if(p) setPageSize(p.w, p.h);
+});
+$("#bgColors").addEventListener("click", e => {
+  const b = e.target.closest("[data-set]"); if(!b) return;
+  curSlide().bg = b.dataset.v; canvas.style.background = b.dataset.v;
+  markDirty(); commit(); renderSlideFields();
+});
+$("#bgColors").addEventListener("input", e => {
+  if(e.target.type !== "color") return;
+  curSlide().bg = hex6(e.target.value) || "#ffffff"; canvas.style.background = curSlide().bg; markDirty();
+});
+$("#bgColors").addEventListener("change", e => { if(e.target.type === "color"){ commit(); renderSlideFields(); } });
+let notesTimer = null;
+$("#slideNotes").addEventListener("input", e => {
+  curSlide().notes = e.target.value;
+  clearTimeout(notesTimer); notesTimer = setTimeout(commit, 700);
+});
+$("#slideNotes").addEventListener("blur", () => { clearTimeout(notesTimer); commit(); });
+$("#btnNotesToLayer").addEventListener("click", () => {
+  const txt = ($("#slideNotes").value || "").trim();
+  if(!txt){ toast("Write a note first, then add it to the slide."); return; }
+  const k = K(), el = newText(PW() * 0.05, PH() * 0.7, PW() * 0.9);
+  Object.assign(el, {text:txt, size:Math.round(26 * k), hl:"#FFFFFF", hlOpacity:0.9, pad:Math.round(16 * k)});
+  curSlide().elements.push(el);
+  canvas.appendChild(buildEl(el, editCtx()));
+  const n = nodeOf(el.id);
+  if(n) el.y = Math.max(PH() * 0.04, PH() - n.offsetHeight - PH() * 0.05);
+  refreshEl(el);
+  if(isCompact()) closePanels();
+  ui.sel = null; select(el.id); commit();
+  toast("Notes added as a text layer — drag it where you want it.");
+});
+$("#btnBgImage").addEventListener("click", () => $("#fileBg").click());
+$("#btnBgClear").addEventListener("click", () => { curSlide().bgAsset = null; renderCanvas(); markDirty(); commit(); renderSlideFields(); });
+
+/* ================================================================= images */
+function isImageFile(f){ return /^image\//.test(f.type || "") || /\.(png|jpe?g|gif|webp|avif|bmp|svg|heic|heif|tiff?)$/i.test(f.name || ""); }
+async function fileToAsset(blob){
+  const d = await fileToImageData(blob);
+  return {id:addAsset(d.dataUrl), w:d.w, h:d.h};
+}
+async function fileToImageData(blob){
+  const dataUrl = await readAsDataURL(blob);
+  const img = await loadImg(dataUrl);
+  const type = blob.type || (dataUrl.slice(5, dataUrl.indexOf(";")) || "");
+  const vector = /svg/i.test(type), gif = /gif/i.test(type);
+  let w = img.naturalWidth || 800, h = img.naturalHeight || 600, out = dataUrl;
+  const needsReencode = /heic|heif|tiff|bmp/i.test(type);
+  if(!vector && !gif && (Math.max(w, h) > MAX_IMG_DIM || needsReencode)){
+    const s = Math.min(1, MAX_IMG_DIM / Math.max(w, h));
+    w = Math.round(w * s); h = Math.round(h * s);
+    const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+    cv.getContext("2d").drawImage(img, 0, 0, w, h);
+    out = /jpe?g|heic|heif/i.test(type) ? cv.toDataURL("image/jpeg", 0.9) : cv.toDataURL("image/png");
+  }
+  return {dataUrl:out, w, h};
+}
+async function insertImageFiles(files, opts){
+  opts = opts || {};
+  const ok = [], bad = [];
+  if(files.length > 2) toast("Adding " + files.length + " images…");
+  for(const f of files){
+    try{ ok.push(await fileToAsset(f)); }catch(_){ bad.push(f.name || "image"); }
+  }
+  if(ok.length){
+    if(opts.target === "slides") addSlidesFromAssets(ok);
+    else placeImages(ok, opts.at);
+  }
+  if(bad.length) toast("Couldn't read " + (bad.length === 1 ? bad[0] : bad.length + " files") + " — PNG, JPG, GIF, WebP or SVG work everywhere.", {warn:true});
+  return ok.length;
+}
+function placeImages(list, at){
+  if(ui.editing) endEdit();
+  const s = curSlide(), step = Math.round(28 * K());
+  let last = null;
+  list.forEach((a, i) => {
+    const f = Math.min(PW() * 0.8 / a.w, PH() * 0.8 / a.h, 1);
+    const w = a.w * f, h = a.h * f, c = at || {x:PW() / 2, y:PH() / 2};
+    const x = clamp(c.x - w / 2 + i * step, 0, Math.max(0, PW() - w));
+    const y = clamp(c.y - h / 2 + i * step, 0, Math.max(0, PH() - h));
+    last = newImage(a.id, x, y, w, h);
+    s.elements.push(last);
+  });
+  renderCanvas(); ui.sel = null; select(last.id); commit();
+  if(list.length > 1) toast("Added " + list.length + " images as separate layers");
+}
+function addSlidesFromAssets(list){
+  if(ui.editing) endEdit();
+  const at = ui.cur + 1;
+  list.forEach((a, i) => {
+    const s = newSlide();
+    const f = Math.min(PW() / a.w, PH() / a.h), w = a.w * f, h = a.h * f;
+    s.elements.push(newImage(a.id, (PW() - w) / 2, (PH() - h) / 2, w, h));
+    doc.slides.splice(at + i, 0, s);
+  });
+  ui.cur = at; ui.sel = null;
+  renderAll(); commit();
+  toast("Created " + list.length + " new slide" + (list.length > 1 ? "s" : ""));
+}
+function addTextLayer(text, at){
+  if(ui.editing) endEdit();
+  const el = newText(0, 0, Math.round(PW() * 0.5));
+  el.text = String(text).slice(0, 20000);
+  const c = at || {x:PW() / 2, y:PH() / 2};
+  el.x = clamp(c.x - el.w / 2, 0, PW() - el.w);
+  el.y = clamp(c.y - el.size, 0, PH() - el.size * 2);
+  curSlide().elements.push(el);
+  canvas.appendChild(buildEl(el, editCtx()));
+  ui.sel = null; select(el.id); commit();
+}
+async function ingestUrl(url, opts){
+  try{
+    let blob;
+    if(url.startsWith("data:")) blob = dataUrlToBlob(url);
+    else {
+      const r = await fetch(url, {mode:"cors"});
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      blob = await r.blob();
+    }
+    if(!/^image\//.test(blob.type)) throw new Error("Not an image");
+    await insertImageFiles([blob], opts);
+  }catch(_){
+    toast("That website doesn't allow its image to be copied directly — save the image, then drop the file here.", {warn:true});
+  }
+}
+let replaceTarget = null, insertAt = null;
+$("#btnImage").addEventListener("click", () => { insertAt = null; $("#fileImages").click(); });
+$("#btnSlidesFromImages").addEventListener("click", () => $("#fileSlides").click());
+$("#fileImages").addEventListener("change", e => {
+  const f = Array.from(e.target.files || []), at = insertAt;
+  e.target.value = ""; insertAt = null;
+  if(f.length) insertImageFiles(f, {at});
+});
+$("#fileSlides").addEventListener("change", e => { const f = Array.from(e.target.files || []); e.target.value = ""; if(isCompact()) closePanels(); if(f.length) startPhotoImport(f); });
+$("#fileReplace").addEventListener("change", async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = "";
+  const el = findEl(replaceTarget); replaceTarget = null;
+  if(!f || !el) return;
+  try{
+    const a = await fileToAsset(f);
+    const cx = el.x + el.w / 2, cy = el.y + el.h / 2, area = el.w * el.h, ar = a.w / a.h;
+    el.asset = a.id; el.w = Math.sqrt(area * ar); el.h = el.w / ar; el.x = cx - el.w / 2; el.y = cy - el.h / 2;
+    refreshEl(el); renderOverlay(); commit();
+  }catch(_){ toast("Couldn't read that image.", {warn:true}); }
+});
+$("#fileBg").addEventListener("change", async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = "";
+  if(!f) return;
+  try{ const a = await fileToAsset(f); curSlide().bgAsset = a.id; renderCanvas(); markDirty(); commit(); renderSlideFields(); }
+  catch(_){ toast("Couldn't read that image.", {warn:true}); }
+});
+
+/* ============================================================== clipboard */
+function isTyping(t){
+  t = t || document.activeElement;
+  if(!t || t === document.body) return false;
+  if(t.isContentEditable) return true;
+  if(t.tagName === "TEXTAREA" || t.tagName === "SELECT") return true;
+  if(t.tagName === "INPUT") return !/^(range|checkbox|radio|color|button|submit|file)$/i.test(t.type);
+  return false;
+}
+function clipPayload(list){
+  const a = {};
+  list.forEach(e => { if(e.type === "image" && assets.has(e.asset)) a[e.asset] = assets.get(e.asset); });
+  return {halodeck:2, page:{w:PW(), h:PH()}, elements:JSON.parse(JSON.stringify(list)), assets:a};
+}
+function clipPlain(list){
+  return list.map(e => e.type === "text" ? e.text : "").filter(Boolean).join("\n\n") || "[HaloDeck " + layerLabel(list[0]).toLowerCase() + "]";
+}
+function parseClipHtml(html){
+  if(!html || html.indexOf("data-halodeck-clip") < 0) return null;
+  try{
+    const d = new DOMParser().parseFromString(html, "text/html");
+    const n = d.querySelector("[data-halodeck-clip]");
+    const p = n && JSON.parse(n.getAttribute("data-halodeck-clip"));
+    return p && p.halodeck && Array.isArray(p.elements) ? p : null;
+  }catch(_){ return null; }
+}
+function firstImgSrc(html){
+  try{
+    const d = new DOMParser().parseFromString(html, "text/html");
+    const img = d.querySelector("img[src]");
+    const src = img && img.getAttribute("src");
+    return src && /^(https?:|data:image\/)/i.test(src) ? src : null;
+  }catch(_){ return null; }
+}
+function pastePayload(p, at){
+  if(ui.editing) endEdit();
+  const s = curSlide();
+  const scale = (p.page && +p.page.w) ? PW() / +p.page.w : 1;
+  const added = [];
+  p.elements.forEach(raw => {
+    const e = normEl(raw);
+    if(!e) return;
+    e.id = uid("e");
+    if(e.type === "image"){
+      const d = p.assets && p.assets[raw.asset];
+      if(d) e.asset = addAsset(d); else if(!assets.has(e.asset)) return;
+    }
+    if(scale !== 1) scaleEl(e, scale, 0, 0);
+    added.push(e);
+  });
+  if(!added.length) return;
+  if(at){
+    // Pasting from the right-click menu drops the copy where you clicked.
+    const bb = added.map(elBounds).reduce((a, b) => ({x:Math.min(a.x, b.x), y:Math.min(a.y, b.y), r:Math.max(a.r, b.x + b.w), b:Math.max(a.b, b.y + b.h)}),
+      {x:Infinity, y:Infinity, r:-Infinity, b:-Infinity});
+    const w = bb.r - bb.x, h = bb.b - bb.y;
+    const dx = clamp(at.x - w / 2, 0, Math.max(0, PW() - w)) - bb.x, dy = clamp(at.y - h / 2, 0, Math.max(0, PH() - h)) - bb.y;
+    added.forEach(e => offsetEl(e, dx, dy));
+  } else {
+    const pos = x => x.type === "arrow" ? [x.x1, x.y1] : [x.x, x.y];
+    added.forEach(e => {
+      for(let n = 0; n < 30 && s.elements.some(o => { const a = pos(o), b = pos(e); return o.type === e.type && Math.abs(a[0] - b[0]) < 1 && Math.abs(a[1] - b[1]) < 1; }); n++){
+        offsetEl(e, 24 * K(), 24 * K());
+      }
+    });
+  }
+  added.forEach(e => s.elements.push(e));
+  renderCanvas(); ui.sel = null; select(added[added.length - 1].id); commit();
+}
+/* Copy / cut from the right-click menu: run the normal copy path so the system clipboard gets it too. */
+function copySel(cut){
+  const el = selEl(); if(!el) return;
+  if(ui.editing) endEdit();
+  internalClip = clipPayload([el]); internalClipText = clipPlain([el]);
+  let viaEvent = false;
+  copyFlag = false;
+  try{ document.execCommand("copy"); viaEvent = copyFlag; }catch(_){}
+  if(!viaEvent && navigator.clipboard){
+    const html = '<meta charset="utf-8"><div data-halodeck-clip="' + esc(JSON.stringify(internalClip)) + '">' + esc(internalClipText) + "</div>";
+    try{
+      if(window.ClipboardItem && navigator.clipboard.write){
+        navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html], {type:"text/html"}), "text/plain":new Blob([internalClipText], {type:"text/plain"})})]).catch(() => {});
+      } else if(navigator.clipboard.writeText) navigator.clipboard.writeText(internalClipText).catch(() => {});
+    }catch(_){}
+  }
+  if(cut){ deleteSel(); toast("Cut — paste it on any slide"); }
+  else toast("Copied — paste it on any slide");
+}
+let copyFlag = false;
+document.addEventListener("copy", e => {
+  if(isTyping() || ui.editing) return;
+  const el = selEl(); if(!el || !e.clipboardData) return;
+  e.preventDefault();
+  const p = clipPayload([el]);
+  internalClip = p; internalClipText = clipPlain([el]);
+  e.clipboardData.setData("text/plain", internalClipText);
+  e.clipboardData.setData("text/html", '<meta charset="utf-8"><div data-halodeck-clip="' + esc(JSON.stringify(p)) + '">' + esc(internalClipText) + "</div>");
+  copyFlag = true;
+  toast("Copied — paste with Ctrl/Cmd+V or the Paste button, on any slide");
+});
+document.addEventListener("cut", e => {
+  if(isTyping() || ui.editing) return;
+  const el = selEl(); if(!el || !e.clipboardData) return;
+  e.preventDefault();
+  const p = clipPayload([el]);
+  internalClip = p; internalClipText = clipPlain([el]);
+  e.clipboardData.setData("text/plain", internalClipText);
+  e.clipboardData.setData("text/html", '<meta charset="utf-8"><div data-halodeck-clip="' + esc(JSON.stringify(p)) + '">' + esc(internalClipText) + "</div>");
+  deleteSel();
+});
+document.addEventListener("paste", e => {
+  if(!e.clipboardData || !$("#exportModal").hidden || !imModal.hidden || !helpModal.hidden || !$("#tourModal").hidden || !$("#newsModal").hidden || !$("#logModal").hidden) return;
+  if(!pasteModal.hidden){ e.preventDefault(); closePasteBox(); ingestTransfer(e.clipboardData, {at:pasteBoxOpts.at, announceEmpty:true}); return; }
+  if(isTyping()) return;
+  e.preventDefault();
+  ingestTransfer(e.clipboardData, {announceEmpty:true});
+});
+function filesFrom(dt){
+  if(dt.files && dt.files.length) return Array.from(dt.files);
+  return Array.from(dt.items || []).filter(i => i.kind === "file").map(i => i.getAsFile()).filter(Boolean);
+}
+async function ingestTransfer(dt, opts){
+  opts = opts || {};
+  const files = filesFrom(dt);
+  if(files.length) return ingestFiles(files, opts);
+  const html = dt.getData("text/html") || "";
+  const plain = dt.getData("text/plain") || "";
+  const clip = parseClipHtml(html) || (internalClip && plain && plain === internalClipText ? internalClip : null);
+  if(clip){ pastePayload(clip, opts.at); return; }
+  const src = html && firstImgSrc(html);
+  if(src){ await ingestUrl(src, opts); return; }
+  const uri = (dt.getData("text/uri-list") || "").split(/\r?\n/).find(l => l && l[0] !== "#") || "";
+  const cand = uri || plain.trim();
+  if(isImageUrl(cand)){ await ingestUrl(cand, opts); return; }
+  if(plain.trim()){ addTextLayer(plain, opts.at); return; }
+  if(opts.announceEmpty) toast("Nothing to paste — copy a picture, some text or a layer first.");
+}
+const isImageUrl = s => /^data:image\//i.test(s) || /^https?:\/\/\S+\.(png|jpe?g|gif|webp|avif|svg)(\?\S*)?$/i.test(s);
+const looksLikeFilePath = s => !/\n/.test(s.trim()) && /^(file:\/\/|[a-z]:\\|\\\\|\/(users|home|private|volumes|tmp|var|mnt)\/)/i.test(s.trim());
+const isPdfFile = f => /\.pdf$/i.test(f.name || "") || f.type === "application/pdf";
+async function ingestFiles(files, opts){
+  const pdf = files.find(isPdfFile);
+  if(pdf && !files.some(isImageFile)){ startPdfImport(pdf); return; }
+  files = files.filter(f => !isPdfFile(f));
+  const images = files.filter(isImageFile);
+  const projects = files.filter(f => !isImageFile(f) && (/\.(json|html?)$/i.test(f.name || "") || /json|html/.test(f.type || "")));
+  const texts = files.filter(f => !isImageFile(f) && !projects.includes(f) && (/^text\//.test(f.type || "") || /\.(txt|md|markdown)$/i.test(f.name || "")));
+  if(!images.length && projects.length && opts.allowProject){ await openProjectFile(projects[0]); return; }
+  if(images.length) await insertImageFiles(images, opts);
+  for(const t of texts){ try{ addTextLayer((await t.text()).trim(), opts.at); }catch(_){} }
+  if(!images.length && !texts.length) toast("Nothing to add — drop images (PNG, JPG, GIF, WebP, SVG) or text files.", {warn:true});
+}
+/* The Paste button / menu item. Reads the clipboard directly where the browser allows it; otherwise
+   (Firefox, Safari, blocked permission, a copied file) it opens a small box you paste into once. */
+const IS_MAC = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || "");
+const KEY_MOD = IS_MAC ? "⌘" : "Ctrl+";
+async function pasteFromClipboard(opts){
+  opts = opts || {};
+  if(ui.editing) endEdit();
+  closeMenu();
+  if(navigator.clipboard && navigator.clipboard.read){
+    try{
+      const items = await navigator.clipboard.read();
+      for(const it of items){
+        const t = it.types.find(x => /^image\//.test(x));
+        if(t){
+          const b = await it.getType(t);
+          await insertImageFiles([new File([b], "pasted." + ((t.split("/")[1] || "png").replace("jpeg", "jpg").replace(/\+.*$/, "")), {type:b.type || t})], {at:opts.at});
+          return;
+        }
+      }
+      for(const it of items){
+        let html = "", plain = "";
+        if(it.types.includes("text/html")) html = await (await it.getType("text/html")).text();
+        if(it.types.includes("text/plain")) plain = await (await it.getType("text/plain")).text();
+        const clip = parseClipHtml(html) || (internalClip && plain && plain === internalClipText ? internalClip : null);
+        if(clip){ pastePayload(clip, opts.at); return; }
+        const src = html && firstImgSrc(html);
+        if(src){ await ingestUrl(src, {at:opts.at}); return; }
+        const cand = plain.trim();
+        if(isImageUrl(cand)){ await ingestUrl(cand, {at:opts.at}); return; }
+        if(cand && looksLikeFilePath(cand)){ openPasteBox(opts, "file"); return; }
+        if(cand){ addTextLayer(plain, opts.at); return; }
+      }
+      // Nothing readable (some apps put files or rich formats there): let the paste box take it.
+      openPasteBox(opts, "other");
+      return;
+    }catch(_){ /* blocked, dismissed or unsupported */ }
+  }
+  openPasteBox(opts, "blocked");
+}
+const pasteModal = $("#pasteModal"), pasteTarget = $("#pasteTarget");
+let pasteBoxOpts = {};
+function openPasteBox(opts, why){
+  pasteBoxOpts = opts || {};
+  const touch = matchMedia("(pointer:coarse)").matches;
+  $("#pasteWhy").textContent = why === "file"
+    ? "Your clipboard holds a file. Paste it into the box below to add it."
+    : why === "other"
+      ? "This kind of clipboard content has to be pasted by hand — paste it into the box below."
+      : "Your browser only shares the clipboard when you paste yourself — paste into the box below.";
+  $("#pasteHow").textContent = touch ? "Touch and hold the box, then tap Paste." : "Click the box if needed, then press " + KEY_MOD + "V.";
+  $("#pasteInternal").hidden = !internalClip;
+  pasteTarget.textContent = "";
+  pasteTarget.dataset.ph = touch ? "Touch and hold here → Paste" : "Press " + KEY_MOD + "V";
+  pasteModal.hidden = false;
+  if(!touch) setTimeout(() => pasteTarget.focus(), 30);
+}
+function closePasteBox(){ pasteModal.hidden = true; pasteTarget.textContent = ""; if(document.activeElement === pasteTarget) pasteTarget.blur(); }
+pasteTarget.addEventListener("paste", e => {
+  e.preventDefault(); e.stopPropagation();
+  const dt = e.clipboardData;
+  closePasteBox();
+  if(dt) ingestTransfer(dt, {at:pasteBoxOpts.at, announceEmpty:true});
+});
+pasteTarget.addEventListener("beforeinput", e => { if(e.inputType !== "insertFromPaste") e.preventDefault(); });
+pasteTarget.addEventListener("drop", e => {
+  e.preventDefault(); e.stopPropagation();
+  clearTimeout(dragHideTimer); hideDragUI();
+  closePasteBox();
+  if(e.dataTransfer) ingestTransfer(e.dataTransfer, {at:pasteBoxOpts.at, announceEmpty:true});
+});
+$("#pasteInternal").addEventListener("click", () => { closePasteBox(); if(internalClip) pastePayload(internalClip, pasteBoxOpts.at); });
+$("#pasteClose").addEventListener("click", closePasteBox);
+pasteModal.addEventListener("pointerdown", e => { if(e.target === pasteModal) closePasteBox(); });
+$("#btnPaste").addEventListener("click", () => pasteFromClipboard({}));
+
+/* ---- Help: a quick reference that always works (it's part of this file), plus a link to the
+   illustrated guide, which lives next to the app as guide.html. */
+const helpModal = $("#helpModal");
+let guideChecked = false;
+function openHelp(){
+  if(ui.editing) endEdit();
+  closeMenu(); closePanels();
+  $$(".help-body kbd.mod").forEach(k => { if(!k.dataset.done){ k.textContent = KEY_MOD + k.textContent; k.dataset.done = "1"; } });
+  helpModal.hidden = false;
+  setTimeout(() => $("#helpTour").focus({preventScroll:true}), 30);
+  if(!guideChecked && /^https?:$/.test(location.protocol)){
+    guideChecked = true;
+    fetch("guide.html", {cache:"no-store", headers:{Range:"bytes=0-4095"}}).then(r => {
+      if(!r.ok){ $("#helpGuide").hidden = true; $("#helpMissing").hidden = false; return; }
+      return r.text().then(t => {
+        const m = /<meta name="halodeck-build" content="([^"]+)"/.exec(t.slice(0, 8000));
+        if(BUILD.id !== "dev" && (!m || m[1] !== BUILD.id)){
+          $("#helpStale").hidden = false;
+          $("#helpStale").textContent = "The guide on this site is from " + (m ? "build " + m[1] : "an older version") + ", and this app is build " + BUILD.id
+            + ". Its screenshots may not match. Whoever manages HaloDeck should upload the guide.html that came with this version.";
+        }
+      });
+    }).catch(() => {});
+  }
+}
+function closeHelp(){ helpModal.hidden = true; }
+$("#btnHelp").addEventListener("click", openHelp);
+$("#helpClose").addEventListener("click", closeHelp);
+helpModal.addEventListener("pointerdown", e => { if(e.target === helpModal) closeHelp(); });
+
+/* ================================================= drag & drop from the OS */
+let dragHideTimer = null;
+function dragKind(dt){
+  const t = Array.from((dt && dt.types) || []);
+  if(t.includes("Files")) return "files";
+  if(t.includes("text/uri-list") || t.includes("text/html")) return "web";
+  return null;
+}
+function dropTarget(e){ return e.target && e.target.closest && e.target.closest("#slidesPanel") ? "slides" : "slide"; }
+function showDragUI(e){
+  document.body.classList.add("dragging-files");
+  const t = dropTarget(e);
+  document.body.classList.toggle("drop-slides", t === "slides");
+  document.body.classList.toggle("drop-slide", t === "slide");
+  clearTimeout(dragHideTimer);
+  dragHideTimer = setTimeout(hideDragUI, 300);
+}
+function hideDragUI(){ document.body.classList.remove("dragging-files", "drop-slides", "drop-slide"); }
+window.addEventListener("dragover", e => {
+  const k = dragKind(e.dataTransfer); if(!k) return;
+  if(k === "web" && isTyping(e.target)) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "copy";
+  showDragUI(e);
+});
+window.addEventListener("drop", e => {
+  const k = dragKind(e.dataTransfer); if(!k) return;
+  if(k === "web" && isTyping(e.target)) return;
+  e.preventDefault();
+  clearTimeout(dragHideTimer); hideDragUI();
+  const target = dropTarget(e);
+  const p = logical(e.clientX, e.clientY);
+  ingestTransfer(e.dataTransfer, {target, at:(target === "slide" && inPage(p)) ? p : null, allowProject:true});
+});
+
+/* ======================================================== save / autosave */
+const KV = (() => {
+  let dbp = null;
+  const db = () => dbp || (dbp = new Promise((res, rej) => {
+    if(!window.indexedDB) return rej(new Error("No IndexedDB"));
+    const r = indexedDB.open("halodeck", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("kv");
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+    r.onblocked = () => rej(new Error("IndexedDB blocked"));
+  }));
+  const req = (mode, fn) => db().then(d => new Promise((res, rej) => {
+    const tx = d.transaction("kv", mode), st = tx.objectStore("kv");
+    const out = fn(st);
+    tx.oncomplete = () => res(out && "result" in out ? out.result : undefined);
+    tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error);
+  }));
+  return {
+    get:k => req("readonly", st => st.get(k)),
+    keys:() => req("readonly", st => st.getAllKeys()),
+    setMany:entries => req("readwrite", st => { entries.forEach(([k, v]) => st.put(v, k)); }),
+    del:keys => req("readwrite", st => { keys.forEach(k => st.delete(k)); }),
+  };
+})();
+const pendingAssets = new Set();
+let saveTimer = null;
+function setStatus(st){
+  const n = $("#saveStatus");
+  n.classList.toggle("err", st === "error");
+  n.textContent = st === "saving" ? "Saving…" : st === "saved" ? "Saved" : st === "error" ? "Not autosaved" : "";
+  n.title = st === "error" ? "Your browser blocked local storage. Use Save project to keep your work." : "Your deck is saved in this browser automatically";
+}
+function scheduleSave(){ clearTimeout(saveTimer); setStatus("saving"); saveTimer = setTimeout(saveNow, 500); }
+async function saveNow(){
+  clearTimeout(saveTimer);
+  const entries = [["doc", {version:2, title:doc.title, page:doc.page, slides:doc.slides, cur:ui.cur, savedAt:Date.now()}]];
+  const flushing = Array.from(pendingAssets);
+  flushing.forEach(id => { if(assets.has(id)) entries.push(["asset:" + id, assets.get(id)]); });
+  pendingAssets.clear();
+  try{ await KV.setMany(entries); setStatus("saved"); }
+  catch(_){ flushing.forEach(id => pendingAssets.add(id)); setStatus("error"); }
+}
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "hidden" && saveTimer) saveNow(); });
+window.addEventListener("pagehide", () => { if(saveTimer) saveNow(); });
+
+function applyImported(data, opts){
+  opts = opts || {};
+  if(ui.editing) endEdit();
+  resetAssets();
+  Object.keys(data.assets || {}).forEach(id => {
+    const d = data.assets[id];
+    if(typeof d === "string" && d.startsWith("data:")){ assets.set(id, d); assetIdByData.set(d, id); if(!opts.fromStore) pendingAssets.add(id); }
+  });
+  const n = normalize(data);
+  doc.title = n.title; doc.page = n.page; doc.slides = n.slides;
+  ui.cur = clamp(+opts.cur || 0, 0, doc.slides.length - 1); ui.sel = null;
+  titleField.value = doc.title;
+}
+async function loadInitial(){
+  try{
+    const d = await KV.get("doc");
+    if(d && Array.isArray(d.slides) && d.slides.length){
+      const used = collectAssetIds(d.slides), a = {};
+      await Promise.all(Array.from(used).map(async id => { const v = await KV.get("asset:" + id); if(v) a[id] = v; }));
+      applyImported(Object.assign({}, d, {assets:a}), {fromStore:true, cur:d.cur});
+      KV.keys().then(keys => {   // drop images no slide uses any more
+        const stale = keys.filter(k => typeof k === "string" && k.startsWith("asset:") && !used.has(k.slice(6)));
+        if(stale.length) KV.del(stale);
+      }).catch(() => {});
+      setStatus("saved");
+      return;
+    }
+  }catch(_){ setStatus("error"); }
+  try{
+    const raw = localStorage.getItem(LEGACY_KEY);
+    const v1 = raw && JSON.parse(raw);
+    if(v1 && Array.isArray(v1.slides) && v1.slides.length){
+      applyImported(migrateV1(v1), {cur:v1.currentSlideIdx});
+      scheduleSave();
+      setTimeout(() => toast("Restored your deck from the previous version of HaloDeck"), 400);
+      return;
+    }
+  }catch(_){}
+  applyImported({title:"Untitled deck", page:{w:1280, h:720}, slides:[newSlide()]}, {fromStore:true});
+}
+titleField.addEventListener("input", () => { doc.title = titleField.value.trim() || "Untitled deck"; scheduleSave(); });
+titleField.addEventListener("keydown", e => { if(e.key === "Enter") titleField.blur(); });
+
+function deckHasContent(){ return doc.slides.length > 1 || doc.slides.some(s => s.elements.length || s.bgAsset || (s.notes || "").trim()); }
+function projectData(){
+  const a = {};
+  collectAssetIds(doc.slides).forEach(id => { if(assets.has(id)) a[id] = assets.get(id); });
+  return {app:"halodeck", version:2, title:doc.title, page:doc.page, slides:doc.slides, assets:a};
+}
+function saveProject(){
+  if(ui.editing) endEdit();
+  downloadBlob(new Blob([JSON.stringify(projectData())], {type:"application/json"}), slugify(doc.title) + ".halodeck.json");
+  toast("Project file downloaded — open it here any time to keep editing.");
+}
+function parseExportedHtml(text){
+  const d = new DOMParser().parseFromString(text, "text/html");
+  const src = d.getElementById("halodeck-source");
+  if(!src) return null;
+  const data = JSON.parse(src.textContent);
+  const a = {};
+  d.querySelectorAll("[data-asset]").forEach(n => {
+    const id = n.getAttribute("data-asset"), s = n.getAttribute("src");
+    if(id && s && s.startsWith("data:")) a[id] = s;
+  });
+  data.assets = a;
+  return data;
+}
+async function openProjectFile(file){
+  let data = null;
+  try{
+    const text = await file.text();
+    if(/\.html?$/i.test(file.name || "") || /^\s*</.test(text)) data = parseExportedHtml(text);
+    else {
+      const j = JSON.parse(text);
+      if(j && (j.version >= 2 || j.page)) data = j;
+      else if(j && Array.isArray(j.slides)) data = migrateV1(j);
+    }
+  }catch(_){ data = null; }
+  if(!data || !Array.isArray(data.slides)){
+    toast("That file isn't a HaloDeck project or a HaloDeck HTML export.", {warn:true});
+    return;
+  }
+  if(deckHasContent() && !confirm("Open “" + (data.title || file.name) + "”? It replaces the deck that's open now (save it first if you need it).")) return;
+  applyImported(data, {});
+  hist.stack = []; hist.idx = -1;
+  renderAll(); fitZoom(); pushHistory(); scheduleSave();
+  toast("Opened " + (file.name || "project"));
+}
+$("#btnSave").addEventListener("click", saveProject);
+$("#btnOpen").addEventListener("click", () => toggleMenu($("#menuOpen"), $("#btnOpen")));
+$("#menuOpen").addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if(!b) return;
+  closeMenu();
+  if(b.dataset.act === "pdf") $("#filePdf").click();
+  else if(b.dataset.act === "photos") $("#fileSlides").click();
+  else $("#fileProject").click();
+});
+$("#filePdf").addEventListener("change", e => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if(f) startPdfImport(f); });
+$("#fileProject").addEventListener("change", e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = "";
+  if(f){ if(isPdfFile(f)) startPdfImport(f); else openProjectFile(f); }
+});
+
+/* ======================================================= open as slides: PDF & photos
+   A PDF page or a photo becomes one slide. Slides can take the source's own shape
+   ("match"), so nothing is letterboxed or cropped, or keep this deck's size, in which case
+   each picture is fitted inside the slide. PDF pages come in as locked full-page pictures
+   (you can draw on them right away) and, optionally, their text goes into the slide notes
+   so the words survive in HTML exports. PDF.js is fetched from a CDN the first time a PDF
+   is opened, so the app itself stays one small file. */
+const PDFJS_VER = "4.10.38";
+const PDFJS_BASES = ["https://cdn.jsdelivr.net/npm/pdfjs-dist@" + PDFJS_VER + "/", "https://unpkg.com/pdfjs-dist@" + PDFJS_VER + "/"];
+let pdfjsReady = null;
+function loadPdfJs(){
+  if(!pdfjsReady){
+    pdfjsReady = (async () => {
+      let err = null;
+      for(const base of PDFJS_BASES){
+        try{
+          const lib = await import(base + "build/pdf.min.mjs");
+          lib.GlobalWorkerOptions.workerSrc = base + "build/pdf.worker.min.mjs";
+          return {lib, base};
+        }catch(e){ err = e; }
+      }
+      throw Object.assign(new Error("The PDF reader couldn't be downloaded"), {code:"LOAD", cause:err});
+    })();
+    pdfjsReady.catch(() => { pdfjsReady = null; });
+  }
+  return pdfjsReady;
+}
+/* Pick the slide size for a source of w×h (CSS px at 96 dpi): a preset with the same shape if
+   there is one, else the source's own size (scaled to a sensible range). */
+function pageSizeFor(w, h){
+  const r = w / h;
+  const p = PAGE_PRESETS.find(q => Math.abs(q.w / q.h - r) / r < 0.01);
+  if(p) return {w:p.w, h:p.h};
+  const long = Math.max(w, h);
+  if(long > 1600 || long < 600){ const s = 1280 / long; w *= s; h *= s; }
+  return {w:clamp(Math.round(w), 100, 8000), h:clamp(Math.round(h), 100, 8000)};
+}
+function sizeName(w, h){
+  const p = PAGE_PRESETS.find(q => q.w === w && q.h === h);
+  return p ? p.label : (w > h ? "Landscape " : w < h ? "Portrait " : "Square ") + w + " × " + h;
+}
+function inchesName(wPt, hPt){
+  const r = v => (Math.round(v / 72 * 100) / 100).toString();
+  return r(wPt) + " × " + r(hPt) + " in";
+}
+/* "1-3, 5, 9-" → [1,2,3,5,9,…max]; null when it can't be read */
+function parseRange(str, max){
+  const out = new Set(), parts = String(str || "").split(/[,;\s]+/).filter(Boolean);
+  if(!parts.length) return null;
+  for(const part of parts){
+    const m = /^(\d*)\s*[-–]\s*(\d*)$/.exec(part);
+    if(m){
+      const a = m[1] ? +m[1] : 1, b = m[2] ? +m[2] : max;
+      if(!a || !b || a > b || a > max) return null;
+      for(let i = a; i <= Math.min(b, max); i++) out.add(i);
+    } else if(/^\d+$/.test(part)){
+      const n = +part; if(n < 1 || n > max) return null; out.add(n);
+    } else return null;
+  }
+  return Array.from(out).sort((x, y) => x - y);
+}
+/* [1,2,3,5,8,9] → "1-3, 5, 8-9" */
+function formatRange(nums){
+  const out = [];
+  for(let i = 0; i < nums.length; i++){
+    let j = i;
+    while(j + 1 < nums.length && nums[j + 1] === nums[j] + 1) j++;
+    out.push(j > i ? nums[i] + "-" + nums[j] : String(nums[i]));
+    i = j;
+  }
+  return out.join(", ");
+}
+const naturalCmp = (a, b) => String(a).localeCompare(String(b), undefined, {numeric:true, sensitivity:"base"});
+
+const imModal = $("#importModal");
+let imp = null;          // the import being set up: {kind, …}
+function imSeg(id, v){ $$("#" + id + " button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); }
+function openImportShell(kind, name, meta){
+  if(ui.editing) endEdit();
+  closeMenu(); closePanels();
+  $("#imTitle").textContent = kind === "pdf" ? "Open PDF as slides" : "Photos as slides";
+  $("#imIcon").innerHTML = icon(kind === "pdf" ? "pdf" : "stack");
+  $("#imName").textContent = name;
+  $("#imMeta").textContent = meta || "";
+  $("#imStrip").innerHTML = "";
+  $("#imOpts").hidden = true; $("#imNote").hidden = true; $("#imProgress").hidden = true;
+  $("#imLoading").hidden = false; $("#imLoadingText").textContent = kind === "pdf" ? "Reading the PDF…" : "Reading the photos…";
+  $("#imGo").disabled = true; $("#imCancel").disabled = false; $("#imCancel").textContent = "Cancel";
+  $("#imOpts").classList.remove("busy"); $("#imRange").value = "";
+  $("#imSummary").textContent = "";
+  imModal.hidden = false;
+}
+function closeImport(){
+  if(imp && imp.busy){ imp.cancel = true; return; }
+  imModal.hidden = true;
+  if(imp && imp.pdf){ try{ imp.pdf.destroy(); }catch(_){} }
+  imp = null;
+}
+function importFail(msg){
+  imModal.hidden = true;
+  if(imp && imp.pdf){ try{ imp.pdf.destroy(); }catch(_){} }
+  imp = null;
+  toast(msg, {warn:true});
+}
+
+async function startPdfImport(file){
+  if(imp) return;
+  imp = {kind:"pdf", file, busy:false};
+  const mine = imp;
+  openImportShell("pdf", file.name || "document.pdf", "");
+  let lib, base, pdf;
+  try{
+    ({lib, base} = await loadPdfJs());
+  }catch(_){
+    if(imp === mine) importFail("Couldn't download the PDF reader — it needs an internet connection the first time. Try again in a moment.");
+    return;
+  }
+  try{
+    const data = new Uint8Array(await file.arrayBuffer());
+    pdf = await lib.getDocument({data, isEvalSupported:false, cMapUrl:base + "cmaps/", cMapPacked:true, standardFontDataUrl:base + "standard_fonts/"}).promise;
+  }catch(err){
+    if(imp !== mine) return;
+    importFail(err && err.name === "PasswordException"
+      ? "That PDF is password-protected. Save a copy without the password, then open that."
+      : "Couldn't read that file as a PDF.");
+    return;
+  }
+  if(imp !== mine){ pdf.destroy(); return; }
+  imp.pdf = pdf;
+  const sizes = [];
+  for(let i = 1; i <= pdf.numPages; i++){
+    if(imp !== mine) return;
+    const pg = await pdf.getPage(i), vp = pg.getViewport({scale:1});
+    sizes.push([vp.width, vp.height]);
+  }
+  imp.sizes = sizes;
+  const [w0, h0] = sizes[0];
+  const varied = sizes.some(([w, h]) => Math.abs(w - w0) > 1 || Math.abs(h - h0) > 1);
+  imp.pagesMode = "all"; imp.where = "new"; imp.size = "match";
+  pdfShape();
+  $("#imMeta").textContent = pdf.numPages + " page" + (pdf.numPages > 1 ? "s" : "") + " · " + inchesName(w0, h0) + (varied ? " (page 1 — sizes vary)" : "");
+  $("#imLoading").hidden = true;
+  renderImportOpts();
+  // small previews of the first pages
+  const strip = $("#imStrip");
+  for(let i = 1; i <= Math.min(pdf.numPages, 8); i++){
+    if(imp !== mine) return;
+    try{
+      const pg = await pdf.getPage(i), vp1 = pg.getViewport({scale:1});
+      const vp = pg.getViewport({scale:Math.min(2, 180 / Math.max(vp1.width, vp1.height))});
+      const cv = document.createElement("canvas");
+      cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+      const cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, cv.width, cv.height);
+      await pg.render({canvasContext:cx, viewport:vp}).promise;
+      cv.className = "im-thumb"; cv.title = "Page " + i;
+      strip.appendChild(cv);
+    }catch(_){}
+  }
+  if(pdf.numPages > 8 && imp === mine){ const more = document.createElement("span"); more.className = "im-more"; more.textContent = "+" + (pdf.numPages - 8); strip.appendChild(more); }
+}
+
+async function startPhotoImport(files){
+  if(imp) return;
+  const list = files.filter(isImageFile);
+  if(!list.length){ toast("Pick photos or pictures (PNG, JPG, GIF, WebP, HEIC…).", {warn:true}); return; }
+  imp = {kind:"photos", busy:false};
+  const mine = imp;
+  openImportShell("photos", list.length + " photo" + (list.length > 1 ? "s" : ""), "");
+  const items = [], bad = [];
+  for(let i = 0; i < list.length; i++){
+    if(imp !== mine) return;
+    $("#imLoadingText").textContent = "Reading photo " + (i + 1) + " of " + list.length + "…";
+    try{ items.push(Object.assign(await fileToImageData(list[i]), {name:list[i].name || "photo " + (i + 1), picked:i})); }
+    catch(_){ bad.push(list[i].name || "photo"); }
+  }
+  if(imp !== mine) return;
+  if(!items.length){ importFail("Couldn't read those files as pictures."); return; }
+  imp.items = items; imp.bad = bad;
+  // the most common shape among the photos decides "match"
+  const ratios = items.map(it => it.w / it.h).sort((a, b) => a - b), mid = ratios[Math.floor(ratios.length / 2)];
+  const rep = items.find(it => Math.abs(it.w / it.h - mid) < 1e-9) || items[0];
+  imp.match = pageSizeFor(rep.w, rep.h);
+  imp.mixed = ratios.some(r => Math.abs(r - mid) / mid > 0.02);
+  imp.fit = "contain"; imp.order = "name"; imp.where = deckHasContent() ? "add" : "new";
+  imp.size = imp.where === "new" ? "match" : "keep";      // adding to a deck never resizes it unless you ask
+  const portrait = items.filter(it => it.h > it.w).length;
+  $("#imMeta").textContent = (portrait === items.length ? "all portrait" : portrait ? portrait + " portrait, " + (items.length - portrait) + " landscape" : "all landscape")
+    + (bad.length ? " · " + bad.length + " couldn't be read" : "");
+  $("#imLoading").hidden = true;
+  renderImportOpts();
+}
+function orderedPhotos(){
+  const a = imp.items.slice();
+  return imp.order === "name" ? a.sort((x, y) => naturalCmp(x.name, y.name)) : a.sort((x, y) => x.picked - y.picked);
+}
+function renderPhotoStrip(){
+  const strip = $("#imStrip"); strip.innerHTML = "";
+  const list = orderedPhotos();
+  list.slice(0, 10).forEach(it => { const im = document.createElement("img"); im.className = "im-thumb"; im.src = it.dataUrl; im.alt = it.name; im.title = it.name; strip.appendChild(im); });
+  if(list.length > 10){ const more = document.createElement("span"); more.className = "im-more"; more.textContent = "+" + (list.length - 10); strip.appendChild(more); }
+}
+
+function importTargetSize(){ return imp.size === "match" ? imp.match : {w:PW(), h:PH()}; }
+/* For a PDF, "match" follows the first page being imported, and "mixed" looks only at the chosen pages. */
+function pdfShape(){
+  const pages = importPageList() || [1], [w0, h0] = imp.sizes[pages[0] - 1], r0 = w0 / h0;
+  imp.match = pageSizeFor(w0 * 4 / 3, h0 * 4 / 3);
+  imp.mixed = pages.some(n => { const [w, h] = imp.sizes[n - 1]; return Math.abs(w / h - r0) / r0 > 0.01; });
+}
+function importPageList(){
+  if(imp.kind !== "pdf") return null;
+  if(imp.pagesMode === "all") return Array.from({length:imp.pdf.numPages}, (_, i) => i + 1);
+  return parseRange($("#imRange").value, imp.pdf.numPages);
+}
+function renderImportOpts(){
+  if(!imp) return;
+  const pdf = imp.kind === "pdf";
+  $("#imOpts").hidden = false;
+  $("#imRowPages").hidden = !pdf; $("#imTextRow").hidden = !pdf;
+  $("#imRowFit").hidden = pdf; $("#imRowOrder").hidden = pdf || imp.items.length < 2;
+  imSeg("imPagesMode", imp.pagesMode); $("#imRange").hidden = !pdf || imp.pagesMode !== "range";
+  imSeg("imWhere", imp.where); imSeg("imFit", imp.fit); imSeg("imOrder", imp.order);
+  const same = imp.match.w === PW() && imp.match.h === PH();
+  const opt = (v, title, sub) => '<label class="radio"><input type="radio" name="imSize" value="' + v + '"' + (imp.size === v ? " checked" : "") + '><span><b>' + title + '</b><span class="dim">' + sub + "</span></span></label>";
+  $("#imSize").innerHTML = same
+    ? opt("match", "Same as this deck", sizeName(PW(), PH()) + " — already matches")
+    : opt("match", pdf ? "Match the PDF" : "Match the photos", sizeName(imp.match.w, imp.match.h) + " · nothing gets cropped or letterboxed")
+      + opt("keep", "Keep this deck's size", sizeName(PW(), PH()) + (pdf ? " · pages are fitted inside" : imp.fit === "cover" ? " · photos are cropped to fill" : " · photos are fitted inside"));
+  if(same) imp.size = "match";
+  if(!pdf) renderPhotoStrip();
+  syncImport();
+}
+function syncImport(){
+  if(!imp || imp.busy) return;
+  const pdf = imp.kind === "pdf";
+  const pages = importPageList();
+  const n = pdf ? (pages ? pages.length : 0) : imp.items.length;
+  $("#imRange").classList.toggle("bad", pdf && imp.pagesMode === "range" && !pages && $("#imRange").value.trim() !== "");
+  const t = importTargetSize();
+  const resize = imp.where === "add" && (t.w !== PW() || t.h !== PH()) && deckHasContent();
+  const notes = [];
+  if(imp.where === "new" && deckHasContent()) notes.push("A new deck replaces the one that's open now — use Save project first if you want to keep it.");
+  if(resize) notes.push("This deck's slides will change to " + sizeName(t.w, t.h) + "; what's on them is scaled to fit.");
+  if(imp.mixed && pdf) notes.push("Pages in this PDF have different sizes — each one is fitted inside its slide, nothing is cropped.");
+  if(imp.mixed && !pdf && imp.size === "match" && imp.fit === "contain") notes.push("Your photos have different shapes — the odd ones out get a border, or choose “Fill the slide”.");
+  if(pdf && imp.pdf.numPages > 60 && n > 60) notes.push("Big PDFs make big HTML files — every page is stored as a picture.");
+  $("#imNote").hidden = !notes.length; $("#imNote").textContent = notes.join(" ");
+  $("#imSummary").textContent = n ? n + " slide" + (n > 1 ? "s" : "") + " · " + sizeName(t.w, t.h) : (pdf ? "Type pages like 1-3, 7" : "");
+  const go = $("#imGo");
+  go.disabled = !n;
+  go.textContent = n ? "Create " + n + " slide" + (n > 1 ? "s" : "") : "Create slides";
+}
+$("#imPagesMode").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b || !imp) return;
+  imp.pagesMode = b.dataset.v; pdfShape(); renderImportOpts();
+  if(imp.pagesMode === "range"){ const r = $("#imRange"); if(!r.value) r.value = "1-" + imp.pdf.numPages; r.focus(); r.select(); }
+});
+$("#imRange").addEventListener("input", () => {
+  if(!imp || imp.kind !== "pdf") return;
+  const before = imp.match.w + "x" + imp.match.h;
+  pdfShape();
+  if(imp.match.w + "x" + imp.match.h !== before) renderImportOpts(); else syncImport();
+});
+$("#imSize").addEventListener("change", e => { if(imp && e.target.name === "imSize"){ imp.size = e.target.value; imp.sizeChosen = true; syncImport(); } });
+$("#imWhere").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b || !imp) return;
+  imp.where = b.dataset.v;
+  if(!imp.sizeChosen) imp.size = imp.where === "new" ? "match" : "keep";
+  renderImportOpts();
+});
+$("#imFit").addEventListener("click", e => { const b = e.target.closest("button"); if(b && imp){ imp.fit = b.dataset.v; renderImportOpts(); } });
+$("#imOrder").addEventListener("click", e => { const b = e.target.closest("button"); if(b && imp){ imp.order = b.dataset.v; renderImportOpts(); } });
+$("#imClose").addEventListener("click", closeImport);
+$("#imCancel").addEventListener("click", closeImport);
+imModal.addEventListener("pointerdown", e => { if(e.target === imModal && !(imp && imp.busy)) closeImport(); });
+$("#imGo").addEventListener("click", runImport);
+
+function importProgress(i, n, what){
+  const p = $("#imProgress"); p.hidden = false;
+  p.querySelector("i").style.width = (n ? i / n * 100 : 0) + "%";
+  p.querySelector("span").textContent = i < n ? what + " " + (i + 1) + " of " + n + "…" : "Finishing…";
+}
+/* place a w×h picture on a W×H slide: whole (contain) or filling it (cover), centred */
+function fitBox(w, h, W, H, cover){
+  const f = cover ? Math.max(W / w, H / h) : Math.min(W / w, H / h);
+  return {x:(W - w * f) / 2, y:(H - h * f) / 2, w:w * f, h:h * f};
+}
+async function renderPdfPage(page, maxSide){
+  const vp1 = page.getViewport({scale:1});
+  const vp = page.getViewport({scale:Math.min(4, maxSide / Math.max(vp1.width, vp1.height))});
+  const cv = document.createElement("canvas");
+  cv.width = Math.max(1, Math.round(vp.width)); cv.height = Math.max(1, Math.round(vp.height));
+  const cx = cv.getContext("2d");
+  cx.fillStyle = "#ffffff"; cx.fillRect(0, 0, cv.width, cv.height);
+  await page.render({canvasContext:cx, viewport:vp}).promise;
+  // PNG keeps text razor sharp; JPEG wins on photo-heavy pages. Keep whichever is sensible.
+  const png = await canvasBlob(cv, "image/png"), jpg = await canvasBlob(cv, "image/jpeg");
+  cv.width = cv.height = 1;
+  return {dataUrl:await readAsDataURL(png.size <= jpg.size * 1.35 ? png : jpg), w:vp1.width, h:vp1.height};
+}
+async function pdfPageText(page){
+  try{
+    const tc = await page.getTextContent();
+    let s = "";
+    tc.items.forEach(it => { if(typeof it.str === "string"){ s += it.str; if(it.hasEOL) s += "\n"; } });
+    return s.replace(/[ \t ]+\n/g, "\n").replace(/[ \t ]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim().slice(0, 200000);
+  }catch(_){ return ""; }
+}
+async function runImport(){
+  if(!imp || imp.busy) return;
+  const pdf = imp.kind === "pdf";
+  const pages = pdf ? importPageList() : null;
+  if(pdf && !(pages && pages.length)){ $("#imRange").focus(); return; }
+  const target = importTargetSize(), isNew = imp.where === "new";
+  imp.busy = true; imp.cancel = false;
+  $("#imGo").disabled = true; $("#imOpts").classList.add("busy");
+  $("#imCancel").textContent = "Stop";
+  const owned = {};                      // assets for a new deck (it starts with a clean slate)
+  const keep = d => { if(isNew){ const id = uid("a"); owned[id] = d; return id; } return addAsset(d); };
+  const slides = [];
+  let textChars = 0;
+  try{
+    if(pdf){
+      const maxSide = clamp(Math.max(target.w, target.h) * 2, 1200, pages.length > 40 ? 1800 : 2400);
+      const withText = $("#imText").checked, base = (imp.file.name || "PDF").replace(/\.pdf$/i, "");
+      for(let i = 0; i < pages.length; i++){
+        if(imp.cancel) break;
+        importProgress(i, pages.length, "Converting page");
+        await nextFrame();
+        const page = await imp.pdf.getPage(pages[i]);
+        const pic = await renderPdfPage(page, maxSide);
+        const text = withText ? await pdfPageText(page) : "";
+        textChars += text.length;
+        page.cleanup();
+        const b = fitBox(pic.w, pic.h, target.w, target.h, false);
+        const el = Object.assign(newImage(keep(pic.dataUrl), b.x, b.y, b.w, b.h), {locked:true, alt:"Page " + pages[i] + " of " + base});
+        slides.push(Object.assign(newSlide(), {notes:text, elements:[el]}));
+      }
+    } else {
+      const list = orderedPhotos(), cover = imp.fit === "cover";
+      for(let i = 0; i < list.length; i++){
+        if(imp.cancel) break;
+        importProgress(i, list.length, "Adding photo");
+        if(i % 4 === 0) await nextFrame();
+        const it = list[i], b = fitBox(it.w, it.h, target.w, target.h, cover);
+        const el = Object.assign(newImage(keep(it.dataUrl), b.x, b.y, b.w, b.h), {alt:it.name.replace(/\.[a-z0-9]+$/i, "")});
+        slides.push(Object.assign(newSlide(), {elements:[el]}));
+      }
+    }
+  }catch(err){
+    console.error(err);
+    imp.busy = false;
+    importFail("Something went wrong while converting — " + ((err && err.message) || err));
+    return;
+  }
+  const cancelled = imp.cancel, kind = imp.kind, name = pdf ? imp.file.name : "";
+  importProgress(1, 1, "");
+  imp.busy = false;
+  if(!slides.length){ closeImport(); toast("Nothing was added."); return; }
+  if(isNew){
+    applyImported({title:pdf ? name.replace(/\.pdf$/i, "") || "Untitled deck" : "Photos", page:target, slides, assets:owned}, {});
+    hist.stack = []; hist.idx = -1;
+    renderAll(); fitZoom(); pushHistory(); scheduleSave();
+  } else {
+    if(target.w !== PW() || target.h !== PH()) setPageSize(target.w, target.h);
+    const blank = !deckHasContent();
+    const at = blank ? 0 : ui.cur + 1;
+    doc.slides.splice(at, blank ? doc.slides.length : 0, ...slides);
+    ui.cur = at; ui.sel = null;
+    renderAll(); fitZoom(); commit();
+  }
+  closeImport();
+  const n = slides.length;
+  let msg = (cancelled ? "Stopped — " : "") + "Created " + n + " slide" + (n > 1 ? "s" : "") + (kind === "pdf" ? " from " + name : "");
+  if(kind === "pdf" && $("#imText").checked && !textChars) msg += " · this PDF has no text layer (scanned?), so pages are pictures only";
+  else if(kind === "pdf") msg += " · page pictures are locked so you can draw on them";
+  toast(msg);
+}
+const ex = {format:"html", imgType:"png", scale:2, pdfQual:"sharp", pdfScale:2, sel:new Set(), busy:false, last:null};
+try{ const f = localStorage.getItem("halodeck_export_format"); if(["html", "png", "pdf"].includes(f)) ex.format = f; }catch(_){}
+const exModal = $("#exportModal");
+function openExport(format){
+  if(ui.editing) endEdit();
+  closeMenu(); closePanels(); flushThumbs();
+  if(["html", "png", "pdf"].includes(format)) ex.format = format;
+  ex.sel = new Set(doc.slides.map(s => s.id));
+  ex.last = null;
+  renderExportGrid(); renderExportOpts();
+  exModal.hidden = false;
+  setTimeout(() => $("#exGo").focus(), 30);
+}
+$("#btnExport").addEventListener("click", () => toggleMenu($("#menuExport"), $("#btnExport")));
+$("#menuExport").addEventListener("click", e => {
+  const b = e.target.closest("[data-format]"); if(!b) return;
+  closeMenu(); openExport(b.dataset.format);
+});
+function closeExport(){ if(ex.busy) return; exModal.hidden = true; }
+function renderExportGrid(){
+  const g = $("#exGrid"); g.innerHTML = "";
+  doc.slides.forEach((s, i) => {
+    const b = document.createElement("button");
+    b.className = "ex-card"; b.dataset.key = s.id; b.type = "button";
+    b.innerHTML = '<div class="thumb-page"></div><span class="tick">' + icon("check") + '</span><span class="n">Slide ' + (i + 1) + "</span>";
+    fillThumb(b.querySelector(".thumb-page"), s);
+    g.appendChild(b);
+  });
+  syncExportGrid();
+}
+function syncExportGrid(){
+  $$(".ex-card", $("#exGrid")).forEach(b => {
+    const on = ex.sel.has(b.dataset.key);
+    b.classList.toggle("on", on); b.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  const n = ex.sel.size, total = doc.slides.length;
+  const rf = $("#exRange");
+  if(document.activeElement !== rf){ rf.value = formatRange(slideNumbers()); rf.classList.remove("bad"); }
+  $("#exPickCount").textContent = total === 1 ? (n ? "1 slide" : "none selected") : n === total ? "all " + total + " selected" : n + " of " + total + " selected";
+  const slug = slugify(doc.title), ext = ex.imgType === "jpeg" ? "jpg" : "png";
+  let sum = "";
+  if(!n) sum = "Pick at least one slide";
+  else if(ex.format === "html") sum = slug + ".html";
+  else if(ex.format === "pdf"){
+    const notes = $("#exPdfNotes").checked ? selectedSlides().filter(s => (s.notes || "").trim()).length : 0;
+    sum = slug + ".pdf · " + n + " slide page" + (n > 1 ? "s" : "") + (notes ? " + notes" : "");
+  }
+  else sum = willZip() ? slug + "-slides.zip · " + n + " " + ext.toUpperCase() + (n > 1 ? "s" : "") : slug + "-" + String(slideNumbers()[0]).padStart(2, "0") + "." + ext;
+  $("#exSummary").textContent = sum;
+  const go = $("#exGo");
+  go.disabled = !n || ex.busy;
+  const what = {html:"HTML", png:ext.toUpperCase(), pdf:"PDF"}[ex.format];
+  go.textContent = !n ? "Export" : "Export " + n + " slide" + (n > 1 ? "s" : "") + " as " + what;
+}
+function selectedSlides(){ return doc.slides.filter(s => ex.sel.has(s.id)); }
+function slideNumbers(){ return selectedSlides().map(s => doc.slides.indexOf(s) + 1); }
+function willZip(){
+  const sl = selectedSlides();
+  return sl.length > 1 || ($("#exImgNotes").checked && sl.some(s => (s.notes || "").trim()));
+}
+function renderExportOpts(){
+  $$(".ex-format").forEach(b => { const on = b.dataset.format === ex.format; b.classList.toggle("active", on); b.setAttribute("aria-checked", on ? "true" : "false"); });
+  $("#exOptsHtml").hidden = ex.format !== "html";
+  $("#exOptsImg").hidden = ex.format !== "png";
+  $("#exOptsPdf").hidden = ex.format !== "pdf";
+  $$("#exImgType button").forEach(b => b.classList.toggle("on", b.dataset.v === ex.imgType));
+  $$("#exImgScale button").forEach(b => b.classList.toggle("on", +b.dataset.v === ex.scale));
+  $("#exImgDims").textContent = Math.round(PW() * ex.scale) + " × " + Math.round(PH() * ex.scale) + " px";
+  $$("#exPdfQual button").forEach(b => b.classList.toggle("on", b.dataset.v === ex.pdfQual));
+  $$("#exPdfScale button").forEach(b => b.classList.toggle("on", +b.dataset.v === ex.pdfScale));
+  syncExportGrid();
+}
+$$(".ex-format").forEach(b => b.addEventListener("click", () => { ex.format = b.dataset.format; renderExportOpts(); }));
+$("#exImgType").addEventListener("click", e => { const b = e.target.closest("button"); if(b){ ex.imgType = b.dataset.v; renderExportOpts(); } });
+$("#exImgScale").addEventListener("click", e => { const b = e.target.closest("button"); if(b){ ex.scale = +b.dataset.v; renderExportOpts(); } });
+$("#exPdfQual").addEventListener("click", e => { const b = e.target.closest("button"); if(b){ ex.pdfQual = b.dataset.v; renderExportOpts(); } });
+$("#exPdfScale").addEventListener("click", e => { const b = e.target.closest("button"); if(b){ ex.pdfScale = +b.dataset.v; renderExportOpts(); } });
+$("#exImgNotes").addEventListener("change", syncExportGrid);
+$("#exPdfNotes").addEventListener("change", syncExportGrid);
+$("#exGrid").addEventListener("click", e => {
+  const b = e.target.closest(".ex-card"); if(!b || ex.busy) return;
+  const keys = doc.slides.map(s => s.id), i = keys.indexOf(b.dataset.key);
+  if(e.shiftKey && ex.last != null){
+    const on = !ex.sel.has(b.dataset.key);
+    const [a, z] = [Math.min(ex.last, i), Math.max(ex.last, i)];
+    for(let k = a; k <= z; k++){ if(on) ex.sel.add(keys[k]); else ex.sel.delete(keys[k]); }
+  } else if(ex.sel.has(b.dataset.key)) ex.sel.delete(b.dataset.key);
+  else ex.sel.add(b.dataset.key);
+  ex.last = i;
+  syncExportGrid();
+});
+$("#exAll").addEventListener("click", () => { ex.sel = new Set(doc.slides.map(s => s.id)); syncExportGrid(); });
+$("#exCur").addEventListener("click", () => { ex.sel = new Set([curSlide().id]); ex.last = ui.cur; syncExportGrid(); });
+$("#exRange").addEventListener("input", e => {
+  const nums = parseRange(e.target.value, doc.slides.length);
+  e.target.classList.toggle("bad", !nums && e.target.value.trim() !== "");
+  if(nums){ ex.sel = new Set(nums.map(n => doc.slides[n - 1].id)); syncExportGrid(); }
+  else if(!e.target.value.trim()){ ex.sel.clear(); syncExportGrid(); }
+});
+$("#exRange").addEventListener("blur", e => { e.target.classList.remove("bad"); syncExportGrid(); });
+$("#exNone").addEventListener("click", () => { ex.sel.clear(); syncExportGrid(); });
+$("#exClose").addEventListener("click", closeExport);
+$("#exCancel").addEventListener("click", closeExport);
+exModal.addEventListener("pointerdown", e => { if(e.target === exModal) closeExport(); });
+$("#exGo").addEventListener("click", runExport);
+function exportProgress(i, n, what){
+  const p = $("#exProgress");
+  p.hidden = false;
+  p.querySelector("i").style.width = (n ? i / n * 100 : 0) + "%";
+  p.querySelector("span").textContent = i < n ? "Rendering " + (what || "slide") + " " + (i + 1) + " of " + n + "…" : "Packaging…";
+}
+async function runExport(){
+  const slides = selectedSlides();
+  if(!slides.length || ex.busy) return;
+  const nums = slideNumbers();
+  ex.busy = true;
+  $("#exGo").disabled = true; $("#exCancel").disabled = true;
+  try{ localStorage.setItem("halodeck_export_format", ex.format); }catch(_){}
+  try{
+    if(ex.format === "html"){
+      const html = buildExportHtml(slides, nums, $("#exHtmlNotes").checked);
+      downloadBlob(new Blob([html], {type:"text/html"}), slugify(doc.title) + ".html");
+      toast("Exported " + slides.length + " slide" + (slides.length > 1 ? "s" : "") + " as HTML");
+    } else if(ex.format === "pdf"){
+      await exportPdf(slides, nums);
+    } else {
+      await exportImages(slides, nums);
+    }
+    ex.busy = false;
+    closeExport();
+  }catch(err){
+    console.error(err);
+    toast("Export failed: " + ((err && err.message) || err), {warn:true});
+  }finally{
+    ex.busy = false;
+    $("#exProgress").hidden = true;
+    $("#exCancel").disabled = false;
+    syncExportGrid();
+  }
+}
+
+/* ---- HTML deck */
+function buildExportHtml(slides, nums, withNotes){
+  const page = doc.page, ctx = {page, mode:"export", url:id => assets.get(id) || PLACEHOLDER};
+  const fontsUsed = new Set();
+  const n = slides.length;
+  let body = "";
+  slides.forEach((s, i) => {
+    let inner = "";
+    if(s.bgAsset && assets.has(s.bgAsset)) inner += '<img class="slide-bg" alt="" src="' + esc(assets.get(s.bgAsset)) + '" data-asset="' + esc(s.bgAsset) + '">';
+    s.elements.forEach(el => {
+      if(el.hidden) return;
+      if(el.type === "text") fontsUsed.add(el.font);
+      inner += buildEl(el, ctx).outerHTML;
+    });
+    const notes = (withNotes && (s.notes || "").trim()) ? '<aside class="notes"><h2>Notes</h2><p>' + esc(s.notes.trim()) + "</p></aside>" : "";
+    body += '<article class="slide-wrap" id="slide-' + (i + 1) + '" data-n="' + (i + 1) + '">\n<section class="slide" style="background-color:' + s.bg
+      + '" aria-label="Slide ' + (i + 1) + " of " + n + '">' + inner + "</section>" + notes + "\n</article>\n";
+  });
+  const source = {app:"halodeck", version:2, title:doc.title, page,
+    slides:slides.map(s => Object.assign({}, s, {notes:withNotes ? s.notes : "", elements:s.elements.filter(e => !e.hidden)}))};
+  const json = JSON.stringify(source).replace(/</g, "\\u003c");
+  const fams = Array.from(fontsUsed).map(f => FONT_WEB[f]).filter(Boolean);
+  const fontLink = fams.length ? '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link rel="stylesheet" href="https://fonts.googleapis.com/css2?'
+    + fams.map(f => "family=" + f).join("&") + '&display=swap">\n' : "";
+  const title = esc(doc.title || "Untitled deck");
+  const svg = p => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' + p + "</svg>";
+  return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+    + '<meta name="generator" content="HaloDeck">\n<title>' + title + "</title>\n" + fontLink
+    + "<style>\n" + VIEWER_CSS + "</style>\n</head>\n<body>\n"
+    + '<header class="hd"><h1>' + title + '</h1><span class="meta">' + n + " slide" + (n > 1 ? "s" : "") + "</span>"
+    + '<nav class="ctrl" aria-label="Slide controls">'
+    + '<button class="nav" id="prev" aria-label="Previous slide">' + svg('<path d="M15 6l-6 6 6 6"/>') + "</button>"
+    + '<span class="count nav"><b id="cur">1</b> / ' + n + "</span>"
+    + '<button class="nav" id="next" aria-label="Next slide">' + svg('<path d="M9 6l6 6-6 6"/>') + "</button>"
+    + '<span class="sep nav"></span>'
+    + '<button id="all" aria-pressed="false" aria-label="Show all slides" title="Show all slides (A)">' + svg(ICONS.grid) + "</button>"
+    + '<button id="fs" aria-pressed="false" aria-label="Full screen" title="Full screen (F)">' + svg(ICONS.fit) + "</button></nav></header>\n"
+    + '<main class="deck" id="deck" style="--w:' + page.w + ";--h:" + page.h + '">\n' + body + "</main>\n"
+    + '<script type="application/json" id="halodeck-source">' + json + "<\/script>\n"
+    + "<script>\n" + VIEWER_JS + "<\/script>\n</body>\n</html>\n";
+}
+
+/* ---- images (PNG / JPG) drawn straight from the model */
+const imgCache = new Map();
+function assetImage(id){
+  if(!imgCache.has(id)) imgCache.set(id, loadImg(assetUrl(id)).catch(() => null));
+  return imgCache.get(id);
+}
+function fontString(el){ return (el.italic ? "italic " : "") + (el.bold ? "700" : "400") + " " + el.size + "px " + fontCss(el.font); }
+async function prepareFonts(slides){
+  if(!document.fonts || !document.fonts.load) return;
+  const jobs = [];
+  slides.forEach(s => s.elements.forEach(el => {
+    if(el.type === "text" && !el.hidden) jobs.push(document.fonts.load(fontString(el), el.text || "A").catch(() => {}));
+  }));
+  await Promise.race([Promise.all(jobs), new Promise(r => setTimeout(r, 4000))]);
+}
+function wrapLines(ctx, text, maxW){
+  const out = [];
+  String(text).split("\n").forEach(para => {
+    if(para === ""){ out.push(""); return; }
+    const toks = para.match(/\s+|\S+/g) || [""];
+    let line = "";
+    toks.forEach(tok => {
+      const ws = /^\s+$/.test(tok);
+      if(ctx.measureText((line + tok).replace(/\s+$/, "")).width <= maxW || (ws && line === "")){ line += tok; return; }
+      if(ws){ out.push(line); line = ""; return; }
+      if(line.trim() !== "") out.push(line);
+      let w = tok;
+      while(w.length > 1 && ctx.measureText(w).width > maxW){
+        let lo = 1, hi = w.length - 1;
+        while(lo < hi){ const mid = (lo + hi + 1) >> 1; if(ctx.measureText(w.slice(0, mid)).width <= maxW) lo = mid; else hi = mid - 1; }
+        out.push(w.slice(0, lo)); w = w.slice(lo);
+      }
+      line = w;
+    });
+    out.push(line);
+  });
+  return out.map(l => l.replace(/\s+$/, ""));
+}
+function roundRect(ctx, x, y, w, h, r){
+  r = Math.max(0, Math.min(r, w / 2, h / 2));
+  ctx.beginPath();
+  ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+function drawCover(ctx, img, w, h){
+  const iw = img.naturalWidth || w, ih = img.naturalHeight || h, s = Math.max(w / iw, h / ih);
+  ctx.drawImage(img, (w - iw * s) / 2, (h - ih * s) / 2, iw * s, ih * s);
+}
+async function drawElement(ctx, el, runs){
+  if(el.type === "arrow"){
+    const g = arrowGeom(el);
+    ctx.strokeStyle = el.stroke; ctx.fillStyle = el.stroke; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.lineWidth = el.strokeW;
+    ctx.beginPath(); ctx.moveTo(g.sx1, g.sy1); ctx.lineTo(g.sx2, g.sy2); ctx.stroke();
+    ctx.lineWidth = el.strokeW * 0.35;
+    g.heads.forEach(h => { ctx.beginPath(); ctx.moveTo(h[0][0], h[0][1]); ctx.lineTo(h[1][0], h[1][1]); ctx.lineTo(h[2][0], h[2][1]); ctx.closePath(); ctx.fill(); ctx.stroke(); });
+    return;
+  }
+  let layout = null, h = el.h;
+  if(el.type === "text"){
+    ctx.font = fontString(el);
+    const lines = wrapLines(ctx, el.text, Math.max(1, el.w - el.pad * 2));
+    const lh = el.size * LINE_H;
+    layout = {lines, lh};
+    h = lines.length * lh + el.pad * 2;
+  }
+  ctx.translate(el.x + el.w / 2, el.y + h / 2);
+  if(el.rot) ctx.rotate(el.rot * Math.PI / 180);
+  ctx.translate(-el.w / 2, -h / 2);
+  const w = el.w;
+  if(el.type === "image"){
+    const img = await assetImage(el.asset);
+    ctx.save();
+    roundRect(ctx, 0, 0, w, h, el.radius); ctx.clip();
+    if(img) ctx.drawImage(img, 0, 0, w, h); else { ctx.fillStyle = "#d9d5ce"; ctx.fillRect(0, 0, w, h); }
+    ctx.restore();
+    if(el.borderW > 0){
+      ctx.strokeStyle = el.borderColor; ctx.lineWidth = el.borderW;
+      roundRect(ctx, -el.borderW / 2, -el.borderW / 2, w + el.borderW, h + el.borderW, el.radius > 0 ? el.radius + el.borderW / 2 : 0);
+      ctx.stroke();
+    }
+  } else if(el.type === "shape"){
+    const sw = Math.min(el.strokeW, w / 2, h / 2);
+    if(el.shape === "ellipse"){
+      if(el.fillOpacity > 0){ ctx.fillStyle = rgba(el.fill, el.fillOpacity); ctx.beginPath(); ctx.ellipse(w / 2, h / 2, w / 2, h / 2, 0, 0, Math.PI * 2); ctx.fill(); }
+      if(sw > 0){ ctx.strokeStyle = el.stroke; ctx.lineWidth = sw; ctx.beginPath(); ctx.ellipse(w / 2, h / 2, Math.max(0, w / 2 - sw / 2), Math.max(0, h / 2 - sw / 2), 0, 0, Math.PI * 2); ctx.stroke(); }
+    } else {
+      if(el.fillOpacity > 0){ ctx.fillStyle = rgba(el.fill, el.fillOpacity); roundRect(ctx, 0, 0, w, h, el.radius); ctx.fill(); }
+      if(sw > 0){ ctx.strokeStyle = el.stroke; ctx.lineWidth = sw; roundRect(ctx, sw / 2, sw / 2, w - sw, h - sw, Math.max(0, el.radius - sw / 2)); ctx.stroke(); }
+    }
+  } else if(el.type === "text"){
+    if(el.hlOpacity > 0){ ctx.fillStyle = rgba(el.hl, el.hlOpacity); roundRect(ctx, 0, 0, w, h, TEXT_RADIUS * PW() / 1280); ctx.fill(); }
+    ctx.font = fontString(el);
+    ctx.fillStyle = el.color;
+    ctx.textBaseline = "alphabetic";
+    ctx.textAlign = el.align;
+    const m = ctx.measureText("Hg");
+    const asc = m.fontBoundingBoxAscent || el.size * 0.8, desc = m.fontBoundingBoxDescent || el.size * 0.2;
+    const x = el.align === "center" ? w / 2 : el.align === "right" ? w - el.pad : el.pad;
+    layout.lines.forEach((ln, i) => {
+      const by = el.pad + i * layout.lh + (layout.lh - (asc + desc)) / 2 + asc;
+      ctx.fillText(ln, x, by);
+      if(runs && ln.trim()){
+        // where this line sits, so the PDF can lay real (invisible) text exactly over the picture of it
+        const lw = ctx.measureText(ln).width;
+        runs.push({text:ln, lx:el.align === "center" ? x - lw / 2 : el.align === "right" ? x - lw : x, by, lw, size:el.size,
+          cx:el.x + w / 2, cy:el.y + h / 2, w, h, rot:el.rot || 0});
+      }
+    });
+  }
+}
+async function renderSlideCanvas(slide, scale, runs){
+  const cv = document.createElement("canvas");
+  cv.width = Math.round(PW() * scale); cv.height = Math.round(PH() * scale);
+  const ctx = cv.getContext("2d");
+  ctx.scale(scale, scale);
+  ctx.fillStyle = slide.bg || "#ffffff"; ctx.fillRect(0, 0, PW(), PH());
+  if(slide.bgAsset){ const img = await assetImage(slide.bgAsset); if(img) drawCover(ctx, img, PW(), PH()); }
+  for(const el of slide.elements){
+    if(el.hidden) continue;
+    ctx.save();
+    ctx.globalAlpha = el.opacity == null ? 1 : el.opacity;
+    try{ await drawElement(ctx, el, runs); } finally { ctx.restore(); }
+  }
+  return cv;
+}
+function canvasBlob(cv, mime){
+  return new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error("The browser couldn't encode the image")), mime, 0.92));
+}
+async function exportImages(slides, nums){
+  const mime = "image/" + ex.imgType, ext = ex.imgType === "jpeg" ? "jpg" : "png";
+  const slug = slugify(doc.title), digits = Math.max(2, String(doc.slides.length).length);
+  await prepareFonts(slides);
+  const files = [];
+  for(let i = 0; i < slides.length; i++){
+    exportProgress(i, slides.length);
+    await nextFrame();
+    const cv = await renderSlideCanvas(slides[i], ex.scale);
+    files.push({name:slug + "-" + String(nums[i]).padStart(digits, "0") + "." + ext, blob:await canvasBlob(cv, mime)});
+  }
+  exportProgress(slides.length, slides.length);
+  const notesTxt = $("#exImgNotes").checked
+    ? slides.map((s, i) => (s.notes || "").trim() ? "Slide " + nums[i] + "\n" + s.notes.trim() + "\n" : "").filter(Boolean).join("\n") : "";
+  if(files.length === 1 && !notesTxt){
+    downloadBlob(files[0].blob, files[0].name);
+    toast("Exported " + files[0].name);
+    return;
+  }
+  const entries = [];
+  for(const f of files) entries.push({name:f.name, data:new Uint8Array(await f.blob.arrayBuffer())});
+  if(notesTxt) entries.push({name:"notes.txt", data:new TextEncoder().encode((doc.title || "") + "\n\n" + notesTxt)});
+  downloadBlob(makeZip(entries), slug + "-slides.zip");
+  toast("Exported " + files.length + " " + ext.toUpperCase() + (files.length > 1 ? "s" : "") + " in a zip");
+}
+
+/* ---- minimal ZIP writer (stored entries; PNG/JPG are already compressed) */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for(let n = 0; n < 256; n++){ let c = n; for(let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
+  return t;
+})();
+function crc32(u8){
+  let c = 0xFFFFFFFF;
+  for(let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function makeZip(files){
+  const enc = new TextEncoder(), now = new Date();
+  const time = (now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1);
+  const date = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+  const parts = [], central = [];
+  let offset = 0;
+  files.forEach(f => {
+    const name = enc.encode(f.name), crc = crc32(f.data), size = f.data.length;
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+    lh.setUint16(10, time, true); lh.setUint16(12, date, true); lh.setUint32(14, crc, true);
+    lh.setUint32(18, size, true); lh.setUint32(22, size, true); lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+    parts.push(lh, name, f.data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true);
+    ch.setUint16(10, 0, true); ch.setUint16(12, time, true); ch.setUint16(14, date, true); ch.setUint32(16, crc, true);
+    ch.setUint32(20, size, true); ch.setUint32(24, size, true); ch.setUint16(28, name.length, true);
+    ch.setUint16(30, 0, true); ch.setUint16(32, 0, true); ch.setUint16(34, 0, true); ch.setUint16(36, 0, true);
+    ch.setUint32(38, 0, true); ch.setUint32(42, offset, true);
+    central.push(ch, name);
+    offset += 30 + name.length + size;
+  });
+  const cdSize = central.reduce((a, p) => a + p.byteLength, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(4, 0, true); end.setUint16(6, 0, true);
+  end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+  end.setUint32(12, cdSize, true); end.setUint32(16, offset, true); end.setUint16(20, 0, true);
+  return new Blob(parts.concat(central, [end]), {type:"application/zip"});
+}
+
+/* ---- PDF: one page per slide (same aspect ratio), the slide drawn as a picture, plus an
+   invisible text layer over every text box so words can be searched, selected and read by tools.
+   Optional notes pages follow the slides they belong to. Written by hand — no library. */
+const PT = 0.75;                                  // CSS px → PDF points (96 → 72 per inch)
+const WIN_ANSI = {0x20AC:128,0x201A:130,0x0192:131,0x201E:132,0x2026:133,0x2020:134,0x2021:135,0x02C6:136,0x2030:137,0x0160:138,
+  0x2039:139,0x0152:140,0x017D:142,0x2018:145,0x2019:146,0x201C:147,0x201D:148,0x2022:149,0x2013:150,0x2014:151,0x02DC:152,
+  0x2122:153,0x0161:154,0x203A:155,0x0153:156,0x017E:158,0x0178:159};
+// Helvetica advance widths (1/1000 em) for ASCII 32–126; everything else is treated as 556.
+const HELV = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,
+  1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,
+  333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
+function winAnsiBytes(s){
+  const out = [];
+  for(const ch of s){
+    const c = ch.codePointAt(0);
+    if(c >= 32 && c < 127) out.push(c);
+    else if(c >= 160 && c <= 255) out.push(c);
+    else if(WIN_ANSI[c]) out.push(WIN_ANSI[c]);
+    else if(c === 9 || c === 0x2009 || c === 0x202F || c === 0x200A) out.push(32);
+    else out.push(63);
+  }
+  return out;
+}
+const helvWidth = bytes => bytes.reduce((a, b) => a + (b >= 32 && b < 127 ? HELV[b - 32] : 556), 0);
+const pf = v => { const s = (+v).toFixed(3); return s.indexOf(".") >= 0 ? s.replace(/\.?0+$/, "") : s; };
+const hex2 = b => (b < 16 ? "0" : "") + b.toString(16);
+function latin1(s){ const u = new Uint8Array(s.length); for(let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i) & 255; return u; }
+function pdfTextString(s){
+  let h = "FEFF";
+  for(let i = 0; i < s.length; i++) h += s.charCodeAt(i).toString(16).padStart(4, "0");
+  return "<" + h.toUpperCase() + ">";
+}
+async function deflateBytes(u8){
+  const stream = new Blob([u8]).stream().pipeThrough(new CompressionStream("deflate"));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+/* Lossless: raw RGB rows with a PNG-style predictor (Sub or Up per row), zlib-compressed → /FlateDecode. */
+async function pdfImage(cv, quality){
+  const w = cv.width, h = cv.height;
+  if(quality === "small" || typeof CompressionStream === "undefined"){
+    const b = await canvasBlob(cv, "image/jpeg");
+    return {w, h, filter:"/DCTDecode", data:new Uint8Array(await b.arrayBuffer())};
+  }
+  const px = cv.getContext("2d").getImageData(0, 0, w, h).data;
+  const stride = w * 3, raw = new Uint8Array((stride + 1) * h);
+  const prev = new Uint8Array(stride), cur = new Uint8Array(stride), sub = new Uint8Array(stride), up = new Uint8Array(stride);
+  for(let y = 0; y < h; y++){
+    for(let x = 0, si = y * w * 4, j = 0; x < w; x++, si += 4){ cur[j++] = px[si]; cur[j++] = px[si + 1]; cur[j++] = px[si + 2]; }
+    let sSub = 0, sUp = 0;
+    for(let j = 0; j < stride; j++){
+      const a = (cur[j] - (j >= 3 ? cur[j - 3] : 0)) & 255, b = (cur[j] - prev[j]) & 255;
+      sub[j] = a; up[j] = b;
+      sSub += a < 128 ? a : 256 - a; sUp += b < 128 ? b : 256 - b;
+    }
+    const o = y * (stride + 1);
+    if(sUp <= sSub){ raw[o] = 2; raw.set(up, o + 1); } else { raw[o] = 1; raw.set(sub, o + 1); }
+    prev.set(cur);
+  }
+  return {w, h, filter:"/FlateDecode", parms:"<< /Predictor 15 /Colors 3 /BitsPerComponent 8 /Columns " + w + " >>", data:await deflateBytes(raw)};
+}
+/* Invisible text (render mode 3) placed and stretched to cover each line drawn on the picture. */
+function pdfTextOps(runs, pageH){
+  let s = "";
+  runs.forEach(r => {
+    const bytes = winAnsiBytes(r.text);
+    if(!bytes.some(b => b !== 32 && b !== 63)) return;
+    const th = r.rot * Math.PI / 180, c = Math.cos(th), sn = Math.sin(th);
+    const lx = r.lx - r.w / 2, ly = r.by - r.h / 2;
+    const X = r.cx + lx * c - ly * sn, Y = r.cy + lx * sn + ly * c;
+    const natural = helvWidth(bytes) / 1000 * r.size;
+    const tz = natural > 0 ? clamp(r.lw / natural * 100, 5, 1000) : 100;
+    s += "/F1 " + pf(r.size * PT) + " Tf " + pf(tz) + " Tz " + pf(c) + " " + pf(-sn) + " " + pf(sn) + " " + pf(c) + " "
+      + pf(X * PT) + " " + pf((pageH - Y) * PT) + " Tm <" + bytes.map(hex2).join("") + "> Tj\n";
+  });
+  return s ? "BT\n3 Tr\n" + s + "ET\n" : "";
+}
+function buildPdf(pages, meta){
+  const parts = [];
+  let pos = 0;
+  const offsets = [];
+  const put = x => { const u = typeof x === "string" ? latin1(x) : x; parts.push(u); pos += u.length; };
+  const obj = (id, body) => { offsets[id] = pos; put(id + " 0 obj\n"); put(body); put("\nendobj\n"); };
+  const stream = (id, dict, data) => {
+    offsets[id] = pos;
+    put(id + " 0 obj\n<< " + dict + " /Length " + data.length + " >>\nstream\n"); put(data); put("\nendstream\nendobj\n");
+  };
+  const W = meta.w * PT, H = meta.h * PT, n = pages.length;
+  const pageId = i => 5 + i * 3;
+  put("%PDF-1.7\n%\xE2\xE3\xCF\xD3\n");
+  obj(1, "<< /Type /Catalog /Pages 2 0 R /PageLayout /SinglePage >>");
+  obj(2, "<< /Type /Pages /Count " + n + " /Kids [" + pages.map((_, i) => pageId(i) + " 0 R").join(" ") + "] >>");
+  obj(3, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+  const d = new Date(), p2 = v => String(v).padStart(2, "0");
+  const tz = -d.getTimezoneOffset(), tza = Math.abs(tz);
+  const stamp = "D:" + d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + p2(d.getHours()) + p2(d.getMinutes()) + p2(d.getSeconds())
+    + (tz === 0 ? "Z" : (tz > 0 ? "+" : "-") + p2(Math.floor(tza / 60)) + "'" + p2(tza % 60) + "'");
+  obj(4, "<< /Title " + pdfTextString(meta.title || "Untitled deck") + " /Producer (HaloDeck) /Creator (HaloDeck) /CreationDate (" + stamp + ") >>");
+  pages.forEach((pg, i) => {
+    const id = pageId(i), im = pg.image;
+    obj(id, "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 " + pf(W) + " " + pf(H) + "] /Contents " + (id + 1) + " 0 R"
+      + " /Resources << /XObject << /Im0 " + (id + 2) + " 0 R >> /Font << /F1 3 0 R >> >> >>");
+    const content = "q\n" + pf(W) + " 0 0 " + pf(H) + " 0 0 cm\n/Im0 Do\nQ\n" + pdfTextOps(pg.runs, meta.h);
+    stream(id + 1, "", latin1(content));
+    stream(id + 2, "/Type /XObject /Subtype /Image /Width " + im.w + " /Height " + im.h + " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter "
+      + im.filter + (im.parms ? " /DecodeParms " + im.parms : ""), im.data);
+  });
+  const total = 5 + n * 3;
+  const xref = pos;
+  let x = "xref\n0 " + total + "\n0000000000 65535 f \n";
+  for(let i = 1; i < total; i++) x += String(offsets[i]).padStart(10, "0") + " 00000 n \n";
+  put(x);
+  put("trailer\n<< /Size " + total + " /Root 1 0 R /Info 4 0 R >>\nstartxref\n" + xref + "\n%%EOF\n");
+  return new Blob(parts, {type:"application/pdf"});
+}
+/* Notes become their own page(s) after the slide, laid out like a slide so they share the renderer. */
+function notesPages(slide, num){
+  const W = PW(), H = PH(), m = Math.round(Math.min(W, H) * 0.08);
+  const body = Math.max(13, Math.round(Math.min(W, H) * 0.03)), headSize = Math.round(body * 1.25);
+  const cv = document.createElement("canvas").getContext("2d");
+  const t = newText(m, 0, W - m * 2);
+  Object.assign(t, {size:body, pad:0, color:"#2B2721"});
+  cv.font = fontString(t);
+  const lines = wrapLines(cv, slide.notes.trim(), t.w);
+  const top = m + headSize * LINE_H + body;
+  const per = Math.max(1, Math.floor((H - top - m) / (body * LINE_H)));
+  const pages = [];
+  for(let i = 0; i < lines.length; i += per){
+    const head = newText(m, m, W - m * 2);
+    Object.assign(head, {text:"Slide " + num + " — notes" + (i ? " (continued)" : ""), size:headSize, pad:0, bold:true, color:"#8A6418"});
+    const b = Object.assign(cloneEl(t), {y:top, text:lines.slice(i, i + per).join("\n")});
+    pages.push({bg:"#FFFFFF", bgAsset:null, elements:[head, b]});
+  }
+  return pages;
+}
+async function exportPdf(slides, nums){
+  const withNotes = $("#exPdfNotes").checked;
+  if(withNotes){
+    // notes are measured before they're paginated, so the font has to be ready first
+    const probe = b => Object.assign(newText(0, 0), {text:"Notes", bold:b});
+    await prepareFonts([{elements:[probe(false), probe(true)]}]);
+  }
+  const jobs = [];
+  slides.forEach((s, i) => {
+    jobs.push(s);
+    if(withNotes && (s.notes || "").trim()) notesPages(s, nums[i]).forEach(p => jobs.push(p));
+  });
+  await prepareFonts(jobs);
+  const pages = [];
+  for(let i = 0; i < jobs.length; i++){
+    exportProgress(i, jobs.length, "page");
+    await nextFrame();
+    const runs = [];
+    const cv = await renderSlideCanvas(jobs[i], ex.pdfScale, runs);
+    pages.push({image:await pdfImage(cv, ex.pdfQual), runs});
+    cv.width = cv.height = 1;                      // let the browser drop the pixels right away
+  }
+  exportProgress(jobs.length, jobs.length);
+  await nextFrame();
+  const blob = buildPdf(pages, {w:PW(), h:PH(), title:doc.title});
+  downloadBlob(blob, slugify(doc.title) + ".pdf");
+  toast("Exported " + slides.length + " slide" + (slides.length > 1 ? "s" : "") + " as PDF (" + pages.length + " page" + (pages.length > 1 ? "s" : "") + ")");
+}
+
+/* ============================================================ layout / UI */
+const mqCompact = matchMedia("(max-width: 900px), (max-height: 520px) and (pointer: coarse)");
+const mqPhone = matchMedia("(max-width: 640px)");
+const isCompact = () => mqCompact.matches, isPhone = () => mqPhone.matches;
+function applyLayout(){
+  const tools = $("#tools"), target = isCompact() ? $("#dock") : $("#toolSlot");
+  if(tools.parentElement !== target) target.appendChild(tools);
+  if(!isCompact()) closePanels();
+  requestAnimationFrame(() => { if(ui.autoFit) fitZoom(); else renderOverlay(); });
+}
+if(mqCompact.addEventListener) mqCompact.addEventListener("change", applyLayout); else mqCompact.addListener(applyLayout);
+window.addEventListener("resize", () => { if(rightPanel.classList.contains("open")) syncSheetSpace(); });
+const scrim = $("#scrim");
+function openPanel(id, tab){
+  closeMenu();
+  const p = $("#" + id);
+  if(tab) setTab(tab);
+  const wasOpen = p.classList.contains("open");
+  if(wasOpen && tab) return;
+  closePanels();
+  if(wasOpen) return;
+  p.classList.add("open");
+  if(!(id === "rightPanel" && isPhone())) scrim.classList.add("show");
+  syncSheetSpace();
+}
+function closePanels(){ $$(".panel.open").forEach(p => p.classList.remove("open")); scrim.classList.remove("show"); syncSheetSpace(); }
+/* On phones the style sheet slides up from the bottom; shrink the stage so the slide stays visible above it. */
+function syncSheetSpace(){
+  if(isPhone() && rightPanel.classList.contains("open")){
+    const overlap = area.getBoundingClientRect().bottom - (window.innerHeight - rightPanel.offsetHeight);
+    stage.style.bottom = Math.max(0, Math.round(overlap)) + "px";
+    ui.autoFit = true;
+  } else stage.style.bottom = "";
+  renderCtxBar();
+}
+function setTab(t){
+  ui.tab = t; rightPanel.dataset.tab = t;
+  $$(".sheet-tabs [data-tab]").forEach(b => { const on = b.dataset.tab === t; b.classList.toggle("on", on); b.setAttribute("aria-selected", on ? "true" : "false"); });
+}
+$$(".sheet-tabs [data-tab]").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
+$$("[data-close]").forEach(b => b.addEventListener("click", closePanels));
+scrim.addEventListener("click", closePanels);
+$("#btnSlidesPanel").addEventListener("click", () => openPanel("slidesPanel"));
+$("#btnPanel").addEventListener("click", () => {
+  if(rightPanel.classList.contains("open")) closePanels();
+  else openPanel("rightPanel", ui.sel ? "style" : "layers");
+});
+/* ---- popover menus: More (compact screens), Export, and the right-click / long-press menu */
+function showMenu(m, btn, at){
+  closeMenu();
+  m.hidden = false; openMenuEl = m; openMenuBtn = btn || null;
+  if(btn) btn.setAttribute("aria-expanded", "true");
+  if(at){
+    const w = m.offsetWidth, h = m.offsetHeight;
+    m.style.right = "auto";
+    m.style.left = clamp(at.x, 8, Math.max(8, window.innerWidth - w - 8)) + "px";
+    m.style.top = clamp(at.y, 8, Math.max(8, window.innerHeight - h - 8)) + "px";
+  } else {
+    const r = btn.getBoundingClientRect();
+    m.style.left = "auto";
+    m.style.top = (r.bottom + 6) + "px";
+    m.style.right = Math.max(8, window.innerWidth - r.right) + "px";
+  }
+}
+function toggleMenu(m, btn){ if(openMenuEl === m) closeMenu(); else showMenu(m, btn); }
+function closeMenu(){
+  const was = openMenuEl;
+  if(openMenuEl) openMenuEl.hidden = true;
+  if(openMenuBtn) openMenuBtn.setAttribute("aria-expanded", "false");
+  openMenuEl = null; openMenuBtn = null;
+  if(was && was.id === "ctxMenu") renderCtxBar();
+}
+$("#btnMore").addEventListener("click", () => toggleMenu($("#menuMore"), $("#btnMore")));
+$("#menuMore").addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if(!b) return;
+  closeMenu();
+  if(b.dataset.act === "open") $("#fileProject").click();
+  else if(b.dataset.act === "save") saveProject();
+  else if(b.dataset.act === "slidesFromImages") $("#fileSlides").click();
+  else if(b.dataset.act === "pdf") $("#filePdf").click();
+  else if(b.dataset.act === "paste") pasteFromClipboard({});
+  else if(b.dataset.act === "help") openHelp();
+  else if(b.dataset.act === "log") openLog();
+  else if(b.dataset.act === "tour") openTour();
+});
+document.addEventListener("pointerdown", e => {
+  if(openMenuEl && !openMenuEl.contains(e.target) && !(openMenuBtn && openMenuBtn.contains(e.target))) closeMenu();
+}, true);
+window.addEventListener("resize", closeMenu);
+
+/* right-click (or touch-and-hold) on the slide */
+let ctxAt = null;
+function openCtxMenu(cx, cy){
+  if(ui.tool !== "select") setTool("select");
+  const p = logical(cx, cy);
+  const el = hitTest(p);
+  if(el){ if(ui.sel !== el.id) select(el.id); } else if(ui.sel) select(null);
+  ctxAt = inPage(p) ? p : null;
+  const items = [];
+  const item = (act, ic, label, key) => items.push('<button role="menuitem" data-act="' + act + '">' + icon(ic) + "<span>" + label + "</span>" + (key ? "<kbd>" + key + "</kbd>" : "") + "</button>");
+  const sep = () => items.push('<div class="menu-sep" role="separator"></div>');
+  if(el){
+    if(el.type === "text") item("edit", "pencil", "Edit text", "Enter");
+    item("cut", "cut", "Cut", KEY_MOD + "X");
+    item("copy", "copy", "Copy", KEY_MOD + "C");
+    item("paste", "paste", "Paste", KEY_MOD + "V");
+    item("dup", "dup", "Duplicate", KEY_MOD + "D");
+    sep();
+    item("front", "front", "Bring to front", "");
+    item("back", "back", "Send to back", "");
+    item("lock", el.locked ? "unlock" : "lock", el.locked ? "Unlock" : "Lock", "");
+    sep();
+    item("del", "trash", "Delete", "Del");
+  } else {
+    item("paste", "paste", "Paste here", KEY_MOD + "V");
+    sep();
+    item("text", "text", "Add text here", "T");
+    item("image", "image", "Insert images…", "I");
+  }
+  const m = $("#ctxMenu");
+  m.innerHTML = items.join("");
+  showMenu(m, null, {x:cx + 2, y:cy + 2});
+  ctxBar.hidden = true;
+  const first = m.querySelector("button");
+  if(first && !matchMedia("(pointer:coarse)").matches) first.focus({preventScroll:true});
+}
+$("#ctxMenu").addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if(!b) return;
+  const act = b.dataset.act, el = selEl(), at = ctxAt;
+  closeMenu();
+  switch(act){
+    case "paste": pasteFromClipboard({at}); break;
+    case "edit": if(el) startEdit(el.id); break;
+    case "cut": copySel(true); break;
+    case "copy": copySel(false); break;
+    case "dup": duplicateSel(); break;
+    case "front": reorder("front"); break;
+    case "back": reorder("back"); break;
+    case "lock": if(el) toggleLock(el); break;
+    case "del": deleteSel(); break;
+    case "text": addTextAt(at || {x:PW() / 2, y:PH() / 2}); break;
+    case "image": insertAt = at; $("#fileImages").click(); break;
+  }
+});
+$("#ctxMenu").addEventListener("keydown", e => {
+  const bs = $$("button", e.currentTarget), i = bs.indexOf(document.activeElement);
+  if(e.key === "ArrowDown" || e.key === "ArrowUp"){
+    e.preventDefault(); e.stopPropagation();
+    bs[(i + (e.key === "ArrowDown" ? 1 : -1) + bs.length) % bs.length].focus();
+  } else if(e.key === "Escape"){ e.preventDefault(); e.stopPropagation(); closeMenu(); }
+});
+function addTextAt(p){
+  const el = newText(0, 0);
+  el.x = clamp(p.x, 0, Math.max(0, PW() - el.w));
+  el.y = clamp(p.y - el.size * 0.64 - el.pad, 0, Math.max(0, PH() - el.size * 2));
+  curSlide().elements.push(el);
+  canvas.appendChild(buildEl(el, editCtx()));
+  ui.sel = el.id; renderLayers(); renderProps();
+  startEdit(el.id, {selectAll:true});
+}
+
+let toastTimer = null;
+function toast(msg, opts){
+  opts = opts || {};
+  const t = $("#toast");
+  t.innerHTML = "<span></span>" + (opts.action ? "<button></button>" : "");
+  t.firstChild.textContent = msg;
+  if(opts.action){
+    const b = t.querySelector("button");
+    b.textContent = opts.action.label;
+    b.onclick = () => { t.classList.remove("show"); opts.action.fn(); };
+  }
+  t.className = "toast show" + (opts.warn ? " warn" : "") + (opts.action ? " has-action" : "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), opts.action ? 6000 : (opts.warn ? 4200 : 2600));
+}
+
+/* tool buttons, context bar, zoom bar */
+$$(".tool").forEach(b => b.addEventListener("click", () => setTool(b.dataset.tool)));
+$("#btnUndo").addEventListener("click", undo);
+$("#btnRedo").addEventListener("click", redo);
+$("#btnAddSlide").addEventListener("click", () => { addSlide(); if(isCompact()) closePanels(); });
+$("#btnPrevSlide").addEventListener("click", () => gotoSlide(ui.cur - 1));
+$("#btnNextSlide").addEventListener("click", () => gotoSlide(ui.cur + 1));
+$("#btnZoomIn").addEventListener("click", () => zoomBy(1.2));
+$("#btnZoomOut").addEventListener("click", () => zoomBy(1 / 1.2));
+$("#btnZoomFit").addEventListener("click", fitZoom);
+ctxBar.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if(!b) return;
+  const el = selEl(); if(!el) return;
+  switch(b.dataset.act){
+    case "edit": startEdit(el.id); break;
+    case "style": openPanel("rightPanel", "style"); break;
+    case "dup": duplicateSel(); break;
+    case "front": reorder("front"); break;
+    case "back": reorder("back"); break;
+    case "lock": toggleLock(el); break;
+    case "del": deleteSel(); break;
+  }
+});
+
+/*@TOUR_JS@*/
+
+/* ============================================================== keyboard */
+document.addEventListener("keydown", e => {
+  const k = e.key, mod = e.ctrlKey || e.metaKey;
+  if(!spotlight.hidden){ e.preventDefault(); backFromSpot(); return; }
+  if(!tourModal.hidden){
+    if(k === "Escape"){ e.preventDefault(); closeTour(); }
+    else if(tourModal.dataset.mode === "step" && (k === "ArrowRight" || k === "ArrowLeft") && !isTyping(e.target)){ e.preventDefault(); tourGo(k === "ArrowRight" ? 1 : -1); }
+    return;
+  }
+  if(!newsModal.hidden){
+    if(k === "Escape"){ e.preventDefault(); closeNews(); }
+    return;
+  }
+  if(!logModal.hidden){
+    if(k === "Escape"){ e.preventDefault(); closeLog(); }
+    return;
+  }
+  if(!helpModal.hidden){
+    if(k === "Escape"){ e.preventDefault(); closeHelp(); }
+    return;
+  }
+  if(!imModal.hidden){
+    if(k === "Escape"){ e.preventDefault(); closeImport(); }
+    else if(k === "Enter" && !e.target.closest("button,select,textarea") && e.target.type !== "radio" && e.target.type !== "checkbox"){ e.preventDefault(); runImport(); }
+    return;
+  }
+  if(!pasteModal.hidden){
+    if(k === "Escape"){ e.preventDefault(); closePasteBox(); }
+    return;                                        // Ctrl/Cmd+V goes through to the paste box
+  }
+  if(!exModal.hidden){
+    if(k === "Escape"){ e.preventDefault(); closeExport(); }
+    else if(k === "Enter" && !e.target.closest("button,input,select,textarea")){ e.preventDefault(); runExport(); }
+    return;
+  }
+  if(ui.editing){
+    if(k === "Escape" || (k === "Enter" && mod)){ e.preventDefault(); endEdit(); }
+    return;
+  }
+  if(mod && (k === "s" || k === "S")){ e.preventDefault(); saveProject(); return; }
+  if(mod && (k === "e" || k === "E")){ e.preventDefault(); openExport(); return; }
+  if(isTyping(e.target)){ if(k === "Escape") e.target.blur(); return; }
+  if(mod){
+    const l = k.toLowerCase();
+    if(l === "z"){ e.preventDefault(); if(e.shiftKey) redo(); else undo(); }
+    else if(l === "y"){ e.preventDefault(); redo(); }
+    else if(l === "d"){ e.preventDefault(); duplicateSel(); }
+    else if(l === "o"){ e.preventDefault(); $("#fileProject").click(); }
+    else if(k === "]"){ e.preventDefault(); reorder(e.shiftKey ? "front" : "forward"); }
+    else if(k === "["){ e.preventDefault(); reorder(e.shiftKey ? "back" : "backward"); }
+    else if(k === "=" || k === "+"){ e.preventDefault(); zoomBy(1.2); }
+    else if(k === "-"){ e.preventDefault(); zoomBy(1 / 1.2); }
+    else if(k === "0"){ e.preventDefault(); fitZoom(); }
+    return;
+  }
+  if(e.target && e.target.tagName === "INPUT") return;      // sliders/checkboxes keep their own keys
+  if((k === "Enter" || k === " ") && e.target.closest && e.target.closest("button,a,[role=button]")) return;
+  if(k === " "){ if(!spaceDown){ spaceDown = true; stage.classList.add("space"); } e.preventDefault(); return; }
+  if(k === "Delete" || k === "Backspace"){ if(ui.sel){ e.preventDefault(); deleteSel(); } return; }
+  if(k === "Escape"){
+    if(openMenuEl){ closeMenu(); return; }
+    if(isCompact()) closePanels();
+    if(ui.tool !== "select") setTool("select"); else if(ui.sel) select(null);
+    return;
+  }
+  if(k === "Enter"){ const el = selEl(); if(el && el.type === "text"){ e.preventDefault(); startEdit(el.id); } return; }
+  if(k.startsWith("Arrow")){
+    e.preventDefault();
+    const el = selEl();
+    if(!el){ if(k === "ArrowUp" || k === "ArrowLeft") gotoSlide(ui.cur - 1); else gotoSlide(ui.cur + 1); return; }
+    if(el.locked) return;
+    const st = e.shiftKey ? 10 : 1;
+    offsetEl(el, k === "ArrowLeft" ? -st : k === "ArrowRight" ? st : 0, k === "ArrowUp" ? -st : k === "ArrowDown" ? st : 0);
+    refreshEl(el); renderOverlay();
+    clearTimeout(nudgeTimer); nudgeTimer = setTimeout(commit, 350);
+    return;
+  }
+  if(k === "PageDown"){ e.preventDefault(); gotoSlide(ui.cur + 1); return; }
+  if(k === "PageUp"){ e.preventDefault(); gotoSlide(ui.cur - 1); return; }
+  if(k === "?"){ e.preventDefault(); openHelp(); return; }
+  const map = {v:"select", t:"text", o:"ellipse", c:"ellipse", r:"rect", a:"arrow"};
+  if(!e.altKey && map[k.toLowerCase()]){ setTool(map[k.toLowerCase()]); return; }
+  if(k.toLowerCase() === "i" && !e.altKey){ insertAt = null; $("#fileImages").click(); }
+});
+let nudgeTimer = null;
+document.addEventListener("keyup", e => { if(e.key === " "){ spaceDown = false; stage.classList.remove("space"); } });
+window.addEventListener("blur", () => { spaceDown = false; stage.classList.remove("space"); });
+
+/* ================================================================== init */
+function renderAll(){
+  renderSlides(); renderCanvas(); renderLayers(); renderProps(); renderSlideFields(); updateUndoButtons(); updateSlideNav();
+}
+async function init(){
+  hydrateIcons(document);
+  setTab("style");
+  applyLayout();
+  await loadInitial();
+  renderAll();
+  fitZoom();
+  hist.stack = []; hist.idx = -1; pushHistory();
+  document.documentElement.classList.add("ready");
+  tourAutoStart();
+}
+window.HaloDeck = {doc, ui, assets, get history(){ return hist; }, makeZip, renderSlideCanvas, buildExportHtml, saveNow,
+  tour:{open:openTour, close:closeTour, go:tourGo, show:showMe, data:TOUR, version:APP_VERSION, build:BUILD, shots:Object.keys(TOUR_SHOTS)},
+  updates:{changelog:CHANGELOG, news:openNews, closeNews, log:openLog, closeLog, role:getRole, setRole, forRole:changesFor, move:SITE_MOVE}};
+init();
+})();

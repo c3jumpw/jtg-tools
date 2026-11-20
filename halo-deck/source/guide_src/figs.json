@@ -1,0 +1,278 @@
+{
+ "workspace": {
+  "layout": "full",
+  "alt": "The HaloDeck editor with a marked-up dashboard screenshot on the slide and a rectangle selected",
+  "caption": "The editor with one slide open and a rectangle selected.",
+  "legend": [
+   "<b>Top bar</b>. Undo, the drawing tools, Paste, the deck's name, Help, Open, Save project and Export.",
+   "<b>Slides</b>. Every slide in the deck. Click to open one, drag to reorder.",
+   "<b>The slide</b>. Your canvas. Everything you draw sits on top of what's already there, as its own layer.",
+   "<b>Floating toolbar</b>. Appears over whatever you select: duplicate, bring to front, send to back, lock, delete.",
+   "<b>Right panel</b>. <b>Properties</b> of the selected item, then <b>Layers</b>, then <b>Slide</b> settings further down.",
+   "<b>Slide and zoom bar</b>. Previous / next slide, zoom out and in, and <b>FIT</b> to see the whole slide."
+  ]
+ },
+ "topbar_left": {
+  "layout": "strip",
+  "alt": "Left half of the top bar: brand, undo and redo, the five tools, insert images and Paste",
+  "caption": "",
+  "legend": null
+ },
+ "topbar_right": {
+  "layout": "strip",
+  "alt": "Right half of the top bar: deck name, save status, Help, Open, Save project and Export",
+  "caption": "",
+  "legend": null
+ },
+ "menu_open": {
+  "layout": "half",
+  "alt": "The Open menu: PDF, Photos and HaloDeck project",
+  "caption": "<b>Open ▾</b> in the top bar.",
+  "legend": null
+ },
+ "dialog_paste": {
+  "layout": "half",
+  "alt": "Paste box with a dashed target area that says Press Ctrl+V",
+  "caption": "The paste box, when the browser won't hand over the clipboard by itself.",
+  "legend": null
+ },
+ "dialog_pdf": {
+  "layout": "dialog",
+  "alt": "Open PDF as slides dialog showing page previews, page choice, slide size, where to put the slides and the notes option",
+  "caption": "Opening a 3-page US Letter PDF.",
+  "legend": [
+   "<b>Pages</b>. All, or a list like <code>1-3, 7</code>.",
+   "<b>Slide size</b>. <b>Match the PDF</b> makes the slides the PDF's own shape. <b>Keep this deck's size</b> fits each page inside your current slides.",
+   "<b>Put them in</b> a new deck (named after the file) or this deck, after the slide you're on.",
+   "<b>Copy each page's text into its slide notes</b>. Keeps the PDF's words as real text in HTML exports."
+  ]
+ },
+ "dialog_photos": {
+  "layout": "dialog",
+  "alt": "Photos as slides dialog with four photo previews and options for slide size, fit and order",
+  "caption": "Adding four photos to the open deck.",
+  "legend": [
+   "<b>Slide size</b>. Match the photos' shape, or keep this deck's size.",
+   "<b>Show it whole</b> fits each photo inside the slide; <b>Fill the slide</b> crops to cover it edge to edge.",
+   "<b>Order</b>. By file name (IMG_2 before IMG_10) or the order you picked them."
+  ]
+ },
+ "drawing": {
+  "layout": "full",
+  "alt": "A red circle being dragged out over the 'Orders this week' card of the screenshot",
+  "caption": "Drawing a circle straight on top of the pasted screenshot. You don't need empty space to start a shape.",
+  "legend": [
+   "Drag from one corner to the other. Hold <kbd>Shift</kbd> for a perfect circle."
+  ]
+ },
+ "toolbar_active": {
+  "layout": "strip",
+  "alt": "The tool buttons with the circle tool highlighted",
+  "caption": "",
+  "legend": [
+   "The highlighted tool stays on after each shape. Press <kbd>Esc</kbd> or <kbd>V</kbd> to go back to Select."
+  ]
+ },
+ "selected": {
+  "layout": "half",
+  "alt": "A selected rectangle with square resize handles, a round rotate handle and the floating toolbar above it",
+  "caption": "A selected rectangle.",
+  "legend": [
+   "Drag a square handle to resize. Images keep their shape; hold <kbd>Shift</kbd> to change that.",
+   "Drag the round handle to rotate. <kbd>Shift</kbd> snaps to 15°.",
+   "The floating toolbar for the selection."
+  ]
+ },
+ "editing": {
+  "layout": "half",
+  "alt": "Text box in typing mode with a dashed outline",
+  "caption": "A text box being edited. The dashed outline means you're typing.",
+  "legend": [
+   "Click anywhere in the text to put the cursor there. <kbd>Esc</kbd> or a click outside finishes."
+  ]
+ },
+ "ctxmenu_layer": {
+  "layout": "pair",
+  "alt": "Right-click menu on a text layer: Edit text, Cut, Copy, Paste, Duplicate, Bring to front, Send to back, Lock, Delete",
+  "caption": "Right-click on a layer.",
+  "legend": null
+ },
+ "ctxmenu_blank": {
+  "layout": "pair",
+  "alt": "Right-click menu on empty space: Paste here, Add text here, Insert images",
+  "caption": "Right-click on empty space.",
+  "legend": null
+ },
+ "panel_style": {
+  "layout": "narrow",
+  "alt": "Properties panel for a text box: Text, Font, Size, Color, bold and italic, alignment, background behind text",
+  "caption": "Properties for a text box.",
+  "legend": [
+   "<b>Text</b>. Type here instead of on the slide if that's easier (handy on a phone).",
+   "<b>Font</b> and <b>Size</b>.",
+   "<b>Bold</b>, <i>italic</i> and alignment.",
+   "<b>Background behind text</b>. Raise it to put a label on a solid backing so it reads over a busy screenshot."
+  ]
+ },
+ "panel_layers": {
+  "layout": "narrow",
+  "alt": "Layers list with a grip, edit, show/hide, lock and delete buttons on each row",
+  "caption": "The Layers list, top layer first.",
+  "legend": [
+   "Drag the grip (or the whole row with a mouse) to change the order.",
+   "Edit a text layer.",
+   "Hide or show.",
+   "Lock: the layer can't be moved by accident and clicks pass through it to whatever is underneath.",
+   "Delete."
+  ]
+ },
+ "panel_slides": {
+  "layout": "narrow",
+  "alt": "Slides panel with three slide thumbnails, buttons on the hovered slide, and Add slide at the bottom",
+  "caption": "The Slides panel.",
+  "legend": [
+   "The slide that's open. Drag thumbnails to reorder.",
+   "Duplicate or delete a slide (shown when you point at it).",
+   "<b>Add slide</b> adds a blank slide after the current one.",
+   "<b>Photos as slides</b>. Pick several photos, one slide each."
+  ]
+ },
+ "panel_slide": {
+  "layout": "narrow",
+  "alt": "Slide settings: page size, background color, background image, notes, and Add notes to slide",
+  "caption": "Slide settings.",
+  "legend": [
+   "<b>Page size</b>. Applies to every slide; what's on them is scaled to fit.",
+   "<b>Background</b> color for this slide.",
+   "<b>Background image</b>. Fills the slide behind everything.",
+   "<b>Notes &amp; commentary</b>. Exported as real text under the slide.",
+   "Put the notes on the slide as a text box."
+  ]
+ },
+ "menu_export": {
+  "layout": "half",
+  "alt": "The Export menu: HTML, PNG and PDF",
+  "caption": "<b>Export ▾</b>.",
+  "legend": null
+ },
+ "dialog_export": {
+  "layout": "dialog",
+  "alt": "Export dialog with HTML, PNG and PDF cards, PDF options, slide selection set to 1-2 and thumbnails",
+  "caption": "Exporting slides 1 and 2 as a PDF.",
+  "legend": [
+   "<b>Format</b>. You can still switch here.",
+   "Options for the chosen format.",
+   "<b>All</b>, <b>Current</b> (the slide you're on) or <b>Clear</b>.",
+   "<b>Custom</b>. Type slide numbers like <code>1-3, 5</code>. It stays in sync with the thumbnails.",
+   "Click thumbnails to add or remove slides. <kbd>Shift</kbd>-click picks a run.",
+   "The button says exactly what you'll get."
+  ]
+ },
+ "viewer": {
+  "layout": "full",
+  "alt": "An exported HTML deck open in a browser, showing slide 1 with its notes underneath",
+  "caption": "An exported HTML deck, opened straight from the downloaded file.",
+  "legend": [
+   "Previous / next. Arrow keys, <kbd>Space</kbd>, <kbd>Home</kbd>, <kbd>End</kbd> and swiping also work.",
+   "All slides on one page (<kbd>A</kbd>).",
+   "Full screen for presenting (<kbd>F</kbd>). Click the right or left side of the slide to move on or back.",
+   "Slide notes, as real text."
+  ]
+ },
+ "phone_editor": {
+  "layout": "phone",
+  "alt": "HaloDeck on a phone: slide in the middle, tools along the bottom",
+  "caption": "The editor on a phone.",
+  "legend": [
+   "Slides.",
+   "More: Paste, PDF and photos as slides, Open, Save project, Help.",
+   "Tools along the bottom, plus the Layers & style button at the right end."
+  ]
+ },
+ "phone_sheet": {
+  "layout": "phone",
+  "alt": "Phone with the Style sheet open at the bottom showing the text box's settings",
+  "caption": "Style, Layers and Slide open as a sheet from the bottom.",
+  "legend": [
+   "Switch between Style, Layers and Slide."
+  ]
+ },
+ "phone_hold": {
+  "layout": "phone",
+  "alt": "Phone showing the menu opened by touching and holding the picture on the slide",
+  "caption": "Touch and hold for the same menu a right-click opens.",
+  "legend": null
+ },
+ "help_panel": {
+  "layout": "half",
+  "alt": "The in-app Help & guide panel",
+  "caption": "<b>Help</b> inside HaloDeck (the <b>?</b> button or the <kbd>?</kbd> key).",
+  "legend": null
+ },
+ "tour_welcome": {
+  "layout": "dialog",
+  "alt": "The tour's welcome screen with two choices: I make decks, and I set HaloDeck up for others",
+  "caption": "The first time someone opens HaloDeck.",
+  "legend": null
+ },
+ "tour_whatsnew": {
+  "layout": "dialog",
+  "alt": "What's new after an update: cards for each change with a type label, a picture, and a Show me button",
+  "caption": "What's new for someone who makes decks, coming back after two updates.",
+  "legend": [
+   "What changed: <b>New</b>, <b>Improved</b>, <b>Fixed</b>, <b>Changed</b>. Admin-only changes are marked <b>Admins</b> and only shown to admins.",
+   "<b>Show me</b> points at the real control on screen.",
+   "Whose changes these are, with a switch for people who run HaloDeck.",
+   "Close it. It won't appear again for this version."
+  ]
+ },
+ "tour_step": {
+  "layout": "dialog",
+  "alt": "A tour step: screenshot with numbered markers on the left, explanation on the right, Show me button and progress dots",
+  "caption": "A step of the tour.",
+  "legend": [
+   "Where you are in the tour. The left and right arrow keys move between steps.",
+   "A screenshot of this version, with numbered markers.",
+   "<b>Show me</b> rings the real control in the app.",
+   "Progress dots. Click one to jump to that step."
+  ]
+ },
+ "tour_showme": {
+  "layout": "narrow",
+  "alt": "The screen dimmed with an amber ring around the Open button and a note saying Back to the tour",
+  "caption": "Show me, pointing at Open.",
+  "legend": null
+ },
+ "tour_admin": {
+  "layout": "dialog",
+  "alt": "The admin tour's Release an update step with a four-part diagram and the current build number",
+  "caption": "From the admins' tour: releasing an update.",
+  "legend": null
+ },
+ "changelog": {
+  "layout": "dialog",
+  "alt": "The change log: a timeline of every HaloDeck version with dates and labelled changes",
+  "caption": "The change log (Help → <b>Change log</b>).",
+  "legend": [
+   "Show everything, changes for everyone, or admin changes only.",
+   "Oldest first, or newest first.",
+   "Download the whole log as JSON or CSV.",
+   "The version you're using."
+  ]
+ },
+ "help_role": {
+  "layout": "narrow",
+  "alt": "The Your role choice in Help: I make decks, or I run HaloDeck for others",
+  "caption": "<b>Your role</b>, in Help.",
+  "legend": null
+ },
+ "move_banner": {
+  "layout": "dialog",
+  "alt": "A notice across the top of HaloDeck: HaloDeck is moving, with Save project and New address buttons",
+  "caption": "The notice at the old address before a move.",
+  "legend": [
+   "<b>Save project</b> downloads the deck that's open.",
+   "Opens the new address."
+  ]
+ }
+}

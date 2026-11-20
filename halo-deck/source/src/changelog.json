@@ -1,0 +1,325 @@
+{
+ "product": "HaloDeck",
+ "about": "Every HaloDeck version, oldest first. Add a new entry at the end for every update: the build reads the version number from the last entry and stops if an entry is missing or malformed. Versions before 1.4 were reconstructed from the site's publishing history (the git commits of halo-deck/index.html).",
+ "types": {
+  "new": "New",
+  "improved": "Improved",
+  "fixed": "Fixed",
+  "changed": "Changed",
+  "removed": "Removed"
+ },
+ "audiences": {
+  "everyone": "everyone who uses HaloDeck",
+  "admins": "whoever hosts and maintains HaloDeck"
+ },
+ "versions": [
+  {
+   "version": "1.0",
+   "date": "2026-09-23",
+   "live": "2026-09-23",
+   "title": "First version",
+   "changes": [
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Slides you can mark up",
+     "text": "Text boxes, circle highlights, rectangles and arrows on top of pictures. Each is its own layer you can move, resize, rotate, hide, lock, duplicate and reorder, with undo and redo."
+    },
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Pictures in, any way",
+     "text": "Insert images, paste a screenshot, or drop files onto the slide."
+    },
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Notes for each slide",
+     "text": "Write commentary per slide. It travels with the deck as text."
+    },
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Export as one HTML file",
+     "text": "A self-contained deck with previous and next navigation that opens in any browser, with no page limit."
+    },
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Autosave and project files",
+     "text": "The deck saves itself in the browser as you work. Save project downloads a copy you can open again."
+    },
+    {
+     "type": "new",
+     "for": "admins",
+     "title": "One file to host",
+     "text": "HaloDeck is a single index.html on GitHub Pages: no server, accounts or database. Decks stay in each person's browser."
+    }
+   ]
+  },
+  {
+   "version": "1.1",
+   "date": "2026-09-23",
+   "live": "2026-09-23",
+   "title": "Notes, on the slide or under it",
+   "changes": [
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Notes onto the slide",
+     "text": "Add a slide's notes to the slide itself as a text layer, ready to drag into place."
+    },
+    {
+     "type": "improved",
+     "for": "everyone",
+     "title": "Notes always visible in exports",
+     "text": "Exported decks show each slide's notes under it instead of folding them away."
+    }
+   ]
+  },
+  {
+   "version": "1.4",
+   "date": "2026-10-13",
+   "live": "2026-10-13",
+   "title": "Rebuilt editor: phones, page sizes, PNG and PDF export",
+   "note": "Version numbers 1.2 and 1.3 were never published on their own; their work went live as part of 1.4.",
+   "changes": [
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Works on phones and tablets",
+     "text": "Tools along the bottom, pinch to zoom, touch and hold for more options.",
+     "shot": "phone_editor"
+    },
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Page sizes",
+     "text": "Widescreen 16:9, 4:3, square, vertical 9:16, 4:5 and A4, changeable at any time.",
+     "show": [
+      "#secSlide",
+      "#btnPanel"
+     ]
+    },
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Export as PNG or PDF",
+     "text": "Images at 1× or 2× (zipped with the notes), or a PDF whose typed text stays searchable. Every export lets you pick which slides go out.",
+     "show": [
+      "#btnExport"
+     ]
+    },
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Paste button and right-click menu",
+     "text": "Paste whatever you copied from the top bar. Right-click (or touch and hold) for cut, copy, paste here, arrange, lock and delete.",
+     "show": [
+      "#btnPaste",
+      "#btnMore"
+     ]
+    },
+    {
+     "type": "improved",
+     "for": "everyone",
+     "title": "Draw on top of anything",
+     "text": "Shapes start wherever you drag, even over pictures, and the drawing tools stay on until you press Esc."
+    },
+    {
+     "type": "improved",
+     "for": "everyone",
+     "title": "Edit any text",
+     "text": "Click into a text box to type where you clicked. Double-click text that sits under a shape or picture."
+    },
+    {
+     "type": "improved",
+     "for": "everyone",
+     "title": "Pictures autosave reliably",
+     "text": "Decks, including large pictures, are kept in the browser's database. HTML decks made here can be opened again to keep editing."
+    },
+    {
+     "type": "changed",
+     "for": "admins",
+     "title": "New deck format",
+     "text": "Decks from 1.0 and 1.1 are converted automatically the first time they open. Project files from those versions still open."
+    }
+   ]
+  },
+  {
+   "version": "1.5",
+   "date": "2026-10-13",
+   "live": "2026-10-13",
+   "title": "PDFs and photos become slides",
+   "changes": [
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Open a PDF as slides",
+     "text": "Every page becomes a slide, sized to match the PDF, with the page's text copied into the notes.",
+     "show": [
+      "#btnOpen",
+      "#btnMore"
+     ],
+     "shot": "dialog_pdf"
+    },
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "A batch of photos, one slide each",
+     "text": "Open several photos at once from Open ▾ → Photos…",
+     "show": [
+      "#btnOpen",
+      "#btnMore"
+     ]
+    },
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Export just some slides",
+     "text": "All, Current, or a list like 1-3, 5. The list and the thumbnails stay in sync.",
+     "show": [
+      "#btnExport"
+     ]
+    },
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "US Letter page size",
+     "text": "Letter joins the other page sizes, and PDF exports keep each slide's own shape."
+    },
+    {
+     "type": "new",
+     "for": "admins",
+     "title": "PDF reader loads from a CDN",
+     "text": "The first time someone opens a PDF, HaloDeck loads PDF.js from cdn.jsdelivr.net (unpkg.com as backup). Allow those addresses on locked-down networks."
+    }
+   ]
+  },
+  {
+   "version": "1.6",
+   "date": "2026-10-30",
+   "live": "2026-11-18",
+   "title": "Help and the illustrated guide",
+   "changes": [
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Help panel",
+     "text": "The ? button (or the ? key) opens a quick reference to every tool, menu and shortcut.",
+     "show": [
+      "#btnHelp",
+      "#btnMore"
+     ]
+    },
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Illustrated guide",
+     "text": "Screenshots of every tool, menu and setting, for everyday users and admins, linked from Help."
+    },
+    {
+     "type": "new",
+     "for": "admins",
+     "title": "guide.html sits next to the app",
+     "text": "Upload guide.html beside index.html. Help links to it and says so if it's missing."
+    }
+   ]
+  },
+  {
+   "version": "1.7",
+   "date": "2026-11-18",
+   "live": "2026-11-18",
+   "build": "53f0b41",
+   "title": "Getting-started tour",
+   "changes": [
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Getting-started tour",
+     "text": "Step-by-step screenshots of every part of HaloDeck. Open it any time from Help.",
+     "show": [
+      "#btnHelp",
+      "#btnMore"
+     ],
+     "shot": "help_panel"
+    },
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Show me",
+     "text": "A tour step can light up the real button on your screen."
+    },
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "What's new after updates",
+     "text": "A short summary of changes appears once, the first time you open a new version."
+    },
+    {
+     "type": "new",
+     "for": "admins",
+     "title": "Admin track in the tour",
+     "text": "Six steps on hosting, releasing updates, storage, network and rollout."
+    },
+    {
+     "type": "new",
+     "for": "admins",
+     "title": "Version check",
+     "text": "index.html and guide.html are stamped with one build number. Help shows the version and warns everyone if the two files don't match."
+    }
+   ]
+  },
+  {
+   "version": "1.8",
+   "date": "2026-11-20",
+   "live": "2026-11-20",
+   "title": "Change log, updates by role, and the move to mkcworkspace.com",
+   "changes": [
+    {
+     "type": "new",
+     "for": "admins",
+     "title": "Change log",
+     "text": "Every version since the first, oldest first, with dates and who each change affects. It's in the admin tour and Help, downloadable as JSON or CSV, and published as changelog.json and CHANGELOG.md next to the app.",
+     "show": [
+      "#helpLog"
+     ],
+     "shot": "changelog"
+    },
+    {
+     "type": "improved",
+     "for": "everyone",
+     "title": "What's new shows what applies to you",
+     "text": "After an update you see only the changes that affect you, as cards with pictures and Show me buttons."
+    },
+    {
+     "type": "new",
+     "for": "everyone",
+     "title": "Choose your role",
+     "text": "Pick “I make decks” or “I run HaloDeck” in the tour or in Help. People who run HaloDeck also see admin changes.",
+     "show": [
+      "#helpRole"
+     ],
+     "shot": "help_role"
+    },
+    {
+     "type": "changed",
+     "for": "everyone",
+     "title": "HaloDeck is moving to jtg-tools.mkcworkspace.com",
+     "text": "Your autosaved deck stays at the old address. Use Save project before the move, then open that file at the new address with Open ▾ → HaloDeck project…",
+     "show": [
+      "#btnSave",
+      "#btnMore"
+     ],
+     "shot": "move_banner"
+    },
+    {
+     "type": "new",
+     "for": "admins",
+     "title": "Moving-address notice",
+     "text": "People who open HaloDeck at jtg-tools.jtgworkspace.com see a banner asking them to save their deck. Switch the domain only after people have had time to save."
+    }
+   ]
+  }
+ ]
+}
