@@ -62,7 +62,16 @@ jobs:
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add tour
             git commit -m "ContentFlow tour: re-capture screenshots for v${version}"
-            git push
+            # Other tools in this repo get pushed while this runs; this commit
+            # only touches tour/, so replaying it on the latest main is safe.
+            for attempt in 1 2 3 4 5; do
+              if git pull --rebase --no-edit origin main && git push origin HEAD:main; then
+                exit 0
+              fi
+              sleep $((attempt * 5))
+            done
+            echo "Could not push the refreshed screenshots." >&2
+            exit 1
           else
             echo "Screenshots unchanged."
           fi
