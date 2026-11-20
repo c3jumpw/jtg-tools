@@ -1,6 +1,6 @@
 {
  "app": "mkc-crm/index.html",
- "appHash": "efc5f58638050fc184dfdbd2b0f849ef54103f8ea2438743229f5134add311de",
+ "appHash": "05c1b18e62f657af5b16bf1f99de8ab20dc5fd8632ec0dcfd21d2296725eb00d",
  "slides": {
   "today": {
    "d": 116444,
@@ -75,7 +75,7 @@
    "m": 97038
   },
   "capture": {
-   "d": 48063,
+   "d": 48005,
    "m": 59790
   },
   "action-hub": {
@@ -103,8 +103,8 @@
    "m": 82060
   },
   "changelog": {
-   "d": 93121,
-   "m": 107692
+   "d": 95430,
+   "m": 110944
   },
   "settings-team": {
    "d": 77140,
@@ -127,7 +127,7 @@
    "m": 103687
   },
   "super-access": {
-   "d": 50522,
+   "d": 50511,
    "m": 62913
   },
   "super-data": {

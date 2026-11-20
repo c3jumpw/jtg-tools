@@ -466,6 +466,22 @@
       "details": [],
       "slides": ["whats-new"],
       "refs": []
+    },
+    {
+      "id": "new-address",
+      "date": "2026-11-20",
+      "version": "2.51.1",
+      "type": "improved",
+      "audience": "everyone",
+      "announce": true,
+      "title": "New address: jtg-tools.mkcworkspace.com",
+      "summary": "The CRM now lives at jtg-tools.mkcworkspace.com/mkc-crm/. The old jtgworkspace.com address is switched off, so update your bookmarks. Signing in once on the new address is all it takes.",
+      "details": [
+        "Frontrow moved too: frontrow.mkcworkspace.com for clients and frontrow-manager.mkcworkspace.com for the team. Add to Frontrow on a record opens the new Frontrow Manager address.",
+        "Emails still go out from your usual address; only the web addresses changed."
+      ],
+      "slides": [],
+      "refs": []
     }
   ]
 }

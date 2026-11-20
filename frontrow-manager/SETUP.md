@@ -6,7 +6,7 @@ tasks and guides clients see in their organization's portal (the `frontrow/`
 app in this repo).
 
 - Vercel project: `jtg-tools-frontrow-manager`, **Root Directory `frontrow-manager`**
-- Suggested domain: `frontrow-manager.jtgworkspace.com`
+- Suggested domain: `frontrow-manager.mkcworkspace.com`
 - Database: Supabase project MKC-Admin (`symbmscaajjmgywbifhv`), schema `frontrow`
   (migration `sql/001_frontrow_foundation.sql`, already applied)
 
@@ -26,7 +26,7 @@ app in this repo).
   **Account Status is Active**. Switch an account off in ClickUp and its
   people lose access at the next sync (nightly, or **Sync from ClickUp**).
 - Each organization has its own branded sign-in page:
-  `https://frontrow.jtgworkspace.com/jtg`, `/mco`, `/uny`, `/mkc` — or its own
+  `https://frontrow.mkcworkspace.com/jtg`, `/mco`, `/uny`, `/mkc` — or its own
   domain (Organizations → Edit → Custom domain).
 
 ## Day to day
@@ -75,8 +75,8 @@ Enforced on the server (`lib/access.js`); the browser only hides buttons.
 | `SUPABASE_URL` | `https://symbmscaajjmgywbifhv.supabase.co` |
 | `SUPABASE_SERVICE_ROLE_KEY` | service role key (Supabase → Settings → API) |
 | `RESEND_API_KEY`, `FROM_EMAIL` | same as MKC Admin, e.g. `Frontrow <portal@jtgworkspace.com>` |
-| `SITE_URL` | this app's URL, e.g. `https://frontrow-manager.jtgworkspace.com` |
-| `FRONTROW_URL` | the client app's URL, e.g. `https://frontrow.jtgworkspace.com` |
+| `SITE_URL` | this app's URL, e.g. `https://frontrow-manager.mkcworkspace.com` |
+| `FRONTROW_URL` | the client app's URL, e.g. `https://frontrow.mkcworkspace.com` |
 | `PORTAL_ADMIN_EMAILS` | comma-separated emails that are always super admin |
 | `CLICKUP_API_TOKEN` | a **new** ClickUp personal token (see Security) |
 | `CRON_SECRET` | a long random string; Vercel sends it to the nightly sync |
@@ -110,7 +110,7 @@ if those change.
   (never sent to servers or logs), work once and expire. A new link retires
   the previous unused one. They always point at `FRONTROW_URL`, never a
   custom domain.
-- Session cookies use the `__Host-` prefix, so other `*.jtgworkspace.com`
+- Session cookies use the `__Host-` prefix, so other `*.mkcworkspace.com`
   sites can't set or overwrite them.
 - Everything is written to `core.audit_log` (tool `frontrow`), which is
   append-only.

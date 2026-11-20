@@ -7,7 +7,7 @@ import { esc } from './core.js';
 const HEX = /^#[0-9a-f]{6}$/i;
 
 function site(env = process.env) {
-  return (env.FRONTROW_URL || 'https://frontrow.jtgworkspace.com').replace(/\/$/, '');
+  return (env.FRONTROW_URL || 'https://frontrow.mkcworkspace.com').replace(/\/$/, '');
 }
 
 function layout(org, inner, env) {
