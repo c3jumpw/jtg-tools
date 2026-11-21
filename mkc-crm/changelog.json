@@ -443,7 +443,7 @@
     },
     {
       "id": "change-log",
-      "date": "2026-11-20",
+      "date": "2026-11-21",
       "version": "2.51.0",
       "type": "new",
       "audience": "admin",
@@ -456,7 +456,7 @@
     },
     {
       "id": "whats-new",
-      "date": "2026-11-20",
+      "date": "2026-11-21",
       "version": "2.51.0",
       "type": "new",
       "audience": "everyone",
@@ -469,7 +469,7 @@
     },
     {
       "id": "new-address",
-      "date": "2026-11-20",
+      "date": "2026-11-21",
       "version": "2.51.1",
       "type": "improved",
       "audience": "everyone",
