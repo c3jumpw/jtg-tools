@@ -475,10 +475,10 @@
       "audience": "everyone",
       "announce": true,
       "title": "New address: jtg-tools.mkcworkspace.com",
-      "summary": "The CRM now lives at jtg-tools.mkcworkspace.com/mkc-crm/. The old jtgworkspace.com address is switched off, so update your bookmarks. Signing in once on the new address is all it takes.",
+      "summary": "The CRM now lives at jtg-tools.mkcworkspace.com/mkc-crm/ (jtg-tools.mkcworkspace.com/crm takes you there too). The old jtgworkspace.com address is switched off, so update your bookmarks and sign in once on the new address.",
       "details": [
         "Frontrow moved too: frontrow.mkcworkspace.com for clients and frontrow-manager.mkcworkspace.com for the team. Add to Frontrow on a record opens the new Frontrow Manager address.",
-        "Emails still go out from your usual address; only the web addresses changed."
+        "Emails still go out as you, from your own MKC address. mkcworkspace.com replaces jtgworkspace.com as a sending domain."
       ],
       "slides": [],
       "refs": []

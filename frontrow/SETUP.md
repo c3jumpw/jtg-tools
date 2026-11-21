@@ -45,7 +45,8 @@ mistyped domain can never receive account links.
 | Name | Value |
 | --- | --- |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | same as Frontrow Manager |
-| `RESEND_API_KEY`, `FROM_EMAIL` | same as Frontrow Manager |
+| `RESEND_API_KEY` | same as Frontrow Manager |
+| `FROM_EMAIL` | client emails, e.g. `Frontrow <portal@frontrow.mkcworkspace.com>` (verify `frontrow.mkcworkspace.com` in that Resend account) |
 | `FRONTROW_URL` | this app's URL, e.g. `https://frontrow.mkcworkspace.com` (links in emails) |
 | `CLICKUP_API_TOKEN` | same new token as Frontrow Manager (notes and request contacts) |
 | `ALLOWED_ORIGINS` | optional; only if a form is posted from another origin |

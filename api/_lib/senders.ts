@@ -17,7 +17,7 @@
 // and its own RESEND_KEY_<letter> variable.
 
 export const RESEND_ACCOUNTS: Record<string, string[]> = {
-  A: ['jtgworkspace.com', 'befortune5.com', 'buildmystart-up.com'],
+  A: ['mkcworkspace.com', 'frontrow.mkcworkspace.com', 'frontrow-manager.mkcworkspace.com', 'befortune5.com', 'buildmystart-up.com'],
   B: ['mkholdinco.com', 'j-tgroup.com', 'wearepartydesigners.com'],
   C: ['bcm.mambaykanu.com', 'apply1234.com', 'mambaykanu.com'],
   D: ['go-unybase.unywebs.com', 'unywebs.com'],
