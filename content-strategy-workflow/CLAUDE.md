@@ -35,3 +35,15 @@ If the address ever changes again, update all of these together:
    ClickUp API Settings): Redirect URL(s), one origin per line.
 5. `guide.html` "Open ContentFlow" link, and a change-log entry telling
    people to sign in and reconnect ClickUp again.
+
+Supabase project `uwomibcrrrahucqtsvte` ("uny-tools") is shared with UnyBase:
+its Site URL is `https://unybase.unywebs.com` and must stay that way. Its
+redirect allow list has `https://jtg-tools.mkcworkspace.com/content-strategy-workflow/**`
+for ContentFlow (added 2026-11-21).
+
+Known issue (backend, not this repo): `api/admin/invite-user.js` calls
+`inviteUserByEmail(email)` with no `redirectTo`, so invite links fall back to
+the Site URL and open UnyBase, not ContentFlow. Fix: pass
+`{ redirectTo: 'https://jtg-tools.mkcworkspace.com/content-strategy-workflow/' }`
+and redeploy. The invited person then lands signed in and can set a password
+in Settings › Profile.
