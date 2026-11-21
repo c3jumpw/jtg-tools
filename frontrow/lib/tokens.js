@@ -49,6 +49,6 @@ export async function issueAccountToken(contactId, purpose, { orgId = null, crea
  *  organization's custom domain: a custom domain is typed in by staff, and a
  *  wrong or hostile one must not be able to receive account tokens. */
 export function accountLink(org, kind, raw, env = process.env) {
-  const site = (env.FRONTROW_URL || 'https://frontrow.jtgworkspace.com').replace(/\/$/, '');
+  const site = (env.FRONTROW_URL || 'https://frontrow.mkcworkspace.com').replace(/\/$/, '');
   return `${org ? `${site}/${org.slug}` : `${site}/signin`}#${kind}=${raw}`;
 }

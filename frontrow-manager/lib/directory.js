@@ -106,6 +106,6 @@ export function pickOrgId(companies, preferredOrgId) {
 /** Base URL of the client app for an organization. */
 export function portalBase(org, env = process.env) {
   if (org && org.custom_domain) return `https://${org.custom_domain}`;
-  const site = (env.FRONTROW_URL || 'https://frontrow.jtgworkspace.com').replace(/\/$/, '');
+  const site = (env.FRONTROW_URL || 'https://frontrow.mkcworkspace.com').replace(/\/$/, '');
   return org ? `${site}/${org.slug}` : `${site}/signin`;
 }

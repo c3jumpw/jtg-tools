@@ -3,7 +3,7 @@ import { insert, json, clean, EMAIL_RE, rateLimited, clientIp, originAllowed, re
 import { hashToken, getAccessRole } from '../lib/auth.js';
 import { magicLinkEmail, sendEmail } from '../lib/emails.js';
 
-const SITE_URL = () => (process.env.SITE_URL || 'https://frontrow-manager.jtgworkspace.com').replace(/\/$/, '');
+const SITE_URL = () => (process.env.SITE_URL || 'https://frontrow-manager.mkcworkspace.com').replace(/\/$/, '');
 
 export default route(async (request) => {
   if (!originAllowed(request)) return json(403, { error: 'Not allowed.' });
