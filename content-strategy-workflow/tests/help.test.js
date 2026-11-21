@@ -124,7 +124,7 @@ async function boot(browser, server, opts) {
     ok(cards === expected, role + ': shows only the ' + expected + ' changes for this role (' + cards + ')');
     ok(!(await page.locator('.tour-banner').count()), role + ': no welcome banner for a returning person');
     const crop = await page.locator('#whats-new-modal .wn-card .wn-crop').first().evaluate((el) => ({ bg: el.style.backgroundImage, size: parseFloat(el.style.backgroundSize) })).catch(() => null);
-    ok(crop && /tour\/shots\/settings-/.test(crop.bg) && crop.size > 150, role + ': pictures are close-ups of the changed part (' + (crop ? Math.round(crop.size) + '% zoom' : 'none') + ')');
+    ok(crop && /tour\/shots\/[a-z-]+\.webp/.test(crop.bg) && crop.size > 150, role + ': pictures are close-ups of the changed part (' + (crop ? Math.round(crop.size) + '% zoom' : 'none') + ')');
     if (role === 'admin') ok(await page.locator('#whats-new-modal [data-action="open-changelog"]').isVisible(), 'admin: has a Full change log button');
     if (role === 'client') {
       const titles = await page.locator('#whats-new-modal .wn-title').allTextContents();

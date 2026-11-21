@@ -61,11 +61,20 @@
   };
   // contentflow_release_views: the last release each person has seen.
   // CFG.seenVersion is this session's own row (null = never seen anything).
-  var RELEASE_VIEWS = [
-    { email: 'jordan@studio.example', role: 'rep', last_seen_version: '1.27.0', seen_at: iso(0, 3) },
-    { email: 'dana@harborpine.example', role: 'client', last_seen_version: '1.27.0', seen_at: iso(0, 5) },
-    { email: 'alex@studio.example', role: 'rep', last_seen_version: '1.26.0', seen_at: iso(2) },
-  ];
+  // Jordan and Dana are always up to date (the latest release in
+  // changelog.js, read when the table is queried, after it has loaded);
+  // Alex is a release or more behind.
+  function latestRelease() {
+    var r = window.CF_CHANGELOG && window.CF_CHANGELOG.releases;
+    return r && r.length ? r[r.length - 1].version : '0.0.0';
+  }
+  function releaseViews() {
+    return [
+      { email: 'jordan@studio.example', role: 'rep', last_seen_version: latestRelease(), seen_at: iso(0, 3) },
+      { email: 'dana@harborpine.example', role: 'client', last_seen_version: latestRelease(), seen_at: iso(0, 5) },
+      { email: 'alex@studio.example', role: 'rep', last_seen_version: '1.26.0', seen_at: iso(2) },
+    ];
+  }
   window.__CF_DEMO_UPSERTS = [];
   var ACCESS = {
     admin: [],
@@ -281,7 +290,7 @@
             maybeSingle: function () { return Promise.resolve({ data: own, error: null }); },
             upsert: function (row) { window.__CF_DEMO_UPSERTS.push(row); CFG.seenVersion = row.last_seen_version; return Promise.resolve({ data: null, error: null }); },
             then: function (res, rej) {
-              var rows = RELEASE_VIEWS.concat(CFG.seenVersion ? [{ email: PROFILES[ROLE].email, role: ROLE, last_seen_version: CFG.seenVersion, seen_at: new Date(NOW).toISOString() }] : []);
+              var rows = releaseViews().concat(CFG.seenVersion ? [{ email: PROFILES[ROLE].email, role: ROLE, last_seen_version: CFG.seenVersion, seen_at: new Date(NOW).toISOString() }] : []);
               return Promise.resolve({ data: ROLE === 'admin' ? rows : [], error: null }).then(res, rej);
             },
           };

@@ -295,6 +295,15 @@
         { type: 'improved', title: 'Remembered on every device', text: 'Once you’ve seen an update’s notes, you won’t be shown them again on another phone or computer.', roles: ALL, area: 'Help' },
       ],
     },
+    {
+      version: '1.27.1', date: '2026-11-21', title: 'New address',
+      summary: 'ContentFlow moved to jtg-tools.mkcworkspace.com with the rest of the JTG tools.',
+      items: [
+        { type: 'improved', title: 'ContentFlow has a new address', text: 'ContentFlow is now at jtg-tools.mkcworkspace.com/content-strategy-workflow/. Update your bookmark: the old jtgworkspace.com address no longer opens it. Your entries, ideas and files are unchanged.', roles: ALL, area: 'Sign-in' },
+        { type: 'improved', title: 'Sign in once more', text: 'Browsers remember sign-ins per address, so you sign in again once at the new address.', roles: ALL, area: 'Sign-in', step: 'sign-in' },
+        { type: 'improved', title: 'Reconnect ClickUp once', text: 'At the new address, connect ClickUp again the first time you sign in. It takes one click on ClickUp’s approval screen.', roles: TEAM, area: 'Sign-in', step: 'connect-clickup' },
+      ],
+    },
   ];
 
   var CHANGELOG = { releases: RELEASES };

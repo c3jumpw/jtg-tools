@@ -1113,6 +1113,16 @@ body.guide-open { overflow: hidden; }
        written as a fallback. tests/tour/check.js now fails a release whose
        change log entry is missing, out of order or malformed, or that is
        missing any version listed in this history.
+     v1.27.1 (2026-11-21) -- New address: jtg-tools.mkcworkspace.com.
+       The whole JTG tools site moved from jtg-tools.jtgworkspace.com (repo
+       CNAME). Nothing in this file names the host: Supabase, the backend and
+       ClickUp OAuth all key off location.origin. Outside this file: the
+       backend's ALLOWED_ORIGIN is now https://jtg-tools.mkcworkspace.com
+       (it had still been https://c1jumpw.github.io), the ClickUp app accepts
+       the new redirect URL, Supabase Auth redirect URLs include it, and the
+       guide's "Open ContentFlow" link points there. Browsers keep sign-ins
+       per address, so everyone signs in once more and team members
+       reconnect ClickUp; the change-log entry tells them so.
    ============================================================================ */
 
   // ==========================================================================
@@ -1130,7 +1140,7 @@ body.guide-open { overflow: hidden; }
   // The release this file is. Bump it on every release: the tour's
   // "What's new" banner, the tour screenshots and tests/tour/check.js all key
   // off it (see RELEASING.md).
-  var APP_VERSION = '1.27.0';
+  var APP_VERSION = '1.27.1';
   var SUPABASE_URL = 'https://uwomibcrrrahucqtsvte.supabase.co';
   var SUPABASE_ANON_KEY = 'sb_publishable_OsvedtyIs10zAaF6GmkHBg_wrtpxntq';
   var CLICKUP_CLIENT_ID = '76HV2C4YQFC4FEHIWYGA42GGCPFD356R';

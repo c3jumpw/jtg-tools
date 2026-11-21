@@ -302,3 +302,13 @@ Change log for admins; a "What's new" window for everyone after each update, sho
 - tests/tour/check.js now fails if changelog.js has no entry for APP_VERSION, is out of order, has an item with a bad type/role/step/focus, or is missing a version listed in index.html's version history. The old whatsNew notes in tour/steps.js are gone.
 - Tour: new steps "What's new after an update" (all roles) and "Change log" (admin); Settings step covers the new menu item. Guide: new sections for both; Admin panel now "three tabs"; footer v1.27.
 - Tests: tests/help.test.js, 131 browser checks (What's new per role, several missed updates, close-up pictures, Show me, backdrop/Escape, seen-state saved to Supabase, admin Change log filters/search/sort/exports, reps have no change log), all passing. check.js passing (64 screenshots).
+
+## v1.27.1 (2026-11-21)
+New address: https://jtg-tools.mkcworkspace.com/content-strategy-workflow/.
+
+- The whole JTG tools site moved from jtg-tools.jtgworkspace.com when the repo-root CNAME changed (commit c622697). index.html itself names no host; this release is the version bump plus a change-log entry so people are told once, in What's new, to update bookmarks, sign in again and (team) reconnect ClickUp.
+- Backend contentflow-oauth: ALLOWED_ORIGIN changed from https://c1jumpw.github.io to https://jtg-tools.mkcworkspace.com and redeployed (dpl_J2CTAmUGhcVDVoEBPMK3jsXEDMJq). Before that, every backend call from the new address was blocked by CORS (checked in a browser at the new origin); after it they reach the backend.
+- ClickUp OAuth app "Content Flow": https://jtg-tools.mkcworkspace.com added to its Redirect URL(s); ClickUp's authorize screen accepts the new redirect_uri.
+- Supabase Auth URL configuration (dashboard, not in this repo): the new address added to the redirect URLs.
+- guide.html: "Open ContentFlow" link points at the new address.
+- content-strategy-workflow/CLAUDE.md: the pending-move checklist became an "Address" section listing every place the address lives.

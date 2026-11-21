@@ -31,7 +31,7 @@
   var TOUR = {
     // The release these steps were written for. check.js requires this to
     // match APP_VERSION in index.html, so every release gets a review here.
-    version: '1.27.0',
+    version: '1.27.1',
 
     roles: {
       admin: { label: 'Admin', blurb: 'Run the workspace: people, accounts and all the content in between.' },
