@@ -93,8 +93,15 @@ Android (Chrome): open the link, tap the ⋮ menu, then Install app or Add to Ho
   return { subject, html: layout(org, inner, env), text };
 }
 
+// Client emails come from the client app's address (Frontrow's FROM_EMAIL).
+// The Manager sends team sign-in links from its own FROM_EMAIL, so it sets
+// CLIENT_FROM_EMAIL for the setup and reset emails it sends to clients.
+export function clientFrom(env = process.env) {
+  return env.CLIENT_FROM_EMAIL || env.FROM_EMAIL || '';
+}
+
 export async function sendEmail({ to, subject, html, text, key }, env = process.env, fetchImpl = fetch) {
-  if (!env.RESEND_API_KEY || !env.FROM_EMAIL) return 'Email is not configured (RESEND_API_KEY / FROM_EMAIL).';
+  if (!env.RESEND_API_KEY || !clientFrom(env)) return 'Email is not configured (RESEND_API_KEY / FROM_EMAIL).';
   try {
     const res = await fetchImpl('https://api.resend.com/emails', {
       method: 'POST',
@@ -103,7 +110,7 @@ export async function sendEmail({ to, subject, html, text, key }, env = process.
         'Content-Type': 'application/json',
         ...(key ? { 'Idempotency-Key': key } : {})
       },
-      body: JSON.stringify({ from: env.FROM_EMAIL, to: [to], subject, html, text })
+      body: JSON.stringify({ from: clientFrom(env), to: [to], subject, html, text })
     });
     if (!res.ok) return `Resend ${res.status}: ${(await res.text()).slice(0, 200)}`;
     return null;

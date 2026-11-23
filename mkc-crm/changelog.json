@@ -442,8 +442,24 @@
       "refs": ["0b87838", "PR #7"]
     },
     {
+      "id": "new-address",
+      "date": "2026-11-21",
+      "version": "2.50.1",
+      "type": "improved",
+      "audience": "everyone",
+      "announce": true,
+      "title": "New address: jtg-tools.mkcworkspace.com",
+      "summary": "The CRM now lives at jtg-tools.mkcworkspace.com/mkc-crm/ (jtg-tools.mkcworkspace.com/crm takes you there too). The old jtgworkspace.com address is switched off, so update your bookmarks and sign in once on the new address.",
+      "details": [
+        "Frontrow moved too: frontrow.mkcworkspace.com for clients and frontrow-manager.mkcworkspace.com for the team. Add to Frontrow on a record opens the new Frontrow Manager address.",
+        "Emails still go out as you, from your own MKC address. mkcworkspace.com replaces jtgworkspace.com as a sending domain."
+      ],
+      "slides": [],
+      "refs": []
+    },
+    {
       "id": "change-log",
-      "date": "2026-11-20",
+      "date": "2026-11-22",
       "version": "2.51.0",
       "type": "new",
       "audience": "admin",
@@ -456,7 +472,7 @@
     },
     {
       "id": "whats-new",
-      "date": "2026-11-20",
+      "date": "2026-11-22",
       "version": "2.51.0",
       "type": "new",
       "audience": "everyone",

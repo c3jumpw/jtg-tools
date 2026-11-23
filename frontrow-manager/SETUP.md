@@ -74,7 +74,9 @@ Enforced on the server (`lib/access.js`); the browser only hides buttons.
 | --- | --- |
 | `SUPABASE_URL` | `https://symbmscaajjmgywbifhv.supabase.co` |
 | `SUPABASE_SERVICE_ROLE_KEY` | service role key (Supabase → Settings → API) |
-| `RESEND_API_KEY`, `FROM_EMAIL` | same as MKC Admin, e.g. `Frontrow Manager <signin@frontrow-manager.mkcworkspace.com>` (that subdomain must be verified in Resend on its own; `@mkcworkspace.com` needs no extra step) |
+| `RESEND_API_KEY` | key of the Resend account where `frontrow.mkcworkspace.com` and `frontrow-manager.mkcworkspace.com` are verified (account A); each subdomain is verified in Resend on its own |
+| `FROM_EMAIL` | team sign-in links, e.g. `Frontrow Manager <signin@frontrow-manager.mkcworkspace.com>` |
+| `CLIENT_FROM_EMAIL` | setup and reset emails to clients, same as Frontrow's `FROM_EMAIL`, e.g. `Frontrow <portal@frontrow.mkcworkspace.com>` |
 | `SITE_URL` | this app's URL, e.g. `https://frontrow-manager.mkcworkspace.com` |
 | `FRONTROW_URL` | the client app's URL, e.g. `https://frontrow.mkcworkspace.com` |
 | `PORTAL_ADMIN_EMAILS` | comma-separated emails that are always super admin |
