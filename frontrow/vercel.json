@@ -1,8 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "redirects": [
-    { "source": "/:path*", "has": [{ "type": "host", "value": "frontrow.jtgworkspace.com" }], "destination": "https://frontrow.mkcworkspace.com/:path*", "permanent": true }
-  ],
   "cleanUrls": false,
   "rewrites": [
     { "source": "/", "destination": "/api/page" },

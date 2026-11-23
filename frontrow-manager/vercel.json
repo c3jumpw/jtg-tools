@@ -1,8 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "redirects": [
-    { "source": "/:path*", "has": [{ "type": "host", "value": "frontrow-manager.jtgworkspace.com" }], "destination": "https://frontrow-manager.mkcworkspace.com/:path*", "permanent": true }
-  ],
   "functions": {
     "api/assist.js": {
       "maxDuration": 60
