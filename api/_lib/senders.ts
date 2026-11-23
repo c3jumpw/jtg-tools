@@ -18,8 +18,10 @@
 
 export const RESEND_ACCOUNTS: Record<string, string[]> = {
   // jtgworkspace.com was retired on 2026-11-22; mkcworkspace.com replaced it in the same account.
-  // Each subdomain is verified on its own (see accountFor below).
-  A: ['mkcworkspace.com', 'frontrow.mkcworkspace.com', 'frontrow-manager.mkcworkspace.com', 'befortune5.com', 'buildmystart-up.com'],
+  // Only domains people's MKC emails use belong here. Frontrow's sending
+  // subdomains (frontrow. / frontrow-manager.mkcworkspace.com) are set on the
+  // Frontrow projects, not here.
+  A: ['mkcworkspace.com', 'befortune5.com', 'buildmystart-up.com'],
   B: ['mkholdinco.com', 'j-tgroup.com', 'wearepartydesigners.com'],
   C: ['bcm.mambaykanu.com', 'apply1234.com', 'mambaykanu.com'],
   D: ['go-unybase.unywebs.com', 'unywebs.com'],
