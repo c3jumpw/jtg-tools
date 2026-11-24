@@ -48,6 +48,7 @@ What has been seen is stored per browser, so someone using both a phone and a co
 
 | File | What it checks |
 | --- | --- |
+| `test/senders.test.js` | which Resend key sends for which email domain (`api/_lib/senders.ts`; needs Node 22) |
 | `test/features.test.js` | filters, completed jobs and invoices, the assistant |
 | `test/statuses.test.js` | ClickUp's live statuses, new-deal status and links, amounts owed |
 | `test/guide.test.js` | the tour: who sees what, first sign-in, keyboard, phone, Show me |

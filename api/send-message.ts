@@ -16,10 +16,10 @@
 //
 // Env vars needed (Vercel Project Settings -> Environment Variables):
 //   QUO_API_KEY      -- from Quo Settings -> API
-//   RESEND_KEY_<A..> -- one per Resend account, from that account's
-//                       Settings -> API Keys. Which domains each account
-//                       sends for is in api/_lib/senders.ts.
-//   RESEND_API_KEY   -- the single key used before the split; fallback only
+//   RESEND_API_KEY_<A..> -- one per Resend account, from that account's
+//                           API Keys page (Full access, so the CRM can ask
+//                           which domains it has; see api/_lib/senders.ts).
+//   RESEND_API_KEY       -- the single key used before the split; fallback only
 //
 // Migrated from SendGrid to Resend: Resend verifies at the DOMAIN level
 // (SPF/DKIM), not per-address like SendGrid's Single Sender Verification
@@ -212,7 +212,7 @@ export default async function handler(req: Request): Promise<Response> {
 
       // The key comes from the Resend account that has the sender's
       // domain verified (api/_lib/senders.ts).
-      const sender = resendKeyFor(senderEmail, process.env);
+      const sender = await resendKeyFor(senderEmail, process.env);
       if (!sender.ok) {
         return jsonResponse({ error: sender.error }, sender.status);
       }

@@ -43,7 +43,7 @@ jobs:
           fetch-depth: 0   # the change-log check reads when the CRM last changed
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npx playwright install --with-deps chromium
       - name: Remake the tour pictures

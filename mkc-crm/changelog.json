@@ -482,6 +482,22 @@
       "details": [],
       "slides": ["whats-new"],
       "refs": []
+    },
+    {
+      "id": "email-any-account",
+      "date": "2026-11-24",
+      "version": "2.51.1",
+      "type": "improved",
+      "audience": "everyone",
+      "announce": false,
+      "title": "Email sends from every MKC domain",
+      "summary": "The CRM now asks Resend which account has your email's domain, so anyone on a verified MKC domain can send, including domains and accounts added later.",
+      "details": [
+        "Each Resend account's key is a RESEND_API_KEY_<letter> variable on the CRM's Vercel project. A new account needs only its key added there and a redeploy; a new domain needs only verifying in Resend.",
+        "Keys need Full access in Resend for this. Accounts with a sending-only key use the list in api/_lib/senders.ts."
+      ],
+      "slides": [],
+      "refs": []
     }
   ]
 }
