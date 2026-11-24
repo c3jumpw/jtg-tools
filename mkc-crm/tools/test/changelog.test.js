@@ -11,7 +11,10 @@ const FILE = process.argv[2] || APP;
 const OUT = process.env.SWEEP_OUT || fs.mkdtempSync(path.join(os.tmpdir(), 'crm-changelog-'));
 const LOG = JSON.parse(fs.readFileSync(path.join(path.dirname(APP), 'changelog.json'), 'utf8'));
 const newest = LOG.entries.reduce((m, e) => (e.date > m ? e.date : m), '');
-const dayBefore = new Date(Date.parse(newest) - 864e5).toISOString().slice(0, 10);
+// "Last signed in" the day before the newest announced change, so there is
+// something for What's new to show (quiet entries are never announced).
+const newestAnnounced = LOG.entries.filter(e => e.announce).reduce((m, e) => (e.date > m ? e.date : m), '');
+const dayBefore = new Date(Date.parse(newestAnnounced) - 864e5).toISOString().slice(0, 10);
 const rank = { everyone: 0, admin: 1, super: 2 };
 const expectFor = (level, since) => LOG.entries.filter(e => e.announce && e.date > since && rank[e.audience] <= level).map(e => e.title).sort();
 
